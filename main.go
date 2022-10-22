@@ -78,7 +78,7 @@ func generateChromosome(scenario Scenario) Chromosome {
 func getRandomFactory(scenario Scenario, additionalFactories []Factory) Factory {
 	scenario.factories = additionalFactories
 	availablePositions := getAvailableFactoryPositions(scenario)
-	rand.Seed(time.Now().UnixNano() + int64(len(additionalFactories)))
+	rand.Seed(time.Now().UnixNano())
 	//fmt.Printf("Found %d available positions for a factory.\n", len(availablePositions))
 	position := availablePositions[rand.Intn(len(availablePositions))]
 	return Factory{position: position, product: 0}
@@ -170,4 +170,8 @@ func main() {
 
 	chromosomes := generateChromosomes(populationSize, scenario)
 	fmt.Println(chromosomes)
+
+	scenario.factories = chromosomes[3].factories
+
+	exportScenario(scenario, "test.json")
 }
