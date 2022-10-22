@@ -2,6 +2,8 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
+	"io"
 	"os"
 )
 
@@ -60,5 +62,53 @@ func exportScenario(scenario Scenario, path string) {
 	}
 
 	b, _ := json.MarshalIndent(exportableScenario, "", " ")
-	_ = os.WriteFile("test.json", b, 0644)
+	_ = os.WriteFile(path, b, 0644)
+}
+
+func importScenarioFromJson(path string) Scenario {
+	jsonFile, err := os.Open(path)
+	if err != nil {
+		fmt.Println(err)
+	}
+	byteValue, _ := io.ReadAll(jsonFile)
+	var importedScenario ExportableScenario
+	err = json.Unmarshal(byteValue, &importedScenario)
+	if err != nil {
+		fmt.Println(err)
+		return Scenario{}
+	}
+
+	scenario := Scenario{
+		width:        importedScenario.Width,
+		height:       importedScenario.Height,
+		turns:        importedScenario.Turns,
+		numFactories: 10,
+	}
+	for _, object := range importedScenario.Objects {
+		switch object.ObjectType {
+		case "deposit":
+			scenario.deposits = append(scenario.deposits, Deposit{
+				position: Position{object.X, object.Y},
+				width:    object.Width,
+				height:   object.Height,
+				subtype:  object.Subtype,
+			})
+		case "obstacle":
+			scenario.obstacles = append(scenario.obstacles, Obstacle{
+				position: Position{object.X, object.Y},
+				height:   object.Height,
+				width:    object.Width,
+			})
+		case "factory":
+			scenario.factories = append(scenario.factories, Factory{
+				position: Position{object.X, object.Y},
+				product:  object.Subtype,
+			})
+		default:
+			fmt.Println("Unknown ObjectType: ", object.ObjectType)
+
+		}
+	}
+
+	return scenario
 }

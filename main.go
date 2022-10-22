@@ -174,4 +174,6 @@ func main() {
 	scenario.factories = chromosomes[3].factories
 
 	exportScenario(scenario, "test.json")
+	newScenario := importScenarioFromJson("test.json")
+	exportScenario(newScenario, "test2.json")
 }
