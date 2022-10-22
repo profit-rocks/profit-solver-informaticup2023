@@ -1,13 +1,13 @@
 package main
 
 import (
-	"fmt"
 	"math/rand"
 	"time"
 )
 
 const FACTORY_WIDTH = 5
 const FACTORY_HEIGHT = 5
+const NUM_FACTORIES = 10
 
 type Position struct {
 	x int
@@ -141,39 +141,14 @@ func isPositionFree(scenario Scenario, position Position) bool {
 	return true
 }
 
-func getDefaultScenario() Scenario {
-	deposits := make([]Deposit, 2)
-	deposits[0] = Deposit{width: 5, height: 5, subtype: 1, position: Position{0, 0}}
-	deposits[1] = Deposit{width: 5, height: 5, subtype: 0, position: Position{10, 3}}
-
-	obstacles := make([]Obstacle, 1)
-	obstacles[0] = Obstacle{
-		position: Position{8, 10},
-		height:   4,
-		width:    4,
-	}
-	return Scenario{
-		width:        40,
-		height:       40,
-		deposits:     deposits,
-		obstacles:    obstacles,
-		numFactories: 10,
-	}
-}
-
 func main() {
-	var scenario Scenario = getDefaultScenario()
-	fmt.Println(scenario)
+	scenario := importScenarioFromJson("exampleScenario.json")
 	var populationSize int = 30
 	//var crossoverProbability float32 = 0.7
 	//var mutationProbability float32 = 0.5
 
 	chromosomes := generateChromosomes(populationSize, scenario)
-	fmt.Println(chromosomes)
-
 	scenario.factories = chromosomes[3].factories
 
-	exportScenario(scenario, "test.json")
-	newScenario := importScenarioFromJson("test.json")
-	exportScenario(newScenario, "test2.json")
+	exportScenario(scenario, "exampleScenarioWithFactories.json")
 }
