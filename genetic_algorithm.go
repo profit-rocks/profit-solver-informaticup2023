@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"math"
 	"math/rand"
 	"sort"
@@ -12,6 +13,8 @@ type Chromosome struct {
 	mines     []Mine
 	fitness   float64
 }
+
+var NumTriesPerChromosome int = 10
 
 func crossover(chromosome Chromosome, chromosome2 Chromosome, probability float64, scenario Scenario) Chromosome {
 	newChromosome := Chromosome{}
@@ -47,30 +50,47 @@ func evaluateFitness(chromosome Chromosome, scenario Scenario) float64 {
 	return fitness
 }
 
-func generateChromosomes(n int, scenario Scenario) []Chromosome {
+func generateChromosomes(n int, scenario Scenario) ([]Chromosome, error) {
 	chromosomes := make([]Chromosome, n)
 	for i := 0; i < n; i++ {
-		chromosomes[i] = generateChromosome(scenario)
+		foundChromosome := false
+		for j := 0; j < NumTriesPerChromosome; j++ {
+			chromosome, err := generateChromosome(scenario)
+			if err == nil {
+				chromosomes[i] = chromosome
+				foundChromosome = true
+			}
+		}
+		if !foundChromosome {
+			return chromosomes, errors.New("exceeded NumTriesPerChromosome in generateChromosomes, probably trying to place too many factories")
+		}
 	}
-	return chromosomes
+	return chromosomes, nil
 }
 
-func generateChromosome(scenario Scenario) Chromosome {
+func generateChromosome(scenario Scenario) (Chromosome, error) {
 	chromosome := Chromosome{mines: make([]Mine, 0)}
 	factories := make([]Factory, scenario.numFactories)
 	for i := 0; i < scenario.numFactories; i++ {
-		factories[i] = getRandomFactory(scenario, factories[0:i])
+		var err error
+		factories[i], err = getRandomFactory(scenario, factories[0:i])
+		if err != nil {
+			return chromosome, err
+		}
 	}
 	chromosome.factories = factories
-	return chromosome
+	return chromosome, nil
 }
 
-func getRandomFactory(scenario Scenario, additionalFactories []Factory) Factory {
+func getRandomFactory(scenario Scenario, additionalFactories []Factory) (Factory, error) {
 	availablePositions := getAvailableFactoryPositions(scenario, additionalFactories)
 	rand.Seed(time.Now().UnixNano())
 	//fmt.Printf("Found %d available positions for a factory.\n", len(availablePositions))
+	if len(availablePositions) == 0 {
+		return Factory{}, errors.New("no factory positions available")
+	}
 	position := availablePositions[rand.Intn(len(availablePositions))]
-	return Factory{position: position, product: 0}
+	return Factory{position: position, product: 0}, nil
 }
 
 func getAvailableFactoryPositions(scenario Scenario, additionalFactories []Factory) []Position {
@@ -131,8 +151,11 @@ func isPositionFree(scenario Scenario, position Position) bool {
 	return true
 }
 
-func runGeneticAlgorithm(maxIterations int, scenario Scenario, populationSize int, crossoverProbability float64) Scenario {
-	chromosomes := generateChromosomes(populationSize, scenario)
+func runGeneticAlgorithm(maxIterations int, scenario Scenario, populationSize int, crossoverProbability float64) (Scenario, error) {
+	chromosomes, err := generateChromosomes(populationSize, scenario)
+	if err != nil {
+		return scenario, err
+	}
 	for i, chromosome := range chromosomes {
 		chromosomes[i].fitness = evaluateFitness(chromosome, scenario)
 	}
@@ -153,5 +176,5 @@ func runGeneticAlgorithm(maxIterations int, scenario Scenario, populationSize in
 		return chromosomes[i].fitness < chromosomes[j].fitness
 	})
 	scenario.factories = chromosomes[0].factories
-	return scenario
+	return scenario, nil
 }

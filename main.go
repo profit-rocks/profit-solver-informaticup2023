@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"os"
 )
 
@@ -56,8 +57,11 @@ func main() {
 		os.Exit(1)
 	}
 	scenario := importScenarioFromJson(*inputPtr)
+	scenario, err := runGeneticAlgorithm(40, scenario, 200, 0.7)
 
-	scenario = runGeneticAlgorithm(40, scenario, 200, 0.7)
-
+	if err != nil {
+		fmt.Println("Error:", err.Error())
+		os.Exit(1)
+	}
 	exportScenario(scenario, *outputPtr)
 }
