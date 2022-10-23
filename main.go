@@ -3,7 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
+	"math/rand"
 	"os"
+	"time"
 )
 
 const FactoryWidth = 5
@@ -57,7 +59,9 @@ func main() {
 		os.Exit(1)
 	}
 	scenario := importScenarioFromJson(*inputPtr)
-	scenario, err := runGeneticAlgorithm(40, scenario, 200, 0.7)
+
+	rand.Seed(time.Now().UnixNano())
+	scenario, err := runGeneticAlgorithm(40, scenario, 120, 0.18, 0.7)
 
 	if err != nil {
 		fmt.Println("Error:", err.Error())

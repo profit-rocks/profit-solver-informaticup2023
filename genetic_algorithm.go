@@ -2,10 +2,10 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"math"
 	"math/rand"
 	"sort"
-	"time"
 )
 
 type Chromosome struct {
@@ -19,13 +19,29 @@ const NumTriesPerChromosome = 10
 func crossover(chromosome Chromosome, chromosome2 Chromosome, probability float64, scenario Scenario) Chromosome {
 	newChromosome := Chromosome{}
 	for i := 0; i < scenario.numFactories; i++ {
-		rand.Seed(time.Now().UnixNano())
 		if rand.Float64() > probability {
 			newChromosome.factories = append(newChromosome.factories, chromosome.factories[i])
 		} else {
 			newChromosome.factories = append(newChromosome.factories, chromosome2.factories[i])
 		}
-		//TODO: Check if still valid
+	}
+	return newChromosome
+}
+
+func mutation(chromosome Chromosome, probability float64, scenario Scenario) Chromosome {
+	newChromosome := Chromosome{}
+	for _, factory := range chromosome.factories {
+		fl := rand.Float64()
+		if fl > probability {
+			newChromosome.factories = append(newChromosome.factories, factory)
+		} else {
+			newFactory, err := getRandomFactory(scenario, newChromosome.factories)
+			if err != nil {
+				newChromosome.factories = append(newChromosome.factories, factory)
+			} else {
+				newChromosome.factories = append(newChromosome.factories, newFactory)
+			}
+		}
 	}
 	return newChromosome
 }
@@ -83,7 +99,6 @@ func generateChromosome(scenario Scenario) (Chromosome, error) {
 
 func getRandomFactory(scenario Scenario, additionalFactories []Factory) (Factory, error) {
 	availablePositions := getAvailableFactoryPositions(scenario, additionalFactories)
-	rand.Seed(time.Now().UnixNano())
 	//fmt.Printf("Found %d available positions for a factory.\n", len(availablePositions))
 	if len(availablePositions) == 0 {
 		return Factory{}, errors.New("no factory positions available")
@@ -159,7 +174,7 @@ func isPositionAvailableForFactoryCell(scenario Scenario, position Position) boo
 	return true
 }
 
-func runGeneticAlgorithm(maxIterations int, scenario Scenario, populationSize int, crossoverProbability float64) (Scenario, error) {
+func runGeneticAlgorithm(maxIterations int, scenario Scenario, populationSize int, mutationProbability float64, crossoverProbability float64) (Scenario, error) {
 	chromosomes, err := generateChromosomes(populationSize, scenario)
 	if err != nil {
 		return scenario, err
@@ -171,11 +186,17 @@ func runGeneticAlgorithm(maxIterations int, scenario Scenario, populationSize in
 		sort.Slice(chromosomes, func(i, j int) bool {
 			return chromosomes[i].fitness < chromosomes[j].fitness
 		})
+		fmt.Println("starting iteration", i+1, "/", maxIterations, "fitness", chromosomes[0].fitness)
 		chromosomes = chromosomes[:populationSize]
 
 		for j := 0; j < populationSize; j++ {
-			rand.Seed(time.Now().UnixNano())
 			newChromosome := crossover(chromosomes[rand.Intn(populationSize)], chromosomes[rand.Intn(populationSize)], crossoverProbability, scenario)
+			newChromosome.fitness = evaluateFitness(newChromosome, scenario)
+			chromosomes = append(chromosomes, newChromosome)
+		}
+		numChromosomes := len(chromosomes)
+		for j := 0; j < numChromosomes; j++ {
+			newChromosome := mutation(chromosomes[j], mutationProbability, scenario)
 			newChromosome.fitness = evaluateFitness(newChromosome, scenario)
 			chromosomes = append(chromosomes, newChromosome)
 		}
@@ -184,5 +205,6 @@ func runGeneticAlgorithm(maxIterations int, scenario Scenario, populationSize in
 		return chromosomes[i].fitness < chromosomes[j].fitness
 	})
 	scenario.factories = chromosomes[0].factories
+	fmt.Println("final fitness", chromosomes[0].fitness)
 	return scenario, nil
 }
