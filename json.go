@@ -82,7 +82,7 @@ func importScenarioFromJson(path string) Scenario {
 		width:        importedScenario.Width,
 		height:       importedScenario.Height,
 		turns:        importedScenario.Turns,
-		numFactories: NUM_FACTORIES,
+		numFactories: NumFactories,
 	}
 	for _, object := range importedScenario.Objects {
 		switch object.ObjectType {

@@ -14,7 +14,7 @@ type Chromosome struct {
 	fitness   float64
 }
 
-var NumTriesPerChromosome int = 10
+const NumTriesPerChromosome = 10
 
 func crossover(chromosome Chromosome, chromosome2 Chromosome, probability float64, scenario Scenario) Chromosome {
 	newChromosome := Chromosome{}
@@ -37,7 +37,6 @@ func evaluateFitness(chromosome Chromosome, scenario Scenario) float64 {
 		if !isPositionAvailableForFactory(scenario, chromosome.factories[:i], factory.position) {
 			return math.Inf(1)
 		}
-
 	}
 
 	// sum of manhattan distances for each factory to all the deposits
@@ -113,12 +112,12 @@ func getAvailableFactoryPositions(scenario Scenario, additionalFactories []Facto
 
 func isPositionAvailableForFactory(scenario Scenario, additionalFactories []Factory, position Position) bool {
 	scenario.factories = additionalFactories
-	for i := position.x; i < position.x+FACTORY_WIDTH; i++ {
-		for j := position.y; j < position.y+FACTORY_HEIGHT; j++ {
-			if !isPositionFree(scenario, Position{
+	for i := position.x; i < position.x+FactoryWidth; i++ {
+		for j := position.y; j < position.y+FactoryHeight; j++ {
+			if !isPositionAvailableForFactoryCell(scenario, Position{
 				x: i,
 				y: j,
-			}) || i+FACTORY_WIDTH > scenario.width || j+FACTORY_HEIGHT > scenario.height {
+			}) {
 				return false
 			}
 		}
@@ -126,17 +125,26 @@ func isPositionAvailableForFactory(scenario Scenario, additionalFactories []Fact
 	return true
 }
 
-func isPositionFree(scenario Scenario, position Position) bool {
+func isPositionAvailableForFactoryCell(scenario Scenario, position Position) bool {
+	if position.x >= scenario.width || position.y >= scenario.height {
+		return false
+	}
 	for _, deposit := range scenario.deposits {
-		xOverlap := position.x >= deposit.position.x && position.x < deposit.position.x+deposit.width
-		yOverlap := position.y >= deposit.position.y && position.y < deposit.position.y+deposit.height
+		xOverlap := position.x >= deposit.position.x-1 && position.x < deposit.position.x+deposit.width+1
+		yOverlap := position.y >= deposit.position.y-1 && position.y < deposit.position.y+deposit.height+1
 		if xOverlap && yOverlap {
-			return false
+			positionIsCorner := position.y == deposit.position.y-1 && position.x == deposit.position.x-1
+			positionIsCorner = positionIsCorner || (position.y == deposit.position.y+deposit.height && position.x == deposit.position.x-1)
+			positionIsCorner = positionIsCorner || (position.y == deposit.position.y-1 && position.x == deposit.position.x+deposit.width)
+			positionIsCorner = positionIsCorner || (position.y == deposit.position.y+deposit.height && position.x == deposit.position.x+deposit.width)
+			if !positionIsCorner {
+				return false
+			}
 		}
 	}
 	for _, factory := range scenario.factories {
-		xOverlap := position.x >= factory.position.x && position.x < factory.position.x+FACTORY_WIDTH
-		yOverlap := position.y >= factory.position.y && position.y < factory.position.y+FACTORY_HEIGHT
+		xOverlap := position.x >= factory.position.x && position.x < factory.position.x+FactoryWidth
+		yOverlap := position.y >= factory.position.y && position.y < factory.position.y+FactoryHeight
 		if xOverlap && yOverlap {
 			return false
 		}

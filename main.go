@@ -6,9 +6,9 @@ import (
 	"os"
 )
 
-const FACTORY_WIDTH = 5
-const FACTORY_HEIGHT = 5
-const NUM_FACTORIES = 4
+const FactoryWidth = 5
+const FactoryHeight = 5
+const NumFactories = 4
 
 type Position struct {
 	x int
