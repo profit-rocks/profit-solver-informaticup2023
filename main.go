@@ -1,8 +1,13 @@
 package main
 
+import (
+	"flag"
+	"os"
+)
+
 const FACTORY_WIDTH = 5
 const FACTORY_HEIGHT = 5
-const NUM_FACTORIES = 10
+const NUM_FACTORIES = 4
 
 type Position struct {
 	x int
@@ -43,9 +48,16 @@ type Mine struct {
 }
 
 func main() {
-	scenario := importScenarioFromJson("exampleScenario.json")
+	inputPtr := flag.String("input", "", "Path to input scenario json")
+	outputPtr := flag.String("output", "", "Path to output scenario json")
+	flag.Parse()
+	if *inputPtr == "" || *outputPtr == "" {
+		flag.Usage()
+		os.Exit(1)
+	}
+	scenario := importScenarioFromJson(*inputPtr)
 
 	scenario = runGeneticAlgorithm(40, scenario, 200, 0.7)
 
-	exportScenario(scenario, "exampleScenarioWithFactories.json")
+	exportScenario(scenario, *outputPtr)
 }
