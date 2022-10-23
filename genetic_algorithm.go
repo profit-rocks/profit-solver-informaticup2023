@@ -30,6 +30,13 @@ func crossover(chromosome Chromosome, chromosome2 Chromosome, probability float6
 func evaluateFitness(chromosome Chromosome, scenario Scenario) float64 {
 	// TODO: use A* or other metric
 
+	for i, factory := range chromosome.factories {
+		if !isPositionAvailableForFactory(scenario, chromosome.factories[:i], factory.position) {
+			return math.Inf(1)
+		}
+
+	}
+
 	// sum of manhattan distances for each factory to all the deposits
 	fitness := 0.0
 	for _, deposit := range scenario.deposits {
@@ -59,19 +66,18 @@ func generateChromosome(scenario Scenario) Chromosome {
 }
 
 func getRandomFactory(scenario Scenario, additionalFactories []Factory) Factory {
-	scenario.factories = additionalFactories
-	availablePositions := getAvailableFactoryPositions(scenario)
+	availablePositions := getAvailableFactoryPositions(scenario, additionalFactories)
 	rand.Seed(time.Now().UnixNano())
 	//fmt.Printf("Found %d available positions for a factory.\n", len(availablePositions))
 	position := availablePositions[rand.Intn(len(availablePositions))]
 	return Factory{position: position, product: 0}
 }
 
-func getAvailableFactoryPositions(scenario Scenario) []Position {
+func getAvailableFactoryPositions(scenario Scenario, additionalFactories []Factory) []Position {
 	positions := make([]Position, 0)
 	for i := 0; i < scenario.width; i++ {
 		for j := 0; j < scenario.height; j++ {
-			if isPositionAvailableForFactory(scenario, Position{
+			if isPositionAvailableForFactory(scenario, additionalFactories, Position{
 				x: i,
 				y: j,
 			}) {
@@ -85,7 +91,8 @@ func getAvailableFactoryPositions(scenario Scenario) []Position {
 	return positions
 }
 
-func isPositionAvailableForFactory(scenario Scenario, position Position) bool {
+func isPositionAvailableForFactory(scenario Scenario, additionalFactories []Factory, position Position) bool {
+	scenario.factories = additionalFactories
 	for i := position.x; i < position.x+FACTORY_WIDTH; i++ {
 		for j := position.y; j < position.y+FACTORY_HEIGHT; j++ {
 			if !isPositionFree(scenario, Position{
