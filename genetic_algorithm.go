@@ -23,7 +23,7 @@ func (c Chromosome) Solution() Solution {
 
 const NumTriesPerChromosome = 10
 
-func crossover(chromosome Chromosome, chromosome2 Chromosome, probability float64, scenario Scenario) Chromosome {
+func crossover(chromosome Chromosome, chromosome2 Chromosome, probability float64) Chromosome {
 	newChromosome := Chromosome{}
 	for i := 0; i < len(chromosome.factories); i++ {
 		if rand.Float64() > probability {
@@ -106,7 +106,6 @@ func generateChromosome(scenario Scenario, numFactories int) (Chromosome, error)
 
 func getRandomFactory(scenario Scenario, chromosome Chromosome) (Factory, error) {
 	availablePositions := getAvailableFactoryPositions(scenario, chromosome)
-	//fmt.Printf("Found %d available positions for a factory.\n", len(availablePositions))
 	if len(availablePositions) == 0 {
 		return Factory{}, errors.New("no factory positions available")
 	}
@@ -194,7 +193,7 @@ func runGeneticAlgorithm(maxIterations int, scenario Scenario, populationSize in
 		chromosomes = chromosomes[:populationSize]
 
 		for j := 0; j < populationSize; j++ {
-			newChromosome := crossover(chromosomes[rand.Intn(populationSize)], chromosomes[rand.Intn(populationSize)], crossoverProbability, scenario)
+			newChromosome := crossover(chromosomes[rand.Intn(populationSize)], chromosomes[rand.Intn(populationSize)], crossoverProbability)
 			newChromosome.fitness = evaluateFitness(newChromosome, scenario)
 			chromosomes = append(chromosomes, newChromosome)
 		}
