@@ -26,9 +26,36 @@ type Factory struct {
 	product  int
 }
 
+// Orientation is the relative position of the egress
+type Orientation int
+
+const (
+	Right  Orientation = iota
+	Bottom Orientation = iota
+	Left   Orientation = iota
+	Top    Orientation = iota
+)
+
 type Mine struct {
 	position    Position
-	orientation int
+	orientation Orientation
+}
+
+type ConveyorLength int
+
+const (
+	Short ConveyorLength = iota
+	Long  ConveyorLength = iota
+)
+
+type Conveyor struct {
+	position    Position
+	orientation Orientation
+	length      ConveyorLength
+}
+
+func (c Conveyor) Subtype() int {
+	return (int(c.length) << 2) | int(c.orientation)
 }
 
 // Scenario is the input to any algorithm that solves Profit!
@@ -44,6 +71,7 @@ type Scenario struct {
 type Solution struct {
 	factories []Factory
 	mines     []Mine
+	conveyors []Conveyor
 }
 
 func main() {

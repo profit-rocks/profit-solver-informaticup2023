@@ -67,6 +67,24 @@ func solutionToExportableScenario(scenario Scenario, solution Solution) Exportab
 			Y:          factory.position.y,
 		})
 	}
+
+	for _, mine := range solution.mines {
+		exportableScenario.Objects = append(exportableScenario.Objects, Object{
+			ObjectType: "mine",
+			Subtype:    int(mine.orientation),
+			X:          mine.position.x,
+			Y:          mine.position.y,
+		})
+	}
+
+	for _, conveyor := range solution.conveyors {
+		exportableScenario.Objects = append(exportableScenario.Objects, Object{
+			ObjectType: "conveyor",
+			Subtype:    conveyor.Subtype(),
+			X:          conveyor.position.x,
+			Y:          conveyor.position.y,
+		})
+	}
 	return exportableScenario
 }
 
