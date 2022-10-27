@@ -84,10 +84,10 @@ func mutation(chromosome Chromosome, probability float64, scenario Scenario) Chr
 func evaluateFitness(chromosome Chromosome, scenario Scenario) float64 {
 	// TODO: use A* or other metric
 
-	allFactories := chromosome.factories
 	for i, factory := range chromosome.factories {
-		chromosome.factories = allFactories[:i]
-		if !isPositionAvailableForFactory(scenario, chromosome, factory.position) {
+		copiedChromosome := chromosome
+		copiedChromosome.factories = chromosome.factories[:i]
+		if !isPositionAvailableForFactory(scenario, copiedChromosome, factory.position) {
 			return math.Inf(1)
 		}
 	}
