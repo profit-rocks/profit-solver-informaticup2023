@@ -74,6 +74,30 @@ type Solution struct {
 	conveyors []Conveyor
 }
 
+func (m Mine) Egress() Position {
+	if m.orientation == Right {
+		return Position{m.position.x + 2, m.position.y + 1}
+	} else if m.orientation == Bottom {
+		return Position{m.position.x, m.position.y + 2}
+	} else if m.orientation == Left {
+		return Position{m.position.x - 1, m.position.y}
+	}
+	// Top
+	return Position{m.position.x + 1, m.position.y - 1}
+}
+
+func (m Mine) Ingress() Position {
+	if m.orientation == Right {
+		return Position{m.position.x - 1, m.position.y + 1}
+	} else if m.orientation == Bottom {
+		return Position{m.position.x, m.position.y - 1}
+	} else if m.orientation == Left {
+		return Position{m.position.x + 2, m.position.y}
+	}
+	// Top
+	return Position{m.position.x + 1, m.position.y + 2}
+}
+
 func main() {
 	inputPtr := flag.String("input", "", "Path to input scenario json")
 	outputPtr := flag.String("output", "", "Path to output scenario json")
