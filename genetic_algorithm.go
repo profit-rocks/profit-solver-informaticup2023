@@ -142,7 +142,7 @@ func isPositionAvailableForFactory(scenario Scenario, chromosome Chromosome, pos
 		return false
 	}
 	for _, obstacle := range scenario.obstacles {
-		if obstacle.Intersects(factoryRectangle) {
+		if factoryRectangle.Intersects(obstacle) {
 			return false
 		}
 	}
