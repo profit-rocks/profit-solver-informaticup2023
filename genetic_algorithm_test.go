@@ -4,12 +4,11 @@ import "testing"
 
 func largeEmptyScenario() Scenario {
 	return Scenario{
-		width:        20,
-		height:       20,
-		deposits:     []Deposit{},
-		obstacles:    []Obstacle{},
-		turns:        100,
-		numFactories: 4,
+		width:     20,
+		height:    20,
+		deposits:  []Deposit{},
+		obstacles: []Obstacle{},
+		turns:     100,
 	}
 }
 
@@ -21,7 +20,7 @@ func TestLargeEmptyScenarioIsAvailable(t *testing.T) {
 				x: x,
 				y: y,
 			}) {
-				t.Errorf("Position %v should be available", Position{
+				t.Errorf("position %v should be available", Position{
 					x: x,
 					y: y,
 				})
@@ -38,7 +37,7 @@ func TestLargeEmptyScenarioBorders(t *testing.T) {
 				x: x,
 				y: y,
 			}) {
-				t.Errorf("Position %v should not be available", Position{
+				t.Errorf("position %v should not be available", Position{
 					x: x,
 					y: y,
 				})
@@ -51,7 +50,7 @@ func TestLargeEmptyScenarioBorders(t *testing.T) {
 				x: x,
 				y: y,
 			}) {
-				t.Errorf("Position %v should not be available", Position{
+				t.Errorf("position %v should not be available", Position{
 					x: x,
 					y: y,
 				})
@@ -62,12 +61,11 @@ func TestLargeEmptyScenarioBorders(t *testing.T) {
 
 func smallEmptyScenario() Scenario {
 	return Scenario{
-		width:        4,
-		height:       4,
-		deposits:     []Deposit{},
-		obstacles:    []Obstacle{},
-		turns:        100,
-		numFactories: 4,
+		width:     4,
+		height:    4,
+		deposits:  []Deposit{},
+		obstacles: []Obstacle{},
+		turns:     100,
 	}
 }
 
@@ -77,7 +75,7 @@ func TestSmallEmptyScenario(t *testing.T) {
 		for y := 0; y < scenario.height; y++ {
 			pos := Position{x, y}
 			if isPositionAvailableForFactory(scenario, Chromosome{}, pos) {
-				t.Errorf("Position %v should not be available", pos)
+				t.Errorf("position %v should not be available", pos)
 			}
 		}
 	}
@@ -98,8 +96,7 @@ func scenarioWithObstacle() Scenario {
 				height: 2,
 			},
 		},
-		turns:        100,
-		numFactories: 4,
+		turns: 100,
 	}
 }
 
@@ -110,7 +107,7 @@ func TestScenarioWithObstacles(t *testing.T) {
 		for y := 0; y < scenario.height; y++ {
 			pos := Position{x, y}
 			if isPositionAvailableForFactory(scenario, Chromosome{}, pos) {
-				t.Errorf("Position %v should not be available", pos)
+				t.Errorf("position %v should not be available", pos)
 			}
 		}
 	}
@@ -119,12 +116,11 @@ func TestScenarioWithObstacles(t *testing.T) {
 
 func scenarioWithFactory() (Scenario, Chromosome) {
 	return Scenario{
-			width:        15,
-			height:       15,
-			deposits:     []Deposit{},
-			obstacles:    []Obstacle{},
-			turns:        100,
-			numFactories: 4,
+			width:     15,
+			height:    15,
+			deposits:  []Deposit{},
+			obstacles: []Obstacle{},
+			turns:     100,
 		}, Chromosome{
 			factories: []Factory{
 				{
@@ -143,11 +139,11 @@ func TestScenarioWithFactory(t *testing.T) {
 			pos := Position{x, y}
 			if x > 5-FactoryWidth && x < 5+FactoryWidth && y > 5-FactoryHeight && y < 5+FactoryWidth {
 				if isPositionAvailableForFactory(scenario, chromosome, pos) {
-					t.Errorf("Position %v should not be available", pos)
+					t.Errorf("position %v should not be available", pos)
 				}
 			} else {
 				if !isPositionAvailableForFactory(scenario, chromosome, pos) {
-					t.Errorf("Position %v should be available", pos)
+					t.Errorf("position %v should be available", pos)
 				}
 			}
 		}
@@ -172,11 +168,11 @@ func TestScenarioWithDeposit(t *testing.T) {
 			pos := Position{x, y}
 			if x == 0 && y == 0 || x == 0 && y == 10 || x == 10 && y == 0 || x == 10 && y == 10 {
 				if !isPositionAvailableForFactory(scenario, Chromosome{}, pos) {
-					t.Errorf("Position %v should be available", pos)
+					t.Errorf("position %v should be available", pos)
 				}
 			} else {
 				if isPositionAvailableForFactory(scenario, Chromosome{}, pos) {
-					t.Errorf("Position %v should not be available", pos)
+					t.Errorf("position %v should not be available", pos)
 				}
 			}
 		}
