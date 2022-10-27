@@ -1,9 +1,20 @@
 package main
 
+import "math"
+
+type Position struct {
+	x int
+	y int
+}
+
 type Rectangle struct {
 	position Position
 	width    int
 	height   int
+}
+
+func (p Position) ManhattanDist(other Position) float64 {
+	return math.Abs(float64(p.x-other.x)) + math.Abs(float64(p.y-other.y))
 }
 
 func (r Rectangle) Contains(p Position) bool {

@@ -12,11 +12,6 @@ import (
 const FactoryWidth = 5
 const FactoryHeight = 5
 
-type Position struct {
-	x int
-	y int
-}
-
 type Deposit struct {
 	position Position
 	width    int

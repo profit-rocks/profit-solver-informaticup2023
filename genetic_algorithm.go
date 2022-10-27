@@ -68,7 +68,7 @@ func evaluateFitness(chromosome Chromosome, scenario Scenario) float64 {
 	fitness := 0.0
 	for _, deposit := range scenario.deposits {
 		for _, factory := range chromosome.factories {
-			fitness += math.Abs(float64(factory.position.x-deposit.position.x)) + math.Abs(float64(factory.position.y-deposit.position.y))
+			fitness += factory.position.ManhattanDist(deposit.position)
 		}
 	}
 	return fitness
