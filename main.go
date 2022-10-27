@@ -24,11 +24,7 @@ type Deposit struct {
 	subtype  int
 }
 
-type Obstacle struct {
-	position Position
-	height   int
-	width    int
-}
+type Obstacle = Rectangle
 
 type Factory struct {
 	position Position
