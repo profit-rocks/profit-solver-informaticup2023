@@ -16,6 +16,41 @@ type Chromosome struct {
 
 const NumTriesPerChromosome = 10
 
+func chromosomeToExportableScenario(scenario Scenario, chromosome Chromosome) ExportableScenario {
+	exportableScenario := ExportableScenario{Height: scenario.height, Width: scenario.width, Turns: 100, Time: 100}
+
+	for _, deposit := range scenario.deposits {
+		exportableScenario.Objects = append(exportableScenario.Objects, Object{
+			ObjectType: "deposit",
+			Subtype:    deposit.subtype,
+			X:          deposit.position.x,
+			Y:          deposit.position.y,
+			Width:      deposit.width,
+			Height:     deposit.height,
+		})
+	}
+	for _, obstacle := range scenario.obstacles {
+		exportableScenario.Objects = append(exportableScenario.Objects, Object{
+			ObjectType: "obstacle",
+			X:          obstacle.position.x,
+			Y:          obstacle.position.y,
+			Width:      obstacle.width,
+			Height:     obstacle.height,
+		})
+
+	}
+
+	for _, factory := range chromosome.factories {
+		exportableScenario.Objects = append(exportableScenario.Objects, Object{
+			ObjectType: "factory",
+			Subtype:    factory.product,
+			X:          factory.position.x,
+			Y:          factory.position.y,
+		})
+	}
+	return exportableScenario
+}
+
 func crossover(chromosome Chromosome, chromosome2 Chromosome, probability float64, scenario Scenario) Chromosome {
 	newChromosome := Chromosome{}
 	for i := 0; i < scenario.numFactories; i++ {
@@ -35,7 +70,7 @@ func mutation(chromosome Chromosome, probability float64, scenario Scenario) Chr
 		if fl > probability {
 			newChromosome.factories = append(newChromosome.factories, factory)
 		} else {
-			newFactory, err := getRandomFactory(scenario, newChromosome.factories)
+			newFactory, err := getRandomFactory(scenario, chromosome)
 			if err != nil {
 				newChromosome.factories = append(newChromosome.factories, factory)
 			} else {
@@ -49,8 +84,10 @@ func mutation(chromosome Chromosome, probability float64, scenario Scenario) Chr
 func evaluateFitness(chromosome Chromosome, scenario Scenario) float64 {
 	// TODO: use A* or other metric
 
+	allFactories := chromosome.factories
 	for i, factory := range chromosome.factories {
-		if !isPositionAvailableForFactory(scenario, chromosome.factories[:i], factory.position) {
+		chromosome.factories = allFactories[:i]
+		if !isPositionAvailableForFactory(scenario, chromosome, factory.position) {
 			return math.Inf(1)
 		}
 	}
@@ -84,21 +121,20 @@ func generateChromosomes(n int, scenario Scenario) ([]Chromosome, error) {
 }
 
 func generateChromosome(scenario Scenario) (Chromosome, error) {
-	chromosome := Chromosome{mines: make([]Mine, 0)}
-	factories := make([]Factory, scenario.numFactories)
+	chromosome := Chromosome{mines: make([]Mine, 0), factories: make([]Factory, 0)}
 	for i := 0; i < scenario.numFactories; i++ {
 		var err error
-		factories[i], err = getRandomFactory(scenario, factories[0:i])
+		factory, err := getRandomFactory(scenario, chromosome)
 		if err != nil {
 			return chromosome, err
 		}
+		chromosome.factories = append(chromosome.factories, factory)
 	}
-	chromosome.factories = factories
 	return chromosome, nil
 }
 
-func getRandomFactory(scenario Scenario, additionalFactories []Factory) (Factory, error) {
-	availablePositions := getAvailableFactoryPositions(scenario, additionalFactories)
+func getRandomFactory(scenario Scenario, chromosome Chromosome) (Factory, error) {
+	availablePositions := getAvailableFactoryPositions(scenario, chromosome)
 	//fmt.Printf("Found %d available positions for a factory.\n", len(availablePositions))
 	if len(availablePositions) == 0 {
 		return Factory{}, errors.New("no factory positions available")
@@ -107,11 +143,11 @@ func getRandomFactory(scenario Scenario, additionalFactories []Factory) (Factory
 	return Factory{position: position, product: 0}, nil
 }
 
-func getAvailableFactoryPositions(scenario Scenario, additionalFactories []Factory) []Position {
+func getAvailableFactoryPositions(scenario Scenario, chromosome Chromosome) []Position {
 	positions := make([]Position, 0)
 	for i := 0; i < scenario.width; i++ {
 		for j := 0; j < scenario.height; j++ {
-			if isPositionAvailableForFactory(scenario, additionalFactories, Position{
+			if isPositionAvailableForFactory(scenario, chromosome, Position{
 				x: i,
 				y: j,
 			}) {
@@ -125,11 +161,10 @@ func getAvailableFactoryPositions(scenario Scenario, additionalFactories []Facto
 	return positions
 }
 
-func isPositionAvailableForFactory(scenario Scenario, additionalFactories []Factory, position Position) bool {
-	scenario.factories = additionalFactories
+func isPositionAvailableForFactory(scenario Scenario, chromosome Chromosome, position Position) bool {
 	for i := position.x; i < position.x+FactoryWidth; i++ {
 		for j := position.y; j < position.y+FactoryHeight; j++ {
-			if !isPositionAvailableForFactoryCell(scenario, Position{
+			if !isPositionAvailableForFactoryCell(scenario, chromosome, Position{
 				x: i,
 				y: j,
 			}) {
@@ -140,7 +175,7 @@ func isPositionAvailableForFactory(scenario Scenario, additionalFactories []Fact
 	return true
 }
 
-func isPositionAvailableForFactoryCell(scenario Scenario, position Position) bool {
+func isPositionAvailableForFactoryCell(scenario Scenario, chromosome Chromosome, position Position) bool {
 	if position.x >= scenario.width || position.y >= scenario.height {
 		return false
 	}
@@ -157,7 +192,7 @@ func isPositionAvailableForFactoryCell(scenario Scenario, position Position) boo
 			}
 		}
 	}
-	for _, factory := range scenario.factories {
+	for _, factory := range chromosome.factories {
 		xOverlap := position.x >= factory.position.x && position.x < factory.position.x+FactoryWidth
 		yOverlap := position.y >= factory.position.y && position.y < factory.position.y+FactoryHeight
 		if xOverlap && yOverlap {
@@ -174,10 +209,10 @@ func isPositionAvailableForFactoryCell(scenario Scenario, position Position) boo
 	return true
 }
 
-func runGeneticAlgorithm(maxIterations int, scenario Scenario, populationSize int, mutationProbability float64, crossoverProbability float64) (Scenario, error) {
+func runGeneticAlgorithm(maxIterations int, scenario Scenario, populationSize int, mutationProbability float64, crossoverProbability float64) (ExportableScenario, error) {
 	chromosomes, err := generateChromosomes(populationSize, scenario)
 	if err != nil {
-		return scenario, err
+		return ExportableScenario{}, err
 	}
 	for i, chromosome := range chromosomes {
 		chromosomes[i].fitness = evaluateFitness(chromosome, scenario)
@@ -204,7 +239,6 @@ func runGeneticAlgorithm(maxIterations int, scenario Scenario, populationSize in
 	sort.Slice(chromosomes, func(i, j int) bool {
 		return chromosomes[i].fitness < chromosomes[j].fitness
 	})
-	scenario.factories = chromosomes[0].factories
 	fmt.Println("final fitness", chromosomes[0].fitness)
-	return scenario, nil
+	return chromosomeToExportableScenario(scenario, chromosomes[0]), nil
 }

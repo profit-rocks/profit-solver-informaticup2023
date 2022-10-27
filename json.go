@@ -27,42 +27,12 @@ type Object struct {
 	Points     int    `json:"points"`
 }
 
-func exportScenario(scenario Scenario, path string) {
-	exportableScenario := ExportableScenario{Height: scenario.height, Width: scenario.width, Turns: 100, Time: 100}
-
-	for _, deposit := range scenario.deposits {
-		exportableScenario.Objects = append(exportableScenario.Objects, Object{
-			ObjectType: "deposit",
-			Subtype:    deposit.subtype,
-			X:          deposit.position.x,
-			Y:          deposit.position.y,
-			Width:      deposit.width,
-			Height:     deposit.height,
-		})
+func exportScenario(scenario ExportableScenario, path string) error {
+	b, err := json.MarshalIndent(scenario, "", " ")
+	if err != nil {
+		return err
 	}
-	for _, obstacle := range scenario.obstacles {
-		exportableScenario.Objects = append(exportableScenario.Objects, Object{
-			ObjectType: "obstacle",
-			X:          obstacle.position.x,
-			Y:          obstacle.position.y,
-			Width:      obstacle.width,
-			Height:     obstacle.height,
-		})
-
-	}
-
-	for _, factory := range scenario.factories {
-		exportableScenario.Objects = append(exportableScenario.Objects, Object{
-			ObjectType: "factory",
-			Subtype:    factory.product,
-			X:          factory.position.x,
-			Y:          factory.position.y,
-		})
-
-	}
-
-	b, _ := json.MarshalIndent(exportableScenario, "", " ")
-	_ = os.WriteFile(path, b, 0644)
+	return os.WriteFile(path, b, 0644)
 }
 
 func importScenarioFromJson(path string) Scenario {
@@ -99,14 +69,8 @@ func importScenarioFromJson(path string) Scenario {
 				height:   object.Height,
 				width:    object.Width,
 			})
-		case "factory":
-			scenario.factories = append(scenario.factories, Factory{
-				position: Position{object.X, object.Y},
-				product:  object.Subtype,
-			})
 		default:
 			fmt.Println("Unknown ObjectType: ", object.ObjectType)
-
 		}
 	}
 

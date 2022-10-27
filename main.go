@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"log"
 	"math/rand"
 	"os"
@@ -37,7 +36,6 @@ type Scenario struct {
 	height       int
 	deposits     []Deposit
 	obstacles    []Obstacle
-	factories    []Factory
 	turns        int
 	numFactories int
 }
@@ -75,11 +73,13 @@ func main() {
 	scenario := importScenarioFromJson(*inputPtr)
 
 	rand.Seed(time.Now().UnixNano())
-	scenario, err := runGeneticAlgorithm(40, scenario, 120, 0.18, 0.7)
+	exportableScenario, err := runGeneticAlgorithm(200, scenario, 120, 0.18, 0.7)
 
 	if err != nil {
-		fmt.Println("Error:", err.Error())
-		os.Exit(1)
+		log.Fatal(err)
 	}
-	exportScenario(scenario, *outputPtr)
+	err = exportScenario(exportableScenario, *outputPtr)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
