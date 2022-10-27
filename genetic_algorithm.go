@@ -133,48 +133,46 @@ func getAvailableFactoryPositions(scenario Scenario, chromosome Chromosome) []Po
 }
 
 func isPositionAvailableForFactory(scenario Scenario, chromosome Chromosome, position Position) bool {
-	for i := position.x; i < position.x+FactoryWidth; i++ {
-		for j := position.y; j < position.y+FactoryHeight; j++ {
-			if !isPositionAvailableForFactoryCell(scenario, chromosome, Position{
-				x: i,
-				y: j,
-			}) {
-				return false
-			}
-		}
+	factoryRectangle := Rectangle{
+		position: position,
+		width:    FactoryWidth,
+		height:   FactoryHeight,
 	}
-	return true
-}
-
-func isPositionAvailableForFactoryCell(scenario Scenario, chromosome Chromosome, position Position) bool {
-	if position.x >= scenario.width || position.y >= scenario.height {
+	if position.x+FactoryWidth > scenario.width || position.y+FactoryHeight > scenario.height {
 		return false
 	}
+	for _, obstacle := range scenario.obstacles {
+		if obstacle.Intersects(factoryRectangle) {
+			return false
+		}
+	}
+	for _, factory := range chromosome.factories {
+		if factoryRectangle.Intersects(factory.Rectangle()) {
+			return false
+		}
+	}
 	for _, deposit := range scenario.deposits {
-		xOverlap := position.x >= deposit.position.x-1 && position.x < deposit.position.x+deposit.width+1
-		yOverlap := position.y >= deposit.position.y-1 && position.y < deposit.position.y+deposit.height+1
-		if xOverlap && yOverlap {
-			positionIsCorner := position.y == deposit.position.y-1 && position.x == deposit.position.x-1
-			positionIsCorner = positionIsCorner || (position.y == deposit.position.y+deposit.height && position.x == deposit.position.x-1)
-			positionIsCorner = positionIsCorner || (position.y == deposit.position.y-1 && position.x == deposit.position.x+deposit.width)
+		depositRectangle := deposit.Rectangle()
+		extendedDepositRectangle := Rectangle{
+			position: Position{
+				x: depositRectangle.position.x - 1,
+				y: depositRectangle.position.y - 1,
+			},
+			width:  depositRectangle.width + 2,
+			height: depositRectangle.height + 2,
+		}
+		if factoryRectangle.Intersects(extendedDepositRectangle) {
+			// top left
+			positionIsCorner := position.y+FactoryHeight == deposit.position.y && position.x+FactoryHeight == deposit.position.x
+			// top right
+			positionIsCorner = positionIsCorner || (position.y+FactoryHeight == deposit.position.y && position.x == deposit.position.x+deposit.width)
+			// bottom left
+			positionIsCorner = positionIsCorner || (position.y == deposit.position.y+deposit.height && position.x+FactoryHeight == deposit.position.x)
+			// bottom right
 			positionIsCorner = positionIsCorner || (position.y == deposit.position.y+deposit.height && position.x == deposit.position.x+deposit.width)
 			if !positionIsCorner {
 				return false
 			}
-		}
-	}
-	for _, factory := range chromosome.factories {
-		xOverlap := position.x >= factory.position.x && position.x < factory.position.x+FactoryWidth
-		yOverlap := position.y >= factory.position.y && position.y < factory.position.y+FactoryHeight
-		if xOverlap && yOverlap {
-			return false
-		}
-	}
-	for _, obstacles := range scenario.obstacles {
-		xOverlap := position.x >= obstacles.position.x && position.x < obstacles.position.x+obstacles.width
-		yOverlap := position.y >= obstacles.position.y && position.y < obstacles.position.y+obstacles.height
-		if xOverlap && yOverlap {
-			return false
 		}
 	}
 	return true
