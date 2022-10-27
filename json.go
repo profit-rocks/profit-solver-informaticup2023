@@ -27,12 +27,47 @@ type Object struct {
 	Points     int    `json:"points"`
 }
 
-func exportScenario(scenario ExportableScenario, path string) error {
-	b, err := json.MarshalIndent(scenario, "", " ")
+func exportSolution(scenario Scenario, solution Solution, filePath string) error {
+	exportableScenario := solutionToExportableScenario(scenario, solution)
+	b, err := json.MarshalIndent(exportableScenario, "", " ")
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(path, b, 0644)
+	return os.WriteFile(filePath, b, 0644)
+}
+
+func solutionToExportableScenario(scenario Scenario, solution Solution) ExportableScenario {
+	exportableScenario := ExportableScenario{Height: scenario.height, Width: scenario.width, Turns: 100, Time: 100}
+
+	for _, deposit := range scenario.deposits {
+		exportableScenario.Objects = append(exportableScenario.Objects, Object{
+			ObjectType: "deposit",
+			Subtype:    deposit.subtype,
+			X:          deposit.position.x,
+			Y:          deposit.position.y,
+			Width:      deposit.width,
+			Height:     deposit.height,
+		})
+	}
+	for _, obstacle := range scenario.obstacles {
+		exportableScenario.Objects = append(exportableScenario.Objects, Object{
+			ObjectType: "obstacle",
+			X:          obstacle.position.x,
+			Y:          obstacle.position.y,
+			Width:      obstacle.width,
+			Height:     obstacle.height,
+		})
+	}
+
+	for _, factory := range solution.factories {
+		exportableScenario.Objects = append(exportableScenario.Objects, Object{
+			ObjectType: "factory",
+			Subtype:    factory.product,
+			X:          factory.position.x,
+			Y:          factory.position.y,
+		})
+	}
+	return exportableScenario
 }
 
 func importScenarioFromJson(path string) Scenario {
@@ -49,10 +84,9 @@ func importScenarioFromJson(path string) Scenario {
 	}
 
 	scenario := Scenario{
-		width:        importedScenario.Width,
-		height:       importedScenario.Height,
-		turns:        importedScenario.Turns,
-		numFactories: NumFactories,
+		width:  importedScenario.Width,
+		height: importedScenario.Height,
+		turns:  importedScenario.Turns,
 	}
 	for _, object := range importedScenario.Objects {
 		switch object.ObjectType {

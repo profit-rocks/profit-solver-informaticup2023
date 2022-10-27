@@ -11,7 +11,6 @@ import (
 
 const FactoryWidth = 5
 const FactoryHeight = 5
-const NumFactories = 4
 
 type Position struct {
 	x int
@@ -31,15 +30,6 @@ type Obstacle struct {
 	width    int
 }
 
-type Scenario struct {
-	width        int
-	height       int
-	deposits     []Deposit
-	obstacles    []Obstacle
-	turns        int
-	numFactories int
-}
-
 type Factory struct {
 	position Position
 	product  int
@@ -48,6 +38,21 @@ type Factory struct {
 type Mine struct {
 	position    Position
 	orientation int
+}
+
+// Scenario is the input to any algorithm that solves Profit!
+type Scenario struct {
+	width     int
+	height    int
+	deposits  []Deposit
+	obstacles []Obstacle
+	turns     int
+}
+
+// Solution is the output of any algorithm that solves Profit!
+type Solution struct {
+	factories []Factory
+	mines     []Mine
 }
 
 func main() {
@@ -73,12 +78,12 @@ func main() {
 	scenario := importScenarioFromJson(*inputPtr)
 
 	rand.Seed(time.Now().UnixNano())
-	exportableScenario, err := runGeneticAlgorithm(200, scenario, 120, 0.18, 0.7)
+	solution, err := runGeneticAlgorithm(200, scenario, 120, 0.18, 0.7, 4)
 
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = exportScenario(exportableScenario, *outputPtr)
+	err = exportSolution(scenario, solution, *outputPtr)
 	if err != nil {
 		log.Fatal(err)
 	}
