@@ -3,8 +3,10 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"math/rand"
 	"os"
+	"runtime/pprof"
 	"time"
 )
 
@@ -53,10 +55,22 @@ type Mine struct {
 func main() {
 	inputPtr := flag.String("input", "", "Path to input scenario json")
 	outputPtr := flag.String("output", "", "Path to output scenario json")
+	cpuProfilePtr := flag.String("cpuprofile", "", "Path to output cpu profile")
 	flag.Parse()
 	if *inputPtr == "" || *outputPtr == "" {
 		flag.Usage()
 		os.Exit(1)
+	}
+	if *cpuProfilePtr != "" {
+		f, err := os.Create(*cpuProfilePtr)
+		if err != nil {
+			log.Fatal(err)
+		}
+		err = pprof.StartCPUProfile(f)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer pprof.StopCPUProfile()
 	}
 	scenario := importScenarioFromJson(*inputPtr)
 
