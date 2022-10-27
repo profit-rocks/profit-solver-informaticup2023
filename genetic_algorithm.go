@@ -70,7 +70,7 @@ func mutation(chromosome Chromosome, probability float64, scenario Scenario) Chr
 		if fl > probability {
 			newChromosome.factories = append(newChromosome.factories, factory)
 		} else {
-			newFactory, err := getRandomFactory(scenario, chromosome)
+			newFactory, err := getRandomFactory(scenario, newChromosome)
 			if err != nil {
 				newChromosome.factories = append(newChromosome.factories, factory)
 			} else {
@@ -123,7 +123,6 @@ func generateChromosomes(n int, scenario Scenario) ([]Chromosome, error) {
 func generateChromosome(scenario Scenario) (Chromosome, error) {
 	chromosome := Chromosome{mines: make([]Mine, 0), factories: make([]Factory, 0)}
 	for i := 0; i < scenario.numFactories; i++ {
-		var err error
 		factory, err := getRandomFactory(scenario, chromosome)
 		if err != nil {
 			return chromosome, err
