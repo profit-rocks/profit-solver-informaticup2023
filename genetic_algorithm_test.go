@@ -257,3 +257,18 @@ func TestAvailableMinePositions(t *testing.T) {
 		}
 	}
 }
+
+func TestTwoMinesSameEgress(t *testing.T) {
+	g := scenarioWithDeposit()
+	mines := g.minesAroundDeposit(g.scenario.deposits[0], Chromosome{
+		factories: []Factory{},
+		mines:     []Mine{{Position{6, 3}, Right}},
+		fitness:   0,
+	})
+	badMine := Mine{Position{3, 3}, Top}
+	for _, mine := range mines {
+		if mine == badMine {
+			t.Errorf("mine %v is not valid", mine)
+		}
+	}
+}

@@ -137,7 +137,7 @@ func (g *GeneticAlgorithm) generateChromosomes() ([]Chromosome, error) {
 			}
 		}
 		if !foundChromosome {
-			return chromosomes, errors.New("exceeded NumTriesPerChromosome in generateChromosomes, probably trying to place too many factories")
+			return chromosomes, errors.New("exceeded NumTriesPerChromosome in generateChromosomes, probably trying to place too many factories or mines")
 		}
 	}
 	return chromosomes, nil
@@ -239,6 +239,19 @@ func (g *GeneticAlgorithm) isPositionAvailableForFactory(chromosome Chromosome, 
 	return true
 }
 
+func (g *GeneticAlgorithm) attachedDepositEgress(mine Mine) (Position, error) {
+	ingress := mine.Ingress()
+	for _, deposit := range g.scenario.deposits {
+		depositRectangle := deposit.Rectangle()
+		for _, egressPosition := range []Position{Position{ingress.x + 1, ingress.y}, Position{ingress.x - 1, ingress.y}, Position{ingress.x, ingress.y + 1}, Position{ingress.x, ingress.y - 1}} {
+			if depositRectangle.Contains(egressPosition) {
+				return egressPosition, nil
+			}
+		}
+	}
+	return Position{}, nil
+}
+
 func (g *GeneticAlgorithm) isPositionAvailableForMine(chromosome Chromosome, mine Mine) bool {
 	// mine is out of bounds
 	boundRectangles := g.scenario.boundRectangles()
@@ -262,8 +275,12 @@ func (g *GeneticAlgorithm) isPositionAvailableForMine(chromosome Chromosome, min
 			return false
 		}
 	}
+	depositEgress, err := g.attachedDepositEgress(mine)
 	for _, otherMine := range chromosome.mines {
 		if mine.Egress().NextTo(otherMine.Ingress()) || mine.Ingress().NextTo(otherMine.Egress()) {
+			return false
+		}
+		if err == nil && otherMine.Ingress().NextTo(depositEgress) {
 			return false
 		}
 		for _, rectangle := range otherMine.Rectangles() {
