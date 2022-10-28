@@ -177,45 +177,47 @@ func isPositionAvailableForFactory(scenario Scenario, chromosome Chromosome, pos
 	return true
 }
 
-func getAvailableMinePositions(scenario Scenario, chromosome Chromosome) []Mine {
-	positions := make([]Mine, 0)
-	for _, deposit := range scenario.deposits {
-		/* For each mine direction, we go counter-clockwise.
-		   There is always one case where the mine corner matches the deposit edge.
-		   We always use the mine ingress coordinate as our iteration variable */
+func minesAroundDeposit(scenario Scenario, deposit Deposit, chromosome Chromosome) []Mine {
+	/* For each mine direction, we go counter-clockwise.
+	   There is always one case where the mine corner matches the deposit edge.
+	   We always use the mine ingress coordinate as our iteration variable */
 
-		// Right
-		positions = append(positions, Mine{Position{deposit.position.x + deposit.width, deposit.position.y + deposit.height - 1}, Right})
-		for i := deposit.position.y + deposit.height - 1; i >= deposit.position.y; i-- {
-			positions = append(positions, Mine{Position{deposit.position.x + deposit.width + 1, i - 1}, Right})
-		}
-		for i := deposit.position.x + deposit.width - 1; i >= deposit.position.x; i-- {
-			positions = append(positions, Mine{Position{i + 1, deposit.position.y - 2}, Right})
-		}
-		// Bottom
-		positions = append(positions, Mine{Position{deposit.position.x - 1, deposit.position.y + deposit.height}, Bottom})
-		for i := deposit.position.x; i <= deposit.position.x+deposit.width-1; i++ {
-			positions = append(positions, Mine{Position{i, deposit.position.y + deposit.height + 1}, Bottom})
-		}
-		for i := deposit.position.y + deposit.height - 1; i >= deposit.position.y; i-- {
-			positions = append(positions, Mine{Position{deposit.position.x + deposit.width, i + 1}, Bottom})
-		}
-		// Left
-		positions = append(positions, Mine{Position{deposit.position.x - 2, deposit.position.y - 1}, Left})
-		for i := deposit.position.y; i <= deposit.position.y+deposit.height-1; i++ {
-			positions = append(positions, Mine{Position{deposit.position.x - 3, i}, Left})
-		}
-		for i := deposit.position.x; i <= deposit.position.x+deposit.width-1; i++ {
-			positions = append(positions, Mine{Position{i - 2, deposit.position.y + deposit.height}, Left})
-		}
-		// Top
-		positions = append(positions, Mine{Position{deposit.position.x + deposit.width - 1, deposit.position.y - 2}, Top})
-		for i := deposit.position.x + deposit.width - 1; i >= deposit.position.x; i-- {
-			positions = append(positions, Mine{Position{i - 1, deposit.position.y - 3}, Top})
-		}
-		for i := deposit.position.y; i <= deposit.position.y+deposit.height-1; i++ {
-			positions = append(positions, Mine{Position{deposit.position.x - 2, i - 2}, Top})
-		}
+	positions := make([]Mine, 0)
+
+	// Right
+	positions = append(positions, Mine{Position{deposit.position.x + deposit.width, deposit.position.y + deposit.height - 1}, Right})
+	for i := deposit.position.y + deposit.height - 1; i >= deposit.position.y; i-- {
+		positions = append(positions, Mine{Position{deposit.position.x + deposit.width + 1, i - 1}, Right})
+	}
+	for i := deposit.position.x + deposit.width - 1; i >= deposit.position.x; i-- {
+		positions = append(positions, Mine{Position{i + 1, deposit.position.y - 2}, Right})
+	}
+
+	// Bottom
+	positions = append(positions, Mine{Position{deposit.position.x - 1, deposit.position.y + deposit.height}, Bottom})
+	for i := deposit.position.x; i <= deposit.position.x+deposit.width-1; i++ {
+		positions = append(positions, Mine{Position{i, deposit.position.y + deposit.height + 1}, Bottom})
+	}
+	for i := deposit.position.y + deposit.height - 1; i >= deposit.position.y; i-- {
+		positions = append(positions, Mine{Position{deposit.position.x + deposit.width, i + 1}, Bottom})
+	}
+
+	// Left
+	positions = append(positions, Mine{Position{deposit.position.x - 2, deposit.position.y - 1}, Left})
+	for i := deposit.position.y; i <= deposit.position.y+deposit.height-1; i++ {
+		positions = append(positions, Mine{Position{deposit.position.x - 3, i}, Left})
+	}
+	for i := deposit.position.x; i <= deposit.position.x+deposit.width-1; i++ {
+		positions = append(positions, Mine{Position{i - 2, deposit.position.y + deposit.height}, Left})
+	}
+
+	// Top
+	positions = append(positions, Mine{Position{deposit.position.x + deposit.width - 1, deposit.position.y - 2}, Top})
+	for i := deposit.position.x + deposit.width - 1; i >= deposit.position.x; i-- {
+		positions = append(positions, Mine{Position{i - 1, deposit.position.y - 3}, Top})
+	}
+	for i := deposit.position.y; i <= deposit.position.y+deposit.height-1; i++ {
+		positions = append(positions, Mine{Position{deposit.position.x - 2, i - 2}, Top})
 	}
 
 	return positions

@@ -230,12 +230,12 @@ func TestAvailableMinePositions(t *testing.T) {
 	}
 
 	scenario := scenarioWithDeposit()
-	mines := getAvailableMinePositions(scenario, Chromosome{})
+	mines := minesAroundDeposit(scenario, scenario.deposits[0], Chromosome{})
 
 	for _, mine := range mines {
 		found := false
 		for _, validMine := range validMines {
-			if mine.position == validMine.position && mine.orientation == validMine.orientation {
+			if mine.position == validMine.position && mine.direction == validMine.direction {
 				found = true
 				break
 			}
@@ -248,7 +248,7 @@ func TestAvailableMinePositions(t *testing.T) {
 	for _, validMine := range validMines {
 		found := false
 		for _, mine := range mines {
-			if mine.position == validMine.position && mine.orientation == validMine.orientation {
+			if mine.position == validMine.position && mine.direction == validMine.direction {
 				found = true
 				break
 			}

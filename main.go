@@ -37,8 +37,8 @@ const (
 )
 
 type Mine struct {
-	position    Position
-	orientation Direction
+	position  Position
+	direction Direction
 }
 
 type ConveyorLength int
@@ -75,11 +75,11 @@ type Solution struct {
 }
 
 func (m Mine) Egress() Position {
-	if m.orientation == Right {
+	if m.direction == Right {
 		return Position{m.position.x + 2, m.position.y + 1}
-	} else if m.orientation == Bottom {
+	} else if m.direction == Bottom {
 		return Position{m.position.x, m.position.y + 2}
-	} else if m.orientation == Left {
+	} else if m.direction == Left {
 		return Position{m.position.x - 1, m.position.y}
 	}
 	// Top
@@ -87,11 +87,11 @@ func (m Mine) Egress() Position {
 }
 
 func (m Mine) Ingress() Position {
-	if m.orientation == Right {
+	if m.direction == Right {
 		return Position{m.position.x - 1, m.position.y + 1}
-	} else if m.orientation == Bottom {
+	} else if m.direction == Bottom {
 		return Position{m.position.x, m.position.y - 1}
-	} else if m.orientation == Left {
+	} else if m.direction == Left {
 		return Position{m.position.x + 2, m.position.y}
 	}
 	// Top

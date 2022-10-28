@@ -71,7 +71,7 @@ func solutionToExportableScenario(scenario Scenario, solution Solution) Exportab
 	for _, mine := range solution.mines {
 		exportableScenario.Objects = append(exportableScenario.Objects, Object{
 			ObjectType: "mine",
-			Subtype:    int(mine.orientation),
+			Subtype:    int(mine.direction),
 			X:          mine.position.x,
 			Y:          mine.position.y,
 		})
