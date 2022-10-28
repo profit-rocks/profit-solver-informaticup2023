@@ -215,12 +215,9 @@ func (g *GeneticAlgorithm) isPositionAvailableForFactory(chromosome Chromosome, 
 	for _, deposit := range g.scenario.deposits {
 		depositRectangle := deposit.Rectangle()
 		extendedDepositRectangle := Rectangle{
-			position: Position{
-				x: depositRectangle.position.x - 1,
-				y: depositRectangle.position.y - 1,
-			},
-			width:  depositRectangle.width + 2,
-			height: depositRectangle.height + 2,
+			Position{depositRectangle.position.x - 1, depositRectangle.position.y - 1},
+			depositRectangle.width + 2,
+			depositRectangle.height + 2,
 		}
 		if factoryRectangle.Intersects(extendedDepositRectangle) {
 			// top left

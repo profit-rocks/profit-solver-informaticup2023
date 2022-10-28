@@ -25,10 +25,7 @@ func TestLargeEmptyScenarioIsAvailable(t *testing.T) {
 	for x := 0; x <= g.scenario.width-FactoryWidth; x++ {
 		for y := 0; y <= g.scenario.height-FactoryHeight; y++ {
 			if !g.isPositionAvailableForFactory(Chromosome{}, Position{x, y}) {
-				t.Errorf("position %v should be available", Position{
-					x: x,
-					y: y,
-				})
+				t.Errorf("position %v should be available", Position{x, y})
 			}
 		}
 	}
@@ -39,20 +36,14 @@ func TestLargeEmptyScenarioBorders(t *testing.T) {
 	for x := 0; x <= g.scenario.width-FactoryWidth; x++ {
 		for y := g.scenario.height - FactoryHeight + 1; y < g.scenario.width; y++ {
 			if g.isPositionAvailableForFactory(Chromosome{}, Position{x, y}) {
-				t.Errorf("position %v should not be available", Position{
-					x: x,
-					y: y,
-				})
+				t.Errorf("position %v should not be available", Position{x, y})
 			}
 		}
 	}
 	for x := g.scenario.width - FactoryWidth + 1; x < g.scenario.width; x++ {
 		for y := 0; y <= g.scenario.height-FactoryHeight; y++ {
 			if g.isPositionAvailableForFactory(Chromosome{}, Position{x, y}) {
-				t.Errorf("position %v should not be available", Position{
-					x: x,
-					y: y,
-				})
+				t.Errorf("position %v should not be available", Position{x, y})
 			}
 		}
 	}
@@ -82,20 +73,10 @@ func TestSmallEmptyScenario(t *testing.T) {
 
 func scenarioWithObstacle() GeneticAlgorithm {
 	return geneticAlgorithmFromScenario(Scenario{
-		width:    10,
-		height:   10,
-		deposits: []Deposit{},
-		obstacles: []Obstacle{
-			{
-				position: Position{
-					x: 4,
-					y: 4,
-				},
-				width:  2,
-				height: 2,
-			},
-		},
-		turns: 100,
+		width:     10,
+		height:    10,
+		deposits:  []Deposit{},
+		obstacles: []Obstacle{{Position{4, 4}, 2, 2}}, turns: 100,
 	})
 }
 
@@ -121,12 +102,7 @@ func scenarioWithFactory() (GeneticAlgorithm, Chromosome) {
 			obstacles: []Obstacle{},
 			turns:     100,
 		}), Chromosome{
-			factories: []Factory{
-				{
-					position: Position{x: 5, y: 5},
-					product:  0,
-				},
-			},
+			factories: []Factory{{Position{5, 5}, 0}},
 		}
 }
 
@@ -153,7 +129,7 @@ func scenarioWithDeposit() GeneticAlgorithm {
 	return geneticAlgorithmFromScenario(Scenario{
 		width:     15,
 		height:    15,
-		deposits:  []Deposit{{position: Position{x: 5, y: 5}, width: 5, height: 5, subtype: 0}},
+		deposits:  []Deposit{{position: Position{5, 5}, width: 5, height: 5, subtype: 0}},
 		obstacles: []Obstacle{},
 		turns:     100,
 	})
