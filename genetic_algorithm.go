@@ -105,7 +105,7 @@ func (g *GeneticAlgorithm) evaluateFitness(chromosome Chromosome) float64 {
 		}
 	}
 
-	// sum of manhattan distances for each factory to all the deposits
+	// sum of manhattan distances for each factory to all the mines
 	fitness := 0.0
 	for _, mine := range chromosome.mines {
 		for _, factory := range chromosome.factories {
@@ -253,8 +253,10 @@ func (g *GeneticAlgorithm) isPositionAvailableForMine(chromosome Chromosome, min
 			return false
 		}
 	}
-	// TODO: check if one mine's egress is adjacent to another mine's ingress
 	for _, otherMine := range chromosome.mines {
+		if mine.Egress().NextTo(otherMine.Ingress()) || mine.Ingress().NextTo(otherMine.Egress()) {
+			return false
+		}
 		for _, rectangle := range otherMine.Rectangles() {
 			if mine.Intersects(rectangle) {
 				return false

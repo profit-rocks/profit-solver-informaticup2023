@@ -74,6 +74,20 @@ type Solution struct {
 	conveyors []Conveyor
 }
 
+func abs(x int) int {
+	if x < 0 {
+		return -x
+	}
+	return x
+}
+
+func (p Position) NextTo(other Position) bool {
+	if p == other {
+		return false
+	}
+	return abs(p.x-other.x) <= 1 && abs(p.y-other.y) <= 1
+}
+
 func (m Mine) Egress() Position {
 	if m.direction == Right {
 		return Position{m.position.x + 2, m.position.y + 1}
