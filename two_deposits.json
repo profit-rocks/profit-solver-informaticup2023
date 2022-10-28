@@ -1,0 +1,24 @@
+{
+  "width": 40,
+  "height": 20,
+  "objects": [
+    {
+      "type": "deposit",
+      "x": 7,
+      "y": 4,
+      "subtype": 0,
+      "width": 3,
+      "height": 3
+    },
+    {
+      "type": "deposit",
+      "x": 21,
+      "y": 12,
+      "subtype": 0,
+      "width": 3,
+      "height": 3
+    }
+  ],
+  "products": [],
+  "turns": 100
+}
