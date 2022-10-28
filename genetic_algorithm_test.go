@@ -178,3 +178,83 @@ func TestScenarioWithDeposit(t *testing.T) {
 		}
 	}
 }
+
+func TestAvailableMinePositions(t *testing.T) {
+
+	validMines := []Mine{
+		{Position{6, 3}, Right},
+		{Position{7, 3}, Right},
+		{Position{8, 3}, Right},
+		{Position{9, 3}, Right},
+		{Position{10, 3}, Right},
+		{Position{11, 4}, Right},
+		{Position{11, 5}, Right},
+		{Position{11, 6}, Right},
+		{Position{11, 7}, Right},
+		{Position{11, 8}, Right},
+		{Position{10, 9}, Right},
+		{Position{4, 10}, Bottom},
+		{Position{5, 11}, Bottom},
+		{Position{6, 11}, Bottom},
+		{Position{7, 11}, Bottom},
+		{Position{8, 11}, Bottom},
+		{Position{9, 11}, Bottom},
+		{Position{10, 10}, Bottom},
+		{Position{10, 10}, Bottom},
+		{Position{10, 9}, Bottom},
+		{Position{10, 8}, Bottom},
+		{Position{10, 7}, Bottom},
+		{Position{10, 6}, Bottom},
+		{Position{3, 4}, Left},
+		{Position{2, 5}, Left},
+		{Position{2, 6}, Left},
+		{Position{2, 7}, Left},
+		{Position{2, 8}, Left},
+		{Position{2, 9}, Left},
+		{Position{3, 10}, Left},
+		{Position{4, 10}, Left},
+		{Position{5, 10}, Left},
+		{Position{6, 10}, Left},
+		{Position{7, 10}, Left},
+		{Position{9, 3}, Top},
+		{Position{8, 2}, Top},
+		{Position{7, 2}, Top},
+		{Position{6, 2}, Top},
+		{Position{5, 2}, Top},
+		{Position{4, 2}, Top},
+		{Position{3, 3}, Top},
+		{Position{3, 4}, Top},
+		{Position{3, 5}, Top},
+		{Position{3, 6}, Top},
+		{Position{3, 7}, Top},
+	}
+
+	scenario := scenarioWithDeposit()
+	mines := getAvailableMinePositions(scenario, Chromosome{})
+
+	for _, mine := range mines {
+		found := false
+		for _, validMine := range validMines {
+			if mine.position == validMine.position && mine.orientation == validMine.orientation {
+				found = true
+				break
+			}
+		}
+		if !found {
+			t.Errorf("mine %v is not valid", mine)
+		}
+	}
+
+	for _, validMine := range validMines {
+		found := false
+		for _, mine := range mines {
+			if mine.position == validMine.position && mine.orientation == validMine.orientation {
+				found = true
+				break
+			}
+		}
+		if !found {
+			t.Errorf("mine %v is not found", validMine)
+		}
+	}
+}
