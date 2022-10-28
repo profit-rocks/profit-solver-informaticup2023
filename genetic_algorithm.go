@@ -14,8 +14,24 @@ type Chromosome struct {
 	fitness   float64
 }
 
+// GeneticAlgorithm contains input data as well as configuration information used by the genetic algorithm.
+// Data in this struct is passed around, but never changed. If there is context information that needs to be
+// changed, it should probably be stored in a chromosome.
+type GeneticAlgorithm struct {
+	scenario             Scenario
+	iterations           int
+	populationSize       int
+	mutationProbability  float64
+	crossoverProbability float64
+	numFactories         int
+	numMines             int
+}
+
 func (c Chromosome) Solution() Solution {
-	solution := Solution{}
+	solution := Solution{
+		factories: make([]Factory, len(c.factories)),
+		mines:     make([]Mine, len(c.mines)),
+	}
 	copy(solution.factories, c.factories)
 	copy(solution.mines, c.mines)
 	return solution
@@ -23,10 +39,17 @@ func (c Chromosome) Solution() Solution {
 
 const NumTriesPerChromosome = 10
 
-func crossover(chromosome Chromosome, chromosome2 Chromosome, probability float64) Chromosome {
+func (g *GeneticAlgorithm) crossover(chromosome Chromosome, chromosome2 Chromosome) Chromosome {
 	newChromosome := Chromosome{}
+	for i := 0; i < len(chromosome.mines); i++ {
+		if rand.Float64() > g.crossoverProbability {
+			newChromosome.mines = append(newChromosome.mines, chromosome.mines[i])
+		} else {
+			newChromosome.mines = append(newChromosome.mines, chromosome2.mines[i])
+		}
+	}
 	for i := 0; i < len(chromosome.factories); i++ {
-		if rand.Float64() > probability {
+		if rand.Float64() > g.crossoverProbability {
 			newChromosome.factories = append(newChromosome.factories, chromosome.factories[i])
 		} else {
 			newChromosome.factories = append(newChromosome.factories, chromosome2.factories[i])
@@ -35,14 +58,25 @@ func crossover(chromosome Chromosome, chromosome2 Chromosome, probability float6
 	return newChromosome
 }
 
-func mutation(chromosome Chromosome, probability float64, scenario Scenario) Chromosome {
+func (g *GeneticAlgorithm) mutation(chromosome Chromosome) Chromosome {
 	newChromosome := Chromosome{}
+	for _, mine := range chromosome.mines {
+		if rand.Float64() > g.mutationProbability {
+			newChromosome.mines = append(newChromosome.mines, mine)
+		} else {
+			newMine, err := g.getRandomMine(newChromosome)
+			if err != nil {
+				newChromosome.mines = append(newChromosome.mines, mine)
+			} else {
+				newChromosome.mines = append(newChromosome.mines, newMine)
+			}
+		}
+	}
 	for _, factory := range chromosome.factories {
-		fl := rand.Float64()
-		if fl > probability {
+		if rand.Float64() > g.mutationProbability {
 			newChromosome.factories = append(newChromosome.factories, factory)
 		} else {
-			newFactory, err := getRandomFactory(scenario, newChromosome)
+			newFactory, err := g.getRandomFactory(newChromosome)
 			if err != nil {
 				newChromosome.factories = append(newChromosome.factories, factory)
 			} else {
@@ -53,33 +87,40 @@ func mutation(chromosome Chromosome, probability float64, scenario Scenario) Chr
 	return newChromosome
 }
 
-func evaluateFitness(chromosome Chromosome, scenario Scenario) float64 {
+func (g *GeneticAlgorithm) evaluateFitness(chromosome Chromosome) float64 {
 	// TODO: use A* or other metric
+	for i, mine := range chromosome.mines {
+		copiedChromosome := chromosome
+		copiedChromosome.mines = chromosome.mines[:i]
+		if !g.isPositionAvailableForMine(copiedChromosome, mine) {
+			return math.Inf(1)
+		}
+	}
 
 	for i, factory := range chromosome.factories {
 		copiedChromosome := chromosome
 		copiedChromosome.factories = chromosome.factories[:i]
-		if !isPositionAvailableForFactory(scenario, copiedChromosome, factory.position) {
+		if !g.isPositionAvailableForFactory(copiedChromosome, factory.position) {
 			return math.Inf(1)
 		}
 	}
 
 	// sum of manhattan distances for each factory to all the deposits
 	fitness := 0.0
-	for _, deposit := range scenario.deposits {
+	for _, mine := range chromosome.mines {
 		for _, factory := range chromosome.factories {
-			fitness += factory.position.ManhattanDist(deposit.position)
+			fitness += factory.position.ManhattanDist(mine.position)
 		}
 	}
 	return fitness
 }
 
-func generateChromosomes(numChromosomes int, scenario Scenario, numFactories int) ([]Chromosome, error) {
-	chromosomes := make([]Chromosome, numChromosomes)
-	for i := 0; i < numChromosomes; i++ {
+func (g *GeneticAlgorithm) generateChromosomes() ([]Chromosome, error) {
+	chromosomes := make([]Chromosome, g.populationSize)
+	for i := 0; i < g.populationSize; i++ {
 		foundChromosome := false
 		for j := 0; j < NumTriesPerChromosome; j++ {
-			chromosome, err := generateChromosome(scenario, numFactories)
+			chromosome, err := g.generateChromosome()
 			if err == nil {
 				chromosomes[i] = chromosome
 				foundChromosome = true
@@ -92,10 +133,17 @@ func generateChromosomes(numChromosomes int, scenario Scenario, numFactories int
 	return chromosomes, nil
 }
 
-func generateChromosome(scenario Scenario, numFactories int) (Chromosome, error) {
+func (g *GeneticAlgorithm) generateChromosome() (Chromosome, error) {
 	chromosome := Chromosome{mines: make([]Mine, 0), factories: make([]Factory, 0)}
-	for i := 0; i < numFactories; i++ {
-		factory, err := getRandomFactory(scenario, chromosome)
+	for i := 0; i < g.numMines; i++ {
+		mine, err := g.getRandomMine(chromosome)
+		if err != nil {
+			return chromosome, err
+		}
+		chromosome.mines = append(chromosome.mines, mine)
+	}
+	for i := 0; i < g.numFactories; i++ {
+		factory, err := g.getRandomFactory(chromosome)
 		if err != nil {
 			return chromosome, err
 		}
@@ -104,8 +152,18 @@ func generateChromosome(scenario Scenario, numFactories int) (Chromosome, error)
 	return chromosome, nil
 }
 
-func getRandomFactory(scenario Scenario, chromosome Chromosome) (Factory, error) {
-	availablePositions := getAvailableFactoryPositions(scenario, chromosome)
+func (g *GeneticAlgorithm) getRandomMine(chromosome Chromosome) (Mine, error) {
+	for _, deposit := range g.scenario.deposits {
+		availableMines := g.minesAroundDeposit(deposit, chromosome)
+		if len(availableMines) != 0 {
+			return availableMines[rand.Intn(len(availableMines))], nil
+		}
+	}
+	return Mine{}, errors.New("no mines available")
+}
+
+func (g *GeneticAlgorithm) getRandomFactory(chromosome Chromosome) (Factory, error) {
+	availablePositions := g.getAvailableFactoryPositions(chromosome)
 	if len(availablePositions) == 0 {
 		return Factory{}, errors.New("no factory positions available")
 	}
@@ -113,34 +171,29 @@ func getRandomFactory(scenario Scenario, chromosome Chromosome) (Factory, error)
 	return Factory{position: position, product: 0}, nil
 }
 
-func getAvailableFactoryPositions(scenario Scenario, chromosome Chromosome) []Position {
+func (g *GeneticAlgorithm) getAvailableFactoryPositions(chromosome Chromosome) []Position {
 	positions := make([]Position, 0)
-	for i := 0; i < scenario.width; i++ {
-		for j := 0; j < scenario.height; j++ {
-			if isPositionAvailableForFactory(scenario, chromosome, Position{
-				x: i,
-				y: j,
-			}) {
-				positions = append(positions, Position{
-					x: i,
-					y: j,
-				})
+	for i := 0; i < g.scenario.width; i++ {
+		for j := 0; j < g.scenario.height; j++ {
+			pos := Position{i, j}
+			if g.isPositionAvailableForFactory(chromosome, pos) {
+				positions = append(positions, pos)
 			}
 		}
 	}
 	return positions
 }
 
-func isPositionAvailableForFactory(scenario Scenario, chromosome Chromosome, position Position) bool {
+func (g *GeneticAlgorithm) isPositionAvailableForFactory(chromosome Chromosome, position Position) bool {
 	factoryRectangle := Rectangle{
 		position: position,
 		width:    FactoryWidth,
 		height:   FactoryHeight,
 	}
-	if position.x+FactoryWidth > scenario.width || position.y+FactoryHeight > scenario.height {
+	if position.x+FactoryWidth > g.scenario.width || position.y+FactoryHeight > g.scenario.height {
 		return false
 	}
-	for _, obstacle := range scenario.obstacles {
+	for _, obstacle := range g.scenario.obstacles {
 		if factoryRectangle.Intersects(obstacle) {
 			return false
 		}
@@ -150,7 +203,7 @@ func isPositionAvailableForFactory(scenario Scenario, chromosome Chromosome, pos
 			return false
 		}
 	}
-	for _, deposit := range scenario.deposits {
+	for _, deposit := range g.scenario.deposits {
 		depositRectangle := deposit.Rectangle()
 		extendedDepositRectangle := Rectangle{
 			position: Position{
@@ -177,7 +230,41 @@ func isPositionAvailableForFactory(scenario Scenario, chromosome Chromosome, pos
 	return true
 }
 
-func minesAroundDeposit(scenario Scenario, deposit Deposit, chromosome Chromosome) []Mine {
+func (g *GeneticAlgorithm) isPositionAvailableForMine(chromosome Chromosome, mine Mine) bool {
+	// mine is out of bounds
+	boundRectangles := g.scenario.boundRectangles()
+	for _, borderRectangle := range boundRectangles {
+		if mine.Intersects(borderRectangle) {
+			return false
+		}
+	}
+	for _, obstacle := range g.scenario.obstacles {
+		if mine.Intersects(obstacle) {
+			return false
+		}
+	}
+	for _, deposit := range g.scenario.deposits {
+		if mine.Intersects(deposit.Rectangle()) {
+			return false
+		}
+	}
+	for _, factory := range chromosome.factories {
+		if mine.Intersects(factory.Rectangle()) {
+			return false
+		}
+	}
+	// TODO: check if one mine's egress is adjacent to another mine's ingress
+	for _, otherMine := range chromosome.mines {
+		for _, rectangle := range otherMine.Rectangles() {
+			if mine.Intersects(rectangle) {
+				return false
+			}
+		}
+	}
+	return true
+}
+
+func (g *GeneticAlgorithm) minesAroundDeposit(deposit Deposit, chromosome Chromosome) []Mine {
 	/* For each mine direction, we go counter-clockwise.
 	   There is always one case where the mine corner matches the deposit edge.
 	   We always use the mine ingress coordinate as our iteration variable */
@@ -220,33 +307,39 @@ func minesAroundDeposit(scenario Scenario, deposit Deposit, chromosome Chromosom
 		positions = append(positions, Mine{Position{deposit.position.x - 2, i - 2}, Top})
 	}
 
-	return positions
+	validPositions := make([]Mine, 0)
+	for _, position := range positions {
+		if g.isPositionAvailableForMine(chromosome, position) {
+			validPositions = append(validPositions, position)
+		}
+	}
+	return validPositions
 }
 
-func runGeneticAlgorithm(maxIterations int, scenario Scenario, populationSize int, mutationProbability float64, crossoverProbability float64, numFactories int) (Solution, error) {
-	chromosomes, err := generateChromosomes(populationSize, scenario, numFactories)
+func (g *GeneticAlgorithm) Run() (Solution, error) {
+	chromosomes, err := g.generateChromosomes()
 	if err != nil {
 		return Solution{}, err
 	}
 	for i, chromosome := range chromosomes {
-		chromosomes[i].fitness = evaluateFitness(chromosome, scenario)
+		chromosomes[i].fitness = g.evaluateFitness(chromosome)
 	}
-	for i := 0; i < maxIterations; i++ {
+	for i := 0; i < g.iterations; i++ {
 		sort.Slice(chromosomes, func(i, j int) bool {
 			return chromosomes[i].fitness < chromosomes[j].fitness
 		})
-		log.Println("starting iteration", i+1, "/", maxIterations, "fitness", chromosomes[0].fitness)
-		chromosomes = chromosomes[:populationSize]
+		log.Println("starting iteration", i+1, "/", g.iterations, "fitness", chromosomes[0].fitness)
+		chromosomes = chromosomes[:g.populationSize]
 
-		for j := 0; j < populationSize; j++ {
-			newChromosome := crossover(chromosomes[rand.Intn(populationSize)], chromosomes[rand.Intn(populationSize)], crossoverProbability)
-			newChromosome.fitness = evaluateFitness(newChromosome, scenario)
+		for j := 0; j < g.populationSize; j++ {
+			newChromosome := g.crossover(chromosomes[rand.Intn(g.populationSize)], chromosomes[rand.Intn(g.populationSize)])
+			newChromosome.fitness = g.evaluateFitness(newChromosome)
 			chromosomes = append(chromosomes, newChromosome)
 		}
 		numChromosomes := len(chromosomes)
 		for j := 0; j < numChromosomes; j++ {
-			newChromosome := mutation(chromosomes[j], mutationProbability, scenario)
-			newChromosome.fitness = evaluateFitness(newChromosome, scenario)
+			newChromosome := g.mutation(chromosomes[j])
+			newChromosome.fitness = g.evaluateFitness(newChromosome)
 			chromosomes = append(chromosomes, newChromosome)
 		}
 	}

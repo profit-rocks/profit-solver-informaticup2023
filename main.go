@@ -121,7 +121,17 @@ func main() {
 	scenario := importScenarioFromJson(*inputPtr)
 
 	rand.Seed(time.Now().UnixNano())
-	solution, err := runGeneticAlgorithm(200, scenario, 120, 0.18, 0.7, 4)
+
+	geneticAlgorithm := GeneticAlgorithm{
+		scenario:             scenario,
+		populationSize:       200,
+		iterations:           120,
+		mutationProbability:  0.18,
+		crossoverProbability: 0.7,
+		numFactories:         4,
+		numMines:             2 * len(scenario.deposits),
+	}
+	solution, err := geneticAlgorithm.Run()
 
 	if err != nil {
 		log.Fatal(err)

@@ -37,7 +37,14 @@ func exportSolution(scenario Scenario, solution Solution, filePath string) error
 }
 
 func solutionToExportableScenario(scenario Scenario, solution Solution) ExportableScenario {
-	exportableScenario := ExportableScenario{Height: scenario.height, Width: scenario.width, Turns: 100, Time: 100}
+	exportableScenario := ExportableScenario{
+		Height:   scenario.height,
+		Width:    scenario.width,
+		Objects:  []Object{},
+		Products: []Object{},
+		Turns:    100,
+		Time:     100,
+	}
 
 	for _, deposit := range scenario.deposits {
 		exportableScenario.Objects = append(exportableScenario.Objects, Object{
