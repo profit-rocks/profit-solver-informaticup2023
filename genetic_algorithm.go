@@ -109,7 +109,7 @@ func (g *GeneticAlgorithm) evaluateFitness(chromosome Chromosome) float64 {
 	fitness := 0.0
 	for _, mine := range chromosome.mines {
 		for _, factory := range chromosome.factories {
-			fitness += factory.position.ManhattanDist(mine.position)
+			fitness += float64(factory.position.ManhattanDist(mine.position))
 		}
 	}
 	return fitness
