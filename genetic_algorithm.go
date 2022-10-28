@@ -64,11 +64,21 @@ func (g *GeneticAlgorithm) mutation(chromosome Chromosome) Chromosome {
 		if rand.Float64() > g.mutationProbability {
 			newChromosome.mines = append(newChromosome.mines, mine)
 		} else {
-			newMine, err := g.getRandomMine(newChromosome)
-			if err != nil {
+			// attach new mine to deposit of old mine.
+			// TODO: this does not work correctly when a mine is attached to multiple deposits
+			success := false
+			for _, deposit := range g.scenario.deposits {
+				if deposit.Rectangle().Intersects(Rectangle{Position{mine.Ingress().x - 1, mine.Ingress().y - 1}, 3, 3}) {
+					newMine, err := g.getRandomMine(deposit, newChromosome)
+					if err == nil {
+						newChromosome.mines = append(newChromosome.mines, newMine)
+						success = true
+						break
+					}
+				}
+			}
+			if !success {
 				newChromosome.mines = append(newChromosome.mines, mine)
-			} else {
-				newChromosome.mines = append(newChromosome.mines, newMine)
 			}
 		}
 	}
@@ -136,7 +146,8 @@ func (g *GeneticAlgorithm) generateChromosomes() ([]Chromosome, error) {
 func (g *GeneticAlgorithm) generateChromosome() (Chromosome, error) {
 	chromosome := Chromosome{mines: make([]Mine, 0), factories: make([]Factory, 0)}
 	for i := 0; i < g.numMines; i++ {
-		mine, err := g.getRandomMine(chromosome)
+		deposit := g.scenario.deposits[i%len(g.scenario.deposits)]
+		mine, err := g.getRandomMine(deposit, chromosome)
 		if err != nil {
 			return chromosome, err
 		}
@@ -152,12 +163,10 @@ func (g *GeneticAlgorithm) generateChromosome() (Chromosome, error) {
 	return chromosome, nil
 }
 
-func (g *GeneticAlgorithm) getRandomMine(chromosome Chromosome) (Mine, error) {
-	for _, deposit := range g.scenario.deposits {
-		availableMines := g.minesAroundDeposit(deposit, chromosome)
-		if len(availableMines) != 0 {
-			return availableMines[rand.Intn(len(availableMines))], nil
-		}
+func (g *GeneticAlgorithm) getRandomMine(deposit Deposit, chromosome Chromosome) (Mine, error) {
+	availableMines := g.minesAroundDeposit(deposit, chromosome)
+	if len(availableMines) != 0 {
+		return availableMines[rand.Intn(len(availableMines))], nil
 	}
 	return Mine{}, errors.New("no mines available")
 }
