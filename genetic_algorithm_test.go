@@ -159,7 +159,7 @@ func TestAvailableMinePositions(t *testing.T) {
 	}
 
 	g := geneticAlgorithmFromScenario(scenarioWithDeposit())
-	mines := g.minesAroundDeposit(g.scenario.deposits[0], Chromosome{})
+	mines := g.minesAroundDeposit(*g.scenario.deposits[0], Chromosome{})
 
 	for _, mine := range mines {
 		found := false
@@ -190,7 +190,7 @@ func TestAvailableMinePositions(t *testing.T) {
 
 func TestTwoMinesSameEgress(t *testing.T) {
 	g := geneticAlgorithmFromScenario(scenarioWithDeposit())
-	mines := g.minesAroundDeposit(g.scenario.deposits[0], Chromosome{
+	mines := g.minesAroundDeposit(*g.scenario.deposits[0], Chromosome{
 		factories: []Factory{},
 		mines:     []Mine{{position: Position{6, 3}, direction: Right}},
 		fitness:   0,
