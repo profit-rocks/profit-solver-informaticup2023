@@ -89,6 +89,20 @@ func TestScenarioWithFactory(t *testing.T) {
 	}
 }
 
+func TestPositionAvailableForFactory(t *testing.T) {
+	scenario := largeEmptyScenario()
+	solution := solutionWithSingleMineForLargeEmptyScenario()
+	mines := make([]Mine, len(solution.mines))
+	for i, mine := range solution.mines {
+		mines[i] = *mine
+	}
+	for _, mine := range solution.mines {
+		if scenario.isPositionAvailableForFactory([]Factory{}, mines, mine.position) {
+			t.Errorf("position %v should not be available", mine.position)
+		}
+	}
+}
+
 func TestScenarioWithDeposit(t *testing.T) {
 	g := geneticAlgorithmFromScenario(scenarioWithDeposit())
 

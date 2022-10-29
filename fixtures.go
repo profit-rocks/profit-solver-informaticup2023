@@ -97,3 +97,19 @@ func solutionForLargeScenarioWithDeposit() Solution {
 		conveyors: nil,
 	}
 }
+
+func solutionWithSingleMineForLargeEmptyScenario() Solution {
+	return Solution{
+		factories: []*Factory{},
+		mines: []*Mine{{
+			position: Position{
+				x: 6,
+				y: 1,
+			},
+			direction:        0,
+			resourcesIngress: nil,
+			resourcesEgress:  nil,
+		}},
+		conveyors: nil,
+	}
+}
