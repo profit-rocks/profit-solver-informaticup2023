@@ -1,1 +1,136 @@
-{"width":40,"height":40,"objects":[{"type":"deposit","x":2,"y":2,"subtype":0,"width":8,"height":4},{"type":"deposit","x":12,"y":2,"subtype":1,"width":9,"height":4},{"type":"deposit","x":23,"y":2,"subtype":2,"width":17,"height":4},{"type":"obstacle","x":0,"y":8,"width":18,"height":3},{"type":"obstacle","x":21,"y":8,"width":19,"height":3},{"type":"obstacle","x":0,"y":19,"width":14,"height":6},{"type":"obstacle","x":21,"y":19,"width":19,"height":6},{"type":"obstacle","x":21,"y":32,"width":19,"height":2},{"type":"obstacle","x":0,"y":32,"width":14,"height":2},{"type":"deposit","x":21,"y":37,"subtype":0,"width":19,"height":3},{"type":"deposit","x":0,"y":37,"subtype":1,"width":14,"height":3}],"products":[{"type":"product","subtype":0,"resources":[10,10,0,0,0,0,0,0],"points":5},{"type":"product","subtype":1,"resources":[10,10,5,0,0,0,0,0],"points":15},{"type":"product","subtype":2,"resources":[15,0,15,0,0,0,0,0],"points":20}],"turns":100}
+{
+  "width": 40,
+  "height": 40,
+  "objects": [
+    {
+      "type": "deposit",
+      "x": 2,
+      "y": 2,
+      "subtype": 0,
+      "width": 8,
+      "height": 4
+    },
+    {
+      "type": "deposit",
+      "x": 12,
+      "y": 2,
+      "subtype": 1,
+      "width": 9,
+      "height": 4
+    },
+    {
+      "type": "deposit",
+      "x": 23,
+      "y": 2,
+      "subtype": 2,
+      "width": 17,
+      "height": 4
+    },
+    {
+      "type": "obstacle",
+      "x": 0,
+      "y": 8,
+      "width": 18,
+      "height": 3
+    },
+    {
+      "type": "obstacle",
+      "x": 21,
+      "y": 8,
+      "width": 19,
+      "height": 3
+    },
+    {
+      "type": "obstacle",
+      "x": 0,
+      "y": 19,
+      "width": 14,
+      "height": 6
+    },
+    {
+      "type": "obstacle",
+      "x": 21,
+      "y": 19,
+      "width": 19,
+      "height": 6
+    },
+    {
+      "type": "obstacle",
+      "x": 21,
+      "y": 32,
+      "width": 19,
+      "height": 2
+    },
+    {
+      "type": "obstacle",
+      "x": 0,
+      "y": 32,
+      "width": 14,
+      "height": 2
+    },
+    {
+      "type": "deposit",
+      "x": 21,
+      "y": 37,
+      "subtype": 0,
+      "width": 19,
+      "height": 3
+    },
+    {
+      "type": "deposit",
+      "x": 0,
+      "y": 37,
+      "subtype": 1,
+      "width": 14,
+      "height": 3
+    }
+  ],
+  "products": [
+    {
+      "type": "product",
+      "subtype": 0,
+      "resources": [
+        10,
+        10,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "points": 5
+    },
+    {
+      "type": "product",
+      "subtype": 1,
+      "resources": [
+        10,
+        10,
+        5,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "points": 15
+    },
+    {
+      "type": "product",
+      "subtype": 2,
+      "resources": [
+        15,
+        0,
+        15,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "points": 20
+    }
+  ],
+  "turns": 100
+}

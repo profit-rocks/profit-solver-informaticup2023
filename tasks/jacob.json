@@ -1,1 +1,124 @@
-{"width":50,"height":30,"objects":[{"type":"deposit","x":4,"y":2,"subtype":0,"width":4,"height":5},{"type":"obstacle","x":28,"y":2,"width":2,"height":19},{"type":"deposit","x":25,"y":21,"subtype":7,"width":7,"height":3},{"type":"deposit","x":45,"y":19,"subtype":7,"width":5,"height":11},{"type":"deposit","x":39,"y":2,"subtype":1,"width":10,"height":3},{"type":"deposit","x":39,"y":6,"subtype":2,"width":10,"height":3},{"type":"deposit","x":39,"y":9,"subtype":3,"width":10,"height":3},{"type":"obstacle","x":9,"y":14,"width":14,"height":3},{"type":"deposit","x":0,"y":1,"subtype":3,"width":4,"height":9},{"type":"deposit","x":19,"y":0,"subtype":2,"width":15,"height":2},{"type":"obstacle","x":0,"y":25,"width":6,"height":5}],"products":[{"type":"product","subtype":1,"resources":[1,1,1,1,0,0,0,6],"points":20},{"type":"product","subtype":4,"resources":[0,0,4,3,0,0,0,0],"points":10}],"turns":75}
+{
+  "width": 50,
+  "height": 30,
+  "objects": [
+    {
+      "type": "deposit",
+      "x": 4,
+      "y": 2,
+      "subtype": 0,
+      "width": 4,
+      "height": 5
+    },
+    {
+      "type": "obstacle",
+      "x": 28,
+      "y": 2,
+      "width": 2,
+      "height": 19
+    },
+    {
+      "type": "deposit",
+      "x": 25,
+      "y": 21,
+      "subtype": 7,
+      "width": 7,
+      "height": 3
+    },
+    {
+      "type": "deposit",
+      "x": 45,
+      "y": 19,
+      "subtype": 7,
+      "width": 5,
+      "height": 11
+    },
+    {
+      "type": "deposit",
+      "x": 39,
+      "y": 2,
+      "subtype": 1,
+      "width": 10,
+      "height": 3
+    },
+    {
+      "type": "deposit",
+      "x": 39,
+      "y": 6,
+      "subtype": 2,
+      "width": 10,
+      "height": 3
+    },
+    {
+      "type": "deposit",
+      "x": 39,
+      "y": 9,
+      "subtype": 3,
+      "width": 10,
+      "height": 3
+    },
+    {
+      "type": "obstacle",
+      "x": 9,
+      "y": 14,
+      "width": 14,
+      "height": 3
+    },
+    {
+      "type": "deposit",
+      "x": 0,
+      "y": 1,
+      "subtype": 3,
+      "width": 4,
+      "height": 9
+    },
+    {
+      "type": "deposit",
+      "x": 19,
+      "y": 0,
+      "subtype": 2,
+      "width": 15,
+      "height": 2
+    },
+    {
+      "type": "obstacle",
+      "x": 0,
+      "y": 25,
+      "width": 6,
+      "height": 5
+    }
+  ],
+  "products": [
+    {
+      "type": "product",
+      "subtype": 1,
+      "resources": [
+        1,
+        1,
+        1,
+        1,
+        0,
+        0,
+        0,
+        6
+      ],
+      "points": 20
+    },
+    {
+      "type": "product",
+      "subtype": 4,
+      "resources": [
+        0,
+        0,
+        4,
+        3,
+        0,
+        0,
+        0,
+        0
+      ],
+      "points": 10
+    }
+  ],
+  "turns": 75
+}
