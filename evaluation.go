@@ -30,19 +30,13 @@ func simulationStateFromScenarioAndSolution(scenario *Scenario, solution *Soluti
 	for _, deposit := range scenario.deposits {
 		deposit.remainingResources = deposit.width * deposit.height * DepositResourceFactor
 	}
-	modifiedFactories := make([]Factory, 0)
 	for _, factory := range solution.factories {
 		factory.resourceStorage = []int{0, 0, 0, 0, 0, 0, 0, 0}
-		modifiedFactories = append(modifiedFactories, factory)
 	}
-	modifiedMines := make([]Mine, 0)
 	for _, mine := range solution.mines {
 		mine.resourcesEgress = []int{0, 0, 0, 0, 0, 0, 0, 0}
 		mine.resourcesIngress = []int{0, 0, 0, 0, 0, 0, 0, 0}
-		modifiedMines = append(modifiedMines, mine)
 	}
-	solution.mines = modifiedMines
-	solution.factories = modifiedFactories
 	return SimulationState{scenario: scenario, solution: solution, simulatedTurns: 0, score: 0}
 }
 
@@ -158,7 +152,7 @@ func (d *Deposit) mineIngressPositions() []Position {
 func getMineWithIngressAt(solution *Solution, position Position) (*Mine, bool) {
 	for _, mine := range solution.mines {
 		if mine.Ingress() == position {
-			return &mine, true
+			return mine, true
 		}
 	}
 	return &Mine{}, false
