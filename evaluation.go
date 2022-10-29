@@ -86,7 +86,7 @@ func (state *SimulationState) simulateOneRound() {
 func (f *Factory) getAdjacentMines(solution *Solution) []*Mine {
 	mines := make([]*Mine, 0)
 	for _, position := range f.mineEgressPositions() {
-		mine, foundMine := getMineWithIngressAt(solution, position)
+		mine, foundMine := getMineWithEgressAt(solution, position)
 		if foundMine {
 			mines = append(mines, mine)
 		}
@@ -159,6 +159,15 @@ func getMineWithIngressAt(solution *Solution, position Position) (*Mine, bool) {
 	for _, mine := range solution.mines {
 		if mine.Ingress() == position {
 			return &mine, true
+		}
+	}
+	return &Mine{}, false
+}
+
+func getMineWithEgressAt(solution *Solution, position Position) (*Mine, bool) {
+	for _, mine := range solution.mines {
+		if mine.Egress() == position {
+			return mine, true
 		}
 	}
 	return &Mine{}, false
