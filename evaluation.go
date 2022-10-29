@@ -5,10 +5,8 @@ const MaxDepositWithdrawPerMine = 3
 const NumResourceTypes = 8
 
 type SimulationState struct {
-	scenario       *Scenario
-	solution       *Solution
-	simulatedTurns int
-	score          int
+	scenario *Scenario
+	solution *Solution
 }
 
 func (s *Scenario) evaluate(solution Solution) (int, error) {
@@ -37,7 +35,7 @@ func simulationStateFromScenarioAndSolution(scenario *Scenario, solution *Soluti
 		mine.resourcesEgress = []int{0, 0, 0, 0, 0, 0, 0, 0}
 		mine.resourcesIngress = []int{0, 0, 0, 0, 0, 0, 0, 0}
 	}
-	return SimulationState{scenario: scenario, solution: solution, simulatedTurns: 0, score: 0}
+	return SimulationState{scenario: scenario, solution: solution}
 }
 
 func (state *SimulationState) simulateOneRound() {
@@ -74,7 +72,6 @@ func (state *SimulationState) simulateOneRound() {
 			mine.resourcesIngress[deposit.subtype] += withdrawAmount
 		}
 	}
-	state.simulatedTurns += 1
 }
 
 func (f *Factory) getAdjacentMines(solution *Solution) []*Mine {
