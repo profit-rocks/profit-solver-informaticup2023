@@ -212,6 +212,13 @@ func (s *Scenario) isPositionAvailableForFactory(factories []Factory, mines []Mi
 			return false
 		}
 	}
+	for _, mine := range mines {
+		for _, rectangle := range mine.Rectangles() {
+			if factoryRectangle.Intersects(rectangle) {
+				return false
+			}
+		}
+	}
 	for _, deposit := range s.deposits {
 		depositRectangle := deposit.Rectangle()
 		extendedDepositRectangle := Rectangle{
