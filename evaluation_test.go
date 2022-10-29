@@ -25,3 +25,15 @@ func TestSolutionForLargeScenarioWithDepositEvaluation(t *testing.T) {
 		t.Errorf("score should be 24 and not %d", score)
 	}
 }
+
+func TestInvalidSolutionEvaluation(t *testing.T) {
+	scenario := largeEmptyScenario()
+	solution := invalidSolutionForLargeEmptyScenario()
+	score, err := scenario.evaluate(solution)
+	if err == nil {
+		t.Errorf("evaluating empty solution should throw an error")
+	}
+	if score != 0 {
+		t.Errorf("score of invalid solution should be 0 and not %d", score)
+	}
+}

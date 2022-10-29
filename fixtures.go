@@ -10,6 +10,22 @@ func largeEmptyScenario() Scenario {
 	}
 }
 
+func invalidSolutionForLargeEmptyScenario() Solution {
+	return Solution{
+		factories: []*Factory{{
+			position:        Position{0, 0},
+			product:         0,
+			resourceStorage: nil,
+		}, {
+			position:        Position{0, 0},
+			product:         0,
+			resourceStorage: nil,
+		}},
+		mines:     nil,
+		conveyors: nil,
+	}
+}
+
 func smallEmptyScenario() Scenario {
 	return Scenario{
 		width:     4,
