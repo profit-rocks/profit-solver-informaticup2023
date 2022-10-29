@@ -1,5 +1,7 @@
 package main
 
+import "errors"
+
 const DepositResourceFactor = 5
 const MaxDepositWithdrawPerMine = 3
 const NumResourceTypes = 8
@@ -9,8 +11,26 @@ type SimulationState struct {
 	solution *Solution
 }
 
-func (s *Scenario) evaluate(solution Solution) (int, error) {
-	// TODO: Check for invalid scenario
+func (s *Scenario) evaluateSolution(solution Solution) (int, error) {
+	mines := make([]Mine, len(solution.mines))
+	for i, mine := range solution.mines {
+		mines[i] = *mine
+	}
+	factories := make([]Factory, len(solution.factories))
+	for i, factory := range solution.factories {
+		factories[i] = *factory
+	}
+	for i, mine := range solution.mines {
+		if !s.isPositionAvailableForMine(factories, mines[:i], *mine) {
+			return 0, errors.New("solution includes a mine which position is invalid, can't evaluate this solution")
+		}
+	}
+
+	for i, factory := range solution.factories {
+		if !s.isPositionAvailableForFactory(factories[:i], mines, factory.position) {
+			return 0, errors.New("solution includes a factory which position is invalid, can't evaluate this solution")
+		}
+	}
 	simulationState := simulationStateFromScenarioAndSolution(s, &solution)
 	for i := 0; i < s.turns; i++ {
 		simulationState.simulateOneRound()
