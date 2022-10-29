@@ -65,7 +65,7 @@ func TestScenarioWithObstacles(t *testing.T) {
 
 func chromosomeWithSingleFactory() Chromosome {
 	return Chromosome{
-		factories: []Factory{{Position{5, 5}, 0}},
+		factories: []Factory{{position: Position{5, 5}, product: 0}},
 	}
 }
 
@@ -111,51 +111,51 @@ func TestScenarioWithDeposit(t *testing.T) {
 func TestAvailableMinePositions(t *testing.T) {
 
 	validMines := []Mine{
-		{Position{6, 3}, Right},
-		{Position{7, 3}, Right},
-		{Position{8, 3}, Right},
-		{Position{9, 3}, Right},
-		{Position{10, 3}, Right},
-		{Position{11, 4}, Right},
-		{Position{11, 5}, Right},
-		{Position{11, 6}, Right},
-		{Position{11, 7}, Right},
-		{Position{11, 8}, Right},
-		{Position{10, 9}, Right},
-		{Position{4, 10}, Bottom},
-		{Position{5, 11}, Bottom},
-		{Position{6, 11}, Bottom},
-		{Position{7, 11}, Bottom},
-		{Position{8, 11}, Bottom},
-		{Position{9, 11}, Bottom},
-		{Position{10, 10}, Bottom},
-		{Position{10, 10}, Bottom},
-		{Position{10, 9}, Bottom},
-		{Position{10, 8}, Bottom},
-		{Position{10, 7}, Bottom},
-		{Position{10, 6}, Bottom},
-		{Position{3, 4}, Left},
-		{Position{2, 5}, Left},
-		{Position{2, 6}, Left},
-		{Position{2, 7}, Left},
-		{Position{2, 8}, Left},
-		{Position{2, 9}, Left},
-		{Position{3, 10}, Left},
-		{Position{4, 10}, Left},
-		{Position{5, 10}, Left},
-		{Position{6, 10}, Left},
-		{Position{7, 10}, Left},
-		{Position{9, 3}, Top},
-		{Position{8, 2}, Top},
-		{Position{7, 2}, Top},
-		{Position{6, 2}, Top},
-		{Position{5, 2}, Top},
-		{Position{4, 2}, Top},
-		{Position{3, 3}, Top},
-		{Position{3, 4}, Top},
-		{Position{3, 5}, Top},
-		{Position{3, 6}, Top},
-		{Position{3, 7}, Top},
+		{position: Position{6, 3}, direction: Right},
+		{position: Position{7, 3}, direction: Right},
+		{position: Position{8, 3}, direction: Right},
+		{position: Position{9, 3}, direction: Right},
+		{position: Position{10, 3}, direction: Right},
+		{position: Position{11, 4}, direction: Right},
+		{position: Position{11, 5}, direction: Right},
+		{position: Position{11, 6}, direction: Right},
+		{position: Position{11, 7}, direction: Right},
+		{position: Position{11, 8}, direction: Right},
+		{position: Position{10, 9}, direction: Right},
+		{position: Position{4, 10}, direction: Bottom},
+		{position: Position{5, 11}, direction: Bottom},
+		{position: Position{6, 11}, direction: Bottom},
+		{position: Position{7, 11}, direction: Bottom},
+		{position: Position{8, 11}, direction: Bottom},
+		{position: Position{9, 11}, direction: Bottom},
+		{position: Position{10, 10}, direction: Bottom},
+		{position: Position{10, 10}, direction: Bottom},
+		{position: Position{10, 9}, direction: Bottom},
+		{position: Position{10, 8}, direction: Bottom},
+		{position: Position{10, 7}, direction: Bottom},
+		{position: Position{10, 6}, direction: Bottom},
+		{position: Position{3, 4}, direction: Left},
+		{position: Position{2, 5}, direction: Left},
+		{position: Position{2, 6}, direction: Left},
+		{position: Position{2, 7}, direction: Left},
+		{position: Position{2, 8}, direction: Left},
+		{position: Position{2, 9}, direction: Left},
+		{position: Position{3, 10}, direction: Left},
+		{position: Position{4, 10}, direction: Left},
+		{position: Position{5, 10}, direction: Left},
+		{position: Position{6, 10}, direction: Left},
+		{position: Position{7, 10}, direction: Left},
+		{position: Position{9, 3}, direction: Top},
+		{position: Position{8, 2}, direction: Top},
+		{position: Position{7, 2}, direction: Top},
+		{position: Position{6, 2}, direction: Top},
+		{position: Position{5, 2}, direction: Top},
+		{position: Position{4, 2}, direction: Top},
+		{position: Position{3, 3}, direction: Top},
+		{position: Position{3, 4}, direction: Top},
+		{position: Position{3, 5}, direction: Top},
+		{position: Position{3, 6}, direction: Top},
+		{position: Position{3, 7}, direction: Top},
 	}
 
 	g := geneticAlgorithmFromScenario(scenarioWithDeposit())
@@ -192,12 +192,12 @@ func TestTwoMinesSameEgress(t *testing.T) {
 	g := geneticAlgorithmFromScenario(scenarioWithDeposit())
 	mines := g.minesAroundDeposit(g.scenario.deposits[0], Chromosome{
 		factories: []Factory{},
-		mines:     []Mine{{Position{6, 3}, Right}},
+		mines:     []Mine{{position: Position{6, 3}, direction: Right}},
 		fitness:   0,
 	})
-	badMine := Mine{Position{3, 3}, Top}
+	badMine := Mine{position: Position{3, 3}, direction: Top}
 	for _, mine := range mines {
-		if mine == badMine {
+		if mine.position == badMine.position && mine.direction == badMine.direction {
 			t.Errorf("mine %v is not valid", mine)
 		}
 	}

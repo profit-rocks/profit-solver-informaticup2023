@@ -3,7 +3,7 @@ package main
 import "testing"
 
 func TestRightMineRectangles(t *testing.T) {
-	mine := Mine{Position{1, 0}, Right}
+	mine := Mine{position: Position{1, 0}, direction: Right}
 
 	rectangles := mine.Rectangles()
 	validRectangles := []Rectangle{
@@ -19,7 +19,7 @@ func TestRightMineRectangles(t *testing.T) {
 }
 
 func TestBottomMineRectangles(t *testing.T) {
-	mine := Mine{Position{0, 1}, Bottom}
+	mine := Mine{position: Position{0, 1}, direction: Bottom}
 
 	rectangles := mine.Rectangles()
 	validRectangles := []Rectangle{
@@ -35,7 +35,7 @@ func TestBottomMineRectangles(t *testing.T) {
 }
 
 func TestLeftMineRectangles(t *testing.T) {
-	mine := Mine{Position{1, 0}, Left}
+	mine := Mine{position: Position{1, 0}, direction: Left}
 
 	rectangles := mine.Rectangles()
 	validRectangles := []Rectangle{
@@ -51,7 +51,7 @@ func TestLeftMineRectangles(t *testing.T) {
 }
 
 func TestTopMineRectangles(t *testing.T) {
-	mine := Mine{Position{0, 1}, Top}
+	mine := Mine{position: Position{0, 1}, direction: Top}
 
 	rectangles := mine.Rectangles()
 	validRectangles := []Rectangle{

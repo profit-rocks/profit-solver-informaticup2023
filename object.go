@@ -4,17 +4,19 @@ const FactoryWidth = 5
 const FactoryHeight = 5
 
 type Deposit struct {
-	position Position
-	width    int
-	height   int
-	subtype  int
+	position           Position
+	width              int
+	height             int
+	subtype            int
+	remainingResources int
 }
 
 type Obstacle = Rectangle
 
 type Factory struct {
-	position Position
-	product  int
+	position        Position
+	product         int
+	resourceStorage []int
 }
 
 // Direction is the relative position of the egress
@@ -28,8 +30,10 @@ const (
 )
 
 type Mine struct {
-	position  Position
-	direction Direction
+	position         Position
+	direction        Direction
+	resourcesIngress []int
+	resourcesEgress  []int
 }
 
 type Product struct {
@@ -46,9 +50,11 @@ const (
 )
 
 type Conveyor struct {
-	position  Position
-	direction Direction
-	length    ConveyorLength
+	position         Position
+	direction        Direction
+	length           ConveyorLength
+	resourcesIngress []int
+	resourcesEgress  []int
 }
 
 func (c Conveyor) Subtype() int {
