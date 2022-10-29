@@ -133,5 +133,16 @@ func importScenarioFromJson(path string) Scenario {
 		}
 	}
 
+	for _, product := range importedScenario.Products {
+		if product.ObjectType != "product" {
+			fmt.Println("Expected ObjectType to be 'product' not", product.ObjectType)
+			continue
+		}
+		scenario.products = append(scenario.products, Product{
+			subtype:   product.Subtype,
+			points:    product.Points,
+			resources: product.Resources,
+		})
+	}
 	return scenario
 }

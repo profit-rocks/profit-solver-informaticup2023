@@ -32,6 +32,12 @@ type Mine struct {
 	direction Direction
 }
 
+type Product struct {
+	subtype   int
+	points    int
+	resources []int
+}
+
 type ConveyorLength int
 
 const (
@@ -55,6 +61,7 @@ type Scenario struct {
 	height    int
 	deposits  []Deposit
 	obstacles []Obstacle
+	products  []Product
 	turns     int
 }
 
