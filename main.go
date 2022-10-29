@@ -36,7 +36,7 @@ func main() {
 	geneticAlgorithm := GeneticAlgorithm{
 		scenario:             scenario,
 		populationSize:       200,
-		iterations:           120,
+		iterations:           60,
 		mutationProbability:  0.18,
 		crossoverProbability: 0.7,
 		numFactories:         4,
