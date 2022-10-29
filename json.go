@@ -116,14 +116,14 @@ func importScenarioFromJson(path string) Scenario {
 	for _, object := range importedScenario.Objects {
 		switch object.ObjectType {
 		case "deposit":
-			scenario.deposits = append(scenario.deposits, Deposit{
+			scenario.deposits = append(scenario.deposits, &Deposit{
 				position: Position{object.X, object.Y},
 				width:    object.Width,
 				height:   object.Height,
 				subtype:  object.Subtype,
 			})
 		case "obstacle":
-			scenario.obstacles = append(scenario.obstacles, Obstacle{
+			scenario.obstacles = append(scenario.obstacles, &Obstacle{
 				position: Position{object.X, object.Y},
 				height:   object.Height,
 				width:    object.Width,
@@ -138,7 +138,7 @@ func importScenarioFromJson(path string) Scenario {
 			fmt.Println("Expected ObjectType to be 'product' not", product.ObjectType)
 			continue
 		}
-		scenario.products = append(scenario.products, Product{
+		scenario.products = append(scenario.products, &Product{
 			subtype:   product.Subtype,
 			points:    product.Points,
 			resources: product.Resources,

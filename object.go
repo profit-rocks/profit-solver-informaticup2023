@@ -65,17 +65,17 @@ func (c Conveyor) Subtype() int {
 type Scenario struct {
 	width     int
 	height    int
-	deposits  []Deposit
-	obstacles []Obstacle
-	products  []Product
+	deposits  []*Deposit
+	obstacles []*Obstacle
+	products  []*Product
 	turns     int
 }
 
 // Solution is the output of any algorithm that solves Profit!
 type Solution struct {
-	factories []Factory
-	mines     []Mine
-	conveyors []Conveyor
+	factories []*Factory
+	mines     []*Mine
+	conveyors []*Conveyor
 }
 
 func (d Deposit) Rectangle() Rectangle {
