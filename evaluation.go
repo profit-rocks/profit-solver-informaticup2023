@@ -1,7 +1,5 @@
 package main
 
-import "math/rand"
-
 const DepositResourceFactor = 5
 const MaxDepositWithdrawPerMine = 3
 const NumResourceTypes = 8
@@ -72,7 +70,8 @@ func (state *SimulationState) simulateOneRound() {
 		for _, mine := range adjacentMines {
 			withdrawAmount := 0
 			if deposit.remainingResources >= MaxDepositWithdrawPerMine {
-				withdrawAmount = rand.Intn(3) + 1
+				//withdrawAmount = rand.Intn(3) + 1
+				withdrawAmount = MaxDepositWithdrawPerMine
 			} else {
 				//TODO: randomize remaining amount
 				withdrawAmount = deposit.remainingResources
