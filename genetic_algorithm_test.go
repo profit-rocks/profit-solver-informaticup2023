@@ -8,20 +8,8 @@ func geneticAlgorithmFromScenario(scenario Scenario) GeneticAlgorithm {
 	}
 }
 
-func largeEmptyScenario() GeneticAlgorithm {
-	return geneticAlgorithmFromScenario(
-		Scenario{
-			width:     20,
-			height:    20,
-			deposits:  []Deposit{},
-			obstacles: []Obstacle{},
-			turns:     100,
-		},
-	)
-}
-
 func TestLargeEmptyScenarioIsAvailable(t *testing.T) {
-	g := largeEmptyScenario()
+	g := geneticAlgorithmFromScenario(largeEmptyScenario())
 	for x := 0; x <= g.scenario.width-FactoryWidth; x++ {
 		for y := 0; y <= g.scenario.height-FactoryHeight; y++ {
 			if !g.isPositionAvailableForFactory(Chromosome{}, Position{x, y}) {
@@ -32,7 +20,7 @@ func TestLargeEmptyScenarioIsAvailable(t *testing.T) {
 }
 
 func TestLargeEmptyScenarioBorders(t *testing.T) {
-	g := largeEmptyScenario()
+	g := geneticAlgorithmFromScenario(largeEmptyScenario())
 	for x := 0; x <= g.scenario.width-FactoryWidth; x++ {
 		for y := g.scenario.height - FactoryHeight + 1; y < g.scenario.width; y++ {
 			if g.isPositionAvailableForFactory(Chromosome{}, Position{x, y}) {
@@ -49,18 +37,8 @@ func TestLargeEmptyScenarioBorders(t *testing.T) {
 	}
 }
 
-func smallEmptyScenario() GeneticAlgorithm {
-	return geneticAlgorithmFromScenario(Scenario{
-		width:     4,
-		height:    4,
-		deposits:  []Deposit{},
-		obstacles: []Obstacle{},
-		turns:     100,
-	})
-}
-
 func TestSmallEmptyScenario(t *testing.T) {
-	g := smallEmptyScenario()
+	g := geneticAlgorithmFromScenario(smallEmptyScenario())
 	for x := 0; x < g.scenario.width; x++ {
 		for y := 0; y < g.scenario.height; y++ {
 			pos := Position{x, y}
@@ -69,19 +47,10 @@ func TestSmallEmptyScenario(t *testing.T) {
 			}
 		}
 	}
-}
-
-func scenarioWithObstacle() GeneticAlgorithm {
-	return geneticAlgorithmFromScenario(Scenario{
-		width:     10,
-		height:    10,
-		deposits:  []Deposit{},
-		obstacles: []Obstacle{{Position{4, 4}, 2, 2}}, turns: 100,
-	})
 }
 
 func TestScenarioWithObstacles(t *testing.T) {
-	g := scenarioWithObstacle()
+	g := geneticAlgorithmFromScenario(scenarioWithObstacle())
 
 	for x := 0; x < g.scenario.width; x++ {
 		for y := 0; y < g.scenario.height; y++ {
@@ -94,20 +63,15 @@ func TestScenarioWithObstacles(t *testing.T) {
 
 }
 
-func scenarioWithFactory() (GeneticAlgorithm, Chromosome) {
-	return geneticAlgorithmFromScenario(Scenario{
-			width:     15,
-			height:    15,
-			deposits:  []Deposit{},
-			obstacles: []Obstacle{},
-			turns:     100,
-		}), Chromosome{
-			factories: []Factory{{Position{5, 5}, 0}},
-		}
+func chromosomeWithSingleFactory() Chromosome {
+	return Chromosome{
+		factories: []Factory{{Position{5, 5}, 0}},
+	}
 }
 
 func TestScenarioWithFactory(t *testing.T) {
-	g, chromosome := scenarioWithFactory()
+	g := geneticAlgorithmFromScenario(largeEmptyScenario())
+	chromosome := chromosomeWithSingleFactory()
 
 	for x := 0; x <= g.scenario.width-FactoryWidth; x++ {
 		for y := 0; y <= g.scenario.height-FactoryHeight; y++ {
@@ -125,18 +89,8 @@ func TestScenarioWithFactory(t *testing.T) {
 	}
 }
 
-func scenarioWithDeposit() GeneticAlgorithm {
-	return geneticAlgorithmFromScenario(Scenario{
-		width:     15,
-		height:    15,
-		deposits:  []Deposit{{position: Position{5, 5}, width: 5, height: 5, subtype: 0}},
-		obstacles: []Obstacle{},
-		turns:     100,
-	})
-}
-
 func TestScenarioWithDeposit(t *testing.T) {
-	g := scenarioWithDeposit()
+	g := geneticAlgorithmFromScenario(scenarioWithDeposit())
 
 	for x := 0; x <= g.scenario.width-FactoryWidth; x++ {
 		for y := 0; y <= g.scenario.height-FactoryHeight; y++ {
@@ -204,7 +158,7 @@ func TestAvailableMinePositions(t *testing.T) {
 		{Position{3, 7}, Top},
 	}
 
-	g := scenarioWithDeposit()
+	g := geneticAlgorithmFromScenario(scenarioWithDeposit())
 	mines := g.minesAroundDeposit(g.scenario.deposits[0], Chromosome{})
 
 	for _, mine := range mines {
@@ -235,7 +189,7 @@ func TestAvailableMinePositions(t *testing.T) {
 }
 
 func TestTwoMinesSameEgress(t *testing.T) {
-	g := scenarioWithDeposit()
+	g := geneticAlgorithmFromScenario(scenarioWithDeposit())
 	mines := g.minesAroundDeposit(g.scenario.deposits[0], Chromosome{
 		factories: []Factory{},
 		mines:     []Mine{{Position{6, 3}, Right}},
