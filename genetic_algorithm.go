@@ -179,7 +179,7 @@ func (g *GeneticAlgorithm) generateChromosome() (Chromosome, error) {
 }
 
 func (g *GeneticAlgorithm) getRandomMine(deposit Deposit, chromosome Chromosome) (Mine, error) {
-	availableMines := g.minesAroundDeposit(deposit, chromosome)
+	availableMines := g.scenario.minesAroundDeposit(deposit, chromosome)
 	if len(availableMines) != 0 {
 		return availableMines[rand.Intn(len(availableMines))], nil
 	}
@@ -187,7 +187,7 @@ func (g *GeneticAlgorithm) getRandomMine(deposit Deposit, chromosome Chromosome)
 }
 
 func (g *GeneticAlgorithm) getRandomFactory(chromosome Chromosome) (Factory, error) {
-	availablePositions := g.getAvailableFactoryPositions(chromosome)
+	availablePositions := g.scenario.getAvailableFactoryPositions(chromosome)
 	if len(availablePositions) == 0 {
 		return Factory{}, errors.New("no factory positions available")
 	}
@@ -195,12 +195,12 @@ func (g *GeneticAlgorithm) getRandomFactory(chromosome Chromosome) (Factory, err
 	return Factory{position: position, product: 0}, nil
 }
 
-func (g *GeneticAlgorithm) getAvailableFactoryPositions(chromosome Chromosome) []Position {
+func (s *Scenario) getAvailableFactoryPositions(chromosome Chromosome) []Position {
 	positions := make([]Position, 0)
-	for i := 0; i < g.scenario.width; i++ {
-		for j := 0; j < g.scenario.height; j++ {
+	for i := 0; i < s.width; i++ {
+		for j := 0; j < s.height; j++ {
 			pos := Position{i, j}
-			if g.isPositionAvailableForFactory(chromosome, pos) {
+			if s.isPositionAvailableForFactory(chromosome.factories, chromosome.mines, pos) {
 				positions = append(positions, pos)
 			}
 		}
@@ -208,26 +208,26 @@ func (g *GeneticAlgorithm) getAvailableFactoryPositions(chromosome Chromosome) [
 	return positions
 }
 
-func (g *GeneticAlgorithm) isPositionAvailableForFactory(chromosome Chromosome, position Position) bool {
+func (s *Scenario) isPositionAvailableForFactory(factories []Factory, mines []Mine, position Position) bool {
 	factoryRectangle := Rectangle{
 		position: position,
 		width:    FactoryWidth,
 		height:   FactoryHeight,
 	}
-	if position.x+FactoryWidth > g.scenario.width || position.y+FactoryHeight > g.scenario.height {
+	if position.x+FactoryWidth > s.width || position.y+FactoryHeight > s.height {
 		return false
 	}
-	for _, obstacle := range g.scenario.obstacles {
+	for _, obstacle := range s.obstacles {
 		if factoryRectangle.Intersects(*obstacle) {
 			return false
 		}
 	}
-	for _, factory := range chromosome.factories {
+	for _, factory := range factories {
 		if factoryRectangle.Intersects(factory.Rectangle()) {
 			return false
 		}
 	}
-	for _, deposit := range g.scenario.deposits {
+	for _, deposit := range s.deposits {
 		depositRectangle := deposit.Rectangle()
 		extendedDepositRectangle := Rectangle{
 			Position{depositRectangle.position.x - 1, depositRectangle.position.y - 1},
@@ -251,9 +251,9 @@ func (g *GeneticAlgorithm) isPositionAvailableForFactory(chromosome Chromosome, 
 	return true
 }
 
-func (g *GeneticAlgorithm) attachedDepositEgress(mine Mine) (Position, error) {
+func (s *Scenario) attachedDepositEgress(mine Mine) (Position, error) {
 	ingress := mine.Ingress()
-	for _, deposit := range g.scenario.deposits {
+	for _, deposit := range s.deposits {
 		depositRectangle := deposit.Rectangle()
 		for _, egressPosition := range []Position{{ingress.x + 1, ingress.y}, {ingress.x - 1, ingress.y}, {ingress.x, ingress.y + 1}, {ingress.x, ingress.y - 1}} {
 			if depositRectangle.Contains(egressPosition) {
@@ -264,31 +264,31 @@ func (g *GeneticAlgorithm) attachedDepositEgress(mine Mine) (Position, error) {
 	return Position{}, nil
 }
 
-func (g *GeneticAlgorithm) isPositionAvailableForMine(chromosome Chromosome, mine Mine) bool {
+func (s *Scenario) isPositionAvailableForMine(factories []Factory, mines []Mine, mine Mine) bool {
 	// mine is out of bounds
-	boundRectangles := g.scenario.boundRectangles()
+	boundRectangles := s.boundRectangles()
 	for _, borderRectangle := range boundRectangles {
 		if mine.Intersects(borderRectangle) {
 			return false
 		}
 	}
-	for _, obstacle := range g.scenario.obstacles {
+	for _, obstacle := range s.obstacles {
 		if mine.Intersects(*obstacle) {
 			return false
 		}
 	}
-	for _, deposit := range g.scenario.deposits {
+	for _, deposit := range s.deposits {
 		if mine.Intersects(deposit.Rectangle()) {
 			return false
 		}
 	}
-	for _, factory := range chromosome.factories {
+	for _, factory := range factories {
 		if mine.Intersects(factory.Rectangle()) {
 			return false
 		}
 	}
-	depositEgress, err := g.attachedDepositEgress(mine)
-	for _, otherMine := range chromosome.mines {
+	depositEgress, err := s.attachedDepositEgress(mine)
+	for _, otherMine := range mines {
 		if mine.Egress().NextTo(otherMine.Ingress()) || mine.Ingress().NextTo(otherMine.Egress()) {
 			return false
 		}
@@ -304,7 +304,7 @@ func (g *GeneticAlgorithm) isPositionAvailableForMine(chromosome Chromosome, min
 	return true
 }
 
-func (g *GeneticAlgorithm) minesAroundDeposit(deposit Deposit, chromosome Chromosome) []Mine {
+func (s *Scenario) minesAroundDeposit(deposit Deposit, chromosome Chromosome) []Mine {
 	/* For each mine direction, we go counter-clockwise.
 	   There is always one case where the mine corner matches the deposit edge.
 	   We always use the mine ingress coordinate as our iteration variable */
@@ -349,7 +349,7 @@ func (g *GeneticAlgorithm) minesAroundDeposit(deposit Deposit, chromosome Chromo
 
 	validPositions := make([]Mine, 0)
 	for _, position := range positions {
-		if g.isPositionAvailableForMine(chromosome, position) {
+		if s.isPositionAvailableForMine(chromosome.factories, chromosome.mines, position) {
 			validPositions = append(validPositions, position)
 		}
 	}
