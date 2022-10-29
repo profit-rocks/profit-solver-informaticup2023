@@ -12,7 +12,7 @@ func TestLargeEmptyScenarioIsAvailable(t *testing.T) {
 	g := geneticAlgorithmFromScenario(largeEmptyScenario())
 	for x := 0; x <= g.scenario.width-FactoryWidth; x++ {
 		for y := 0; y <= g.scenario.height-FactoryHeight; y++ {
-			if !g.isPositionAvailableForFactory(Chromosome{}, Position{x, y}) {
+			if !g.scenario.isPositionAvailableForFactory([]Factory{}, []Mine{}, Position{x, y}) {
 				t.Errorf("position %v should be available", Position{x, y})
 			}
 		}
@@ -23,14 +23,14 @@ func TestLargeEmptyScenarioBorders(t *testing.T) {
 	g := geneticAlgorithmFromScenario(largeEmptyScenario())
 	for x := 0; x <= g.scenario.width-FactoryWidth; x++ {
 		for y := g.scenario.height - FactoryHeight + 1; y < g.scenario.width; y++ {
-			if g.isPositionAvailableForFactory(Chromosome{}, Position{x, y}) {
+			if g.scenario.isPositionAvailableForFactory([]Factory{}, []Mine{}, Position{x, y}) {
 				t.Errorf("position %v should not be available", Position{x, y})
 			}
 		}
 	}
 	for x := g.scenario.width - FactoryWidth + 1; x < g.scenario.width; x++ {
 		for y := 0; y <= g.scenario.height-FactoryHeight; y++ {
-			if g.isPositionAvailableForFactory(Chromosome{}, Position{x, y}) {
+			if g.scenario.isPositionAvailableForFactory([]Factory{}, []Mine{}, Position{x, y}) {
 				t.Errorf("position %v should not be available", Position{x, y})
 			}
 		}
@@ -42,7 +42,7 @@ func TestSmallEmptyScenario(t *testing.T) {
 	for x := 0; x < g.scenario.width; x++ {
 		for y := 0; y < g.scenario.height; y++ {
 			pos := Position{x, y}
-			if g.isPositionAvailableForFactory(Chromosome{}, pos) {
+			if g.scenario.isPositionAvailableForFactory([]Factory{}, []Mine{}, pos) {
 				t.Errorf("position %v should not be available", pos)
 			}
 		}
@@ -55,7 +55,7 @@ func TestScenarioWithObstacles(t *testing.T) {
 	for x := 0; x < g.scenario.width; x++ {
 		for y := 0; y < g.scenario.height; y++ {
 			pos := Position{x, y}
-			if g.isPositionAvailableForFactory(Chromosome{}, pos) {
+			if g.scenario.isPositionAvailableForFactory([]Factory{}, []Mine{}, pos) {
 				t.Errorf("position %v should not be available", pos)
 			}
 		}
@@ -77,11 +77,11 @@ func TestScenarioWithFactory(t *testing.T) {
 		for y := 0; y <= g.scenario.height-FactoryHeight; y++ {
 			pos := Position{x, y}
 			if x > 5-FactoryWidth && x < 5+FactoryWidth && y > 5-FactoryHeight && y < 5+FactoryWidth {
-				if g.isPositionAvailableForFactory(chromosome, pos) {
+				if g.scenario.isPositionAvailableForFactory(chromosome.factories, chromosome.mines, pos) {
 					t.Errorf("position %v should not be available", pos)
 				}
 			} else {
-				if !g.isPositionAvailableForFactory(chromosome, pos) {
+				if !g.scenario.isPositionAvailableForFactory(chromosome.factories, chromosome.mines, pos) {
 					t.Errorf("position %v should be available", pos)
 				}
 			}
@@ -96,11 +96,11 @@ func TestScenarioWithDeposit(t *testing.T) {
 		for y := 0; y <= g.scenario.height-FactoryHeight; y++ {
 			pos := Position{x, y}
 			if x == 0 && y == 0 || x == 0 && y == 10 || x == 10 && y == 0 || x == 10 && y == 10 {
-				if !g.isPositionAvailableForFactory(Chromosome{}, pos) {
+				if !g.scenario.isPositionAvailableForFactory([]Factory{}, []Mine{}, pos) {
 					t.Errorf("position %v should be available", pos)
 				}
 			} else {
-				if g.isPositionAvailableForFactory(Chromosome{}, pos) {
+				if g.scenario.isPositionAvailableForFactory([]Factory{}, []Mine{}, pos) {
 					t.Errorf("position %v should not be available", pos)
 				}
 			}
@@ -159,7 +159,7 @@ func TestAvailableMinePositions(t *testing.T) {
 	}
 
 	g := geneticAlgorithmFromScenario(scenarioWithDeposit())
-	mines := g.minesAroundDeposit(*g.scenario.deposits[0], Chromosome{})
+	mines := g.scenario.minesAroundDeposit(*g.scenario.deposits[0], Chromosome{})
 
 	for _, mine := range mines {
 		found := false
@@ -190,7 +190,7 @@ func TestAvailableMinePositions(t *testing.T) {
 
 func TestTwoMinesSameEgress(t *testing.T) {
 	g := geneticAlgorithmFromScenario(scenarioWithDeposit())
-	mines := g.minesAroundDeposit(*g.scenario.deposits[0], Chromosome{
+	mines := g.scenario.minesAroundDeposit(*g.scenario.deposits[0], Chromosome{
 		factories: []Factory{},
 		mines:     []Mine{{position: Position{6, 3}, direction: Right}},
 		fitness:   0,
