@@ -113,7 +113,7 @@ func (g *GeneticAlgorithm) mutation(chromosome Chromosome) Chromosome {
 func (g *GeneticAlgorithm) evaluateFitness(chromosome Chromosome) float64 {
 	fitness, err := g.scenario.evaluateSolution(chromosome.Solution())
 	if err != nil {
-		return math.Inf(0)
+		return math.Inf(-1)
 	}
 	// sum of manhattan distances for each factory to all the mines
 	//fitness := 0.0
@@ -122,7 +122,7 @@ func (g *GeneticAlgorithm) evaluateFitness(chromosome Chromosome) float64 {
 	//		fitness += float64(factory.position.ManhattanDist(mine.position))
 	//	}
 	//}
-	return -float64(fitness)
+	return float64(fitness)
 }
 
 func (g *GeneticAlgorithm) generateChromosomes() ([]Chromosome, error) {
@@ -358,7 +358,7 @@ func (g *GeneticAlgorithm) Run() (Solution, error) {
 	}
 	for i := 0; i < g.iterations; i++ {
 		sort.Slice(chromosomes, func(i, j int) bool {
-			return chromosomes[i].fitness < chromosomes[j].fitness
+			return chromosomes[i].fitness > chromosomes[j].fitness
 		})
 		log.Println("starting iteration", i+1, "/", g.iterations, "fitness", chromosomes[0].fitness)
 		chromosomes = chromosomes[:g.populationSize]
@@ -376,7 +376,7 @@ func (g *GeneticAlgorithm) Run() (Solution, error) {
 		}
 	}
 	sort.Slice(chromosomes, func(i, j int) bool {
-		return chromosomes[i].fitness < chromosomes[j].fitness
+		return chromosomes[i].fitness > chromosomes[j].fitness
 	})
 	log.Println("final fitness", chromosomes[0].fitness)
 	return chromosomes[0].Solution(), nil
