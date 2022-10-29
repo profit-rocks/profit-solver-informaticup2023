@@ -103,7 +103,7 @@ func (g *GeneticAlgorithm) evaluateFitness(chromosome Chromosome) float64 {
 		copiedChromosome := chromosome
 		copiedChromosome.mines = chromosome.mines[:i]
 		if !g.isPositionAvailableForMine(copiedChromosome, mine) {
-			return math.Inf(1)
+			return math.Inf(0)
 		}
 	}
 
@@ -111,18 +111,20 @@ func (g *GeneticAlgorithm) evaluateFitness(chromosome Chromosome) float64 {
 		copiedChromosome := chromosome
 		copiedChromosome.factories = chromosome.factories[:i]
 		if !g.isPositionAvailableForFactory(copiedChromosome, factory.position) {
-			return math.Inf(1)
+			return math.Inf(0)
 		}
 	}
 
 	// sum of manhattan distances for each factory to all the mines
-	fitness := 0.0
-	for _, mine := range chromosome.mines {
-		for _, factory := range chromosome.factories {
-			fitness += float64(factory.position.ManhattanDist(mine.position))
-		}
-	}
-	return fitness
+	//fitness := 0.0
+	//for _, mine := range chromosome.mines {
+	//	for _, factory := range chromosome.factories {
+	//		fitness += float64(factory.position.ManhattanDist(mine.position))
+	//	}
+	//}
+
+	fitness, _ := g.scenario.evaluate(chromosome.Solution())
+	return -float64(fitness)
 }
 
 func (g *GeneticAlgorithm) generateChromosomes() ([]Chromosome, error) {
