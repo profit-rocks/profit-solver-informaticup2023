@@ -5,7 +5,7 @@ import "testing"
 func TestEmptySolutionEvaluation(t *testing.T) {
 	scenario := largeEmptyScenario()
 	solution := Solution{}
-	score, err := scenario.evaluate(solution)
+	score, err := scenario.evaluateSolution(solution)
 	if err != nil {
 		t.Errorf("evaluating empty solution should not return an error %v", err)
 	}
@@ -17,7 +17,7 @@ func TestEmptySolutionEvaluation(t *testing.T) {
 func TestSolutionForLargeScenarioWithDepositEvaluation(t *testing.T) {
 	scenario := largeScenarioWithDeposit()
 	solution := solutionForLargeScenarioWithDeposit()
-	score, err := scenario.evaluate(solution)
+	score, err := scenario.evaluateSolution(solution)
 	if err != nil {
 		t.Errorf("evaluating empty solution should not return an error %v", err)
 	}
@@ -29,7 +29,7 @@ func TestSolutionForLargeScenarioWithDepositEvaluation(t *testing.T) {
 func TestInvalidSolutionEvaluation(t *testing.T) {
 	scenario := largeEmptyScenario()
 	solution := invalidSolutionForLargeEmptyScenario()
-	score, err := scenario.evaluate(solution)
+	score, err := scenario.evaluateSolution(solution)
 	if err == nil {
 		t.Errorf("evaluating empty solution should throw an error")
 	}

@@ -111,23 +111,10 @@ func (g *GeneticAlgorithm) mutation(chromosome Chromosome) Chromosome {
 }
 
 func (g *GeneticAlgorithm) evaluateFitness(chromosome Chromosome) float64 {
-	// TODO: use A* or other metric
-	for i, mine := range chromosome.mines {
-		copiedChromosome := chromosome
-		copiedChromosome.mines = chromosome.mines[:i]
-		if !g.isPositionAvailableForMine(copiedChromosome, mine) {
-			return math.Inf(0)
-		}
+	fitness, err := g.scenario.evaluateSolution(chromosome.Solution())
+	if err != nil {
+		return math.Inf(0)
 	}
-
-	for i, factory := range chromosome.factories {
-		copiedChromosome := chromosome
-		copiedChromosome.factories = chromosome.factories[:i]
-		if !g.isPositionAvailableForFactory(copiedChromosome, factory.position) {
-			return math.Inf(0)
-		}
-	}
-
 	// sum of manhattan distances for each factory to all the mines
 	//fitness := 0.0
 	//for _, mine := range chromosome.mines {
@@ -135,8 +122,6 @@ func (g *GeneticAlgorithm) evaluateFitness(chromosome Chromosome) float64 {
 	//		fitness += float64(factory.position.ManhattanDist(mine.position))
 	//	}
 	//}
-
-	fitness, _ := g.scenario.evaluate(chromosome.Solution())
 	return -float64(fitness)
 }
 
