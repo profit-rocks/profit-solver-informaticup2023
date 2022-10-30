@@ -19,11 +19,13 @@ type Simulation struct {
 type SimulatedDeposit struct {
 	deposit            Deposit
 	remainingResources int
+	mines              []*SimulatedMine
 }
 
 type SimulatedFactory struct {
 	factory         Factory
 	resourceStorage []int
+	mines           []*SimulatedMine
 }
 
 type SimulatedMine struct {
@@ -108,6 +110,12 @@ func simulationFromScenarioAndSolution(scenario Scenario, solution Solution) Sim
 			resourcesEgress:  []int{0, 0, 0, 0, 0, 0, 0, 0},
 		}
 	}
+	for i, _ := range scenario.deposits {
+		simulation.deposits[i].mines = simulation.adjacentMinesToDeposit(simulation.deposits[i])
+	}
+	for i, _ := range solution.factories {
+		simulation.factories[i].mines = simulation.adjacentMinesToFactory(simulation.factories[i])
+	}
 	return simulation
 }
 
@@ -117,7 +125,7 @@ func (s *Simulation) simulateOneRound() bool {
 	for i, _ := range s.factories {
 		// value is copied if used in range
 		factory := &s.factories[i]
-		for _, mine := range s.adjacentMinesToFactory(*factory) {
+		for _, mine := range factory.mines {
 			for i := 0; i < NumResourceTypes; i++ {
 				finished = finished && mine.resourcesEgress[i] == 0
 				factory.resourceStorage[i] += mine.resourcesEgress[i]
@@ -139,9 +147,8 @@ func (s *Simulation) simulateOneRound() bool {
 	for i, _ := range s.deposits {
 		// value is copied if used in range
 		deposit := &s.deposits[i]
-		adjacentMines := s.adjacentMinesToDeposit(*deposit)
 		//TODO: mix mines
-		for _, mine := range adjacentMines {
+		for _, mine := range deposit.mines {
 			withdrawAmount := 0
 			if deposit.remainingResources >= MaxDepositWithdrawPerMine {
 				//withdrawAmount = rand.Intn(3) + 1
