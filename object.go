@@ -90,7 +90,7 @@ func (f Factory) Rectangle() Rectangle {
 	}
 }
 
-func (m Mine) Egress() Position {
+func (m *Mine) Egress() Position {
 	if m.direction == Right {
 		return Position{m.position.x + 2, m.position.y + 1}
 	} else if m.direction == Bottom {
@@ -102,7 +102,7 @@ func (m Mine) Egress() Position {
 	return Position{m.position.x + 1, m.position.y - 1}
 }
 
-func (m Mine) Ingress() Position {
+func (m *Mine) Ingress() Position {
 	if m.direction == Right {
 		return Position{m.position.x - 1, m.position.y + 1}
 	} else if m.direction == Bottom {
@@ -114,7 +114,7 @@ func (m Mine) Ingress() Position {
 	return Position{m.position.x + 1, m.position.y + 2}
 }
 
-func (m Mine) calculateRectangles() {
+func (m *Mine) calculateRectangles() {
 	switch m.direction {
 	case Right:
 		m.cachedRectangles = []Rectangle{{m.position, 2, 1}, {Position{m.position.x - 1, m.position.y + 1}, 4, 1}}
@@ -127,15 +127,15 @@ func (m Mine) calculateRectangles() {
 	}
 }
 
-func (m Mine) Rectangles() []Rectangle {
-	if m.cachedRectangles != nil {
+func (m *Mine) Rectangles() []Rectangle {
+	if m.cachedRectangles != nil && len(m.cachedRectangles) > 0 {
 		return m.cachedRectangles
 	}
 	m.calculateRectangles()
 	return m.cachedRectangles
 }
 
-func (m Mine) Intersects(other Rectangle) bool {
+func (m *Mine) Intersects(other Rectangle) bool {
 	for _, r := range m.Rectangles() {
 		if r.Intersects(other) {
 			return true
@@ -144,7 +144,7 @@ func (m Mine) Intersects(other Rectangle) bool {
 	return false
 }
 
-func (m Mine) IntersectsAny(rectangles []Rectangle) bool {
+func (m *Mine) IntersectsAny(rectangles []Rectangle) bool {
 	for _, r1 := range m.Rectangles() {
 		for _, r2 := range rectangles {
 			if r1.Intersects(r2) {
