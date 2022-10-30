@@ -256,15 +256,11 @@ func (s *Scenario) attachedDepositEgress(mine Mine) (Position, error) {
 func (s *Scenario) isPositionAvailableForMine(factories []Factory, mines []Mine, mine Mine) bool {
 	// mine is out of bounds
 	boundRectangles := s.boundRectangles()
-	for _, borderRectangle := range boundRectangles {
-		if mine.Intersects(borderRectangle) {
-			return false
-		}
+	if mine.IntersectsAny(boundRectangles) {
+		return false
 	}
-	for _, obstacle := range s.obstacles {
-		if mine.Intersects(obstacle) {
-			return false
-		}
+	if mine.IntersectsAny(s.obstacles) {
+		return false
 	}
 	for _, deposit := range s.deposits {
 		if mine.Intersects(deposit.Rectangle()) {
@@ -284,10 +280,8 @@ func (s *Scenario) isPositionAvailableForMine(factories []Factory, mines []Mine,
 		if err == nil && otherMine.Ingress().NextTo(depositEgress) {
 			return false
 		}
-		for _, rectangle := range otherMine.Rectangles() {
-			if mine.Intersects(rectangle) {
-				return false
-			}
+		if mine.IntersectsAny(otherMine.Rectangles()) {
+			return false
 		}
 	}
 	return true
@@ -337,9 +331,9 @@ func (s *Scenario) minesAroundDeposit(deposit Deposit, chromosome Chromosome) []
 	}
 
 	validPositions := make([]Mine, 0)
-	for _, position := range positions {
-		if s.isPositionAvailableForMine(chromosome.factories, chromosome.mines, position) {
-			validPositions = append(validPositions, position)
+	for i, _ := range positions {
+		if s.isPositionAvailableForMine(chromosome.factories, chromosome.mines, positions[i]) {
+			validPositions = append(validPositions, positions[i])
 		}
 	}
 	return validPositions

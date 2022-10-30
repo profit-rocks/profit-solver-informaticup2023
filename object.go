@@ -30,6 +30,8 @@ const (
 type Mine struct {
 	position  Position
 	direction Direction
+
+	cachedRectangles []Rectangle
 }
 
 type Product struct {
@@ -112,24 +114,42 @@ func (m Mine) Ingress() Position {
 	return Position{m.position.x + 1, m.position.y + 2}
 }
 
-func (m Mine) Rectangles() []Rectangle {
+func (m Mine) calculateRectangles() {
 	switch m.direction {
 	case Right:
-		return []Rectangle{{m.position, 2, 1}, {Position{m.position.x - 1, m.position.y + 1}, 4, 1}}
+		m.cachedRectangles = []Rectangle{{m.position, 2, 1}, {Position{m.position.x - 1, m.position.y + 1}, 4, 1}}
 	case Bottom:
-		return []Rectangle{{Position{m.position.x, m.position.y - 1}, 1, 4}, {Position{m.position.x + 1, m.position.y}, 1, 2}}
+		m.cachedRectangles = []Rectangle{{Position{m.position.x, m.position.y - 1}, 1, 4}, {Position{m.position.x + 1, m.position.y}, 1, 2}}
 	case Left:
-		return []Rectangle{{Position{m.position.x - 1, m.position.y}, 4, 1}, {Position{m.position.x, m.position.y + 1}, 2, 1}}
+		m.cachedRectangles = []Rectangle{{Position{m.position.x - 1, m.position.y}, 4, 1}, {Position{m.position.x, m.position.y + 1}, 2, 1}}
 	case Top:
-		return []Rectangle{{Position{m.position.x, m.position.y}, 1, 2}, {Position{m.position.x + 1, m.position.y - 1}, 1, 4}}
+		m.cachedRectangles = []Rectangle{{Position{m.position.x, m.position.y}, 1, 2}, {Position{m.position.x + 1, m.position.y - 1}, 1, 4}}
 	}
-	return []Rectangle{}
+}
+
+func (m Mine) Rectangles() []Rectangle {
+	if m.cachedRectangles != nil {
+		return m.cachedRectangles
+	}
+	m.calculateRectangles()
+	return m.cachedRectangles
 }
 
 func (m Mine) Intersects(other Rectangle) bool {
 	for _, r := range m.Rectangles() {
 		if r.Intersects(other) {
 			return true
+		}
+	}
+	return false
+}
+
+func (m Mine) IntersectsAny(rectangles []Rectangle) bool {
+	for _, r1 := range m.Rectangles() {
+		for _, r2 := range rectangles {
+			if r1.Intersects(r2) {
+				return true
+			}
 		}
 	}
 	return false
