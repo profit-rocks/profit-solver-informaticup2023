@@ -110,10 +110,10 @@ func simulationFromScenarioAndSolution(scenario *Scenario, solution Solution) Si
 			resourcesEgress:  []int{0, 0, 0, 0, 0, 0, 0, 0},
 		}
 	}
-	for i, _ := range scenario.deposits {
+	for i := range scenario.deposits {
 		simulation.deposits[i].mines = simulation.adjacentMinesToDeposit(simulation.deposits[i])
 	}
-	for i, _ := range solution.factories {
+	for i := range solution.factories {
 		simulation.factories[i].mines = simulation.adjacentMinesToFactory(simulation.factories[i])
 	}
 	return simulation
@@ -122,29 +122,29 @@ func simulationFromScenarioAndSolution(scenario *Scenario, solution Solution) Si
 func (s *Simulation) simulateOneRound() bool {
 	finished := true
 	// Transfer resources from mine egresses to factories
-	for i, _ := range s.factories {
+	for i := range s.factories {
 		// value is copied if used in range
 		factory := &s.factories[i]
 		for _, mine := range factory.mines {
-			for i := 0; i < NumResourceTypes; i++ {
-				finished = finished && mine.resourcesEgress[i] == 0
-				factory.resourceStorage[i] += mine.resourcesEgress[i]
-				mine.resourcesEgress[i] = 0
+			for j := 0; j < NumResourceTypes; j++ {
+				finished = finished && mine.resourcesEgress[j] == 0
+				factory.resourceStorage[j] += mine.resourcesEgress[j]
+				mine.resourcesEgress[j] = 0
 			}
 		}
 	}
 	// Transfer resources from mine ingresses to mine egresses
-	for i, _ := range s.mines {
+	for i := range s.mines {
 		// value is copied if used in range
 		mine := &s.mines[i]
-		for i := 0; i < NumResourceTypes; i++ {
-			finished = finished && mine.resourcesIngress[i] == 0
-			mine.resourcesEgress[i] += mine.resourcesIngress[i]
-			mine.resourcesIngress[i] = 0
+		for j := 0; j < NumResourceTypes; j++ {
+			finished = finished && mine.resourcesIngress[j] == 0
+			mine.resourcesEgress[j] += mine.resourcesIngress[j]
+			mine.resourcesIngress[j] = 0
 		}
 	}
 	// Transfer resources from deposits to mine ingresses
-	for i, _ := range s.deposits {
+	for i := range s.deposits {
 		// value is copied if used in range
 		deposit := &s.deposits[i]
 		//TODO: mix mines
