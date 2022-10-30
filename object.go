@@ -205,7 +205,7 @@ func (d Deposit) mineIngressPositions() []Position {
 	return positions
 }
 
-func (s Scenario) boundRectangles() []Rectangle {
+func (s *Scenario) boundRectangles() []Rectangle {
 	return []Rectangle{{Position{0, -1}, s.width, 1},
 		{Position{-1, 0}, 1, s.height},
 		{Position{s.width, 0}, 1, s.height},

@@ -9,7 +9,7 @@ const MaxDepositWithdrawPerMine = 3
 const NumResourceTypes = 8
 
 type Simulation struct {
-	scenario  Scenario
+	scenario  *Scenario
 	factories []SimulatedFactory
 	deposits  []SimulatedDeposit
 	mines     []SimulatedMine
@@ -40,7 +40,7 @@ type SimulatedConveyor struct {
 	resourcesEgress  []int
 }
 
-func (s Scenario) checkValidity(solution Solution) error {
+func (s *Scenario) checkValidity(solution Solution) error {
 	mines := make([]Mine, len(solution.mines))
 	for i, mine := range solution.mines {
 		mines[i] = mine
@@ -63,7 +63,7 @@ func (s Scenario) checkValidity(solution Solution) error {
 	return nil
 }
 
-func (s Scenario) evaluateSolution(solution Solution) (int, error) {
+func (s *Scenario) evaluateSolution(solution Solution) (int, error) {
 	err := s.checkValidity(solution)
 	if err != nil {
 		return 0, err
@@ -83,7 +83,7 @@ func (s Scenario) evaluateSolution(solution Solution) (int, error) {
 	return score, nil
 }
 
-func simulationFromScenarioAndSolution(scenario Scenario, solution Solution) Simulation {
+func simulationFromScenarioAndSolution(scenario *Scenario, solution Solution) Simulation {
 	simulation := Simulation{
 		scenario:  scenario,
 		factories: make([]SimulatedFactory, len(solution.factories)),
