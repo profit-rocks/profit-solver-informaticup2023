@@ -4,19 +4,17 @@ const FactoryWidth = 5
 const FactoryHeight = 5
 
 type Deposit struct {
-	position           Position
-	width              int
-	height             int
-	subtype            int
-	remainingResources int
+	position Position
+	width    int
+	height   int
+	subtype  int
 }
 
 type Obstacle = Rectangle
 
 type Factory struct {
-	position        Position
-	product         int
-	resourceStorage []int
+	position Position
+	product  int
 }
 
 // Direction is the relative position of the egress
@@ -30,10 +28,8 @@ const (
 )
 
 type Mine struct {
-	position         Position
-	direction        Direction
-	resourcesIngress []int
-	resourcesEgress  []int
+	position  Position
+	direction Direction
 }
 
 type Product struct {
@@ -50,11 +46,9 @@ const (
 )
 
 type Conveyor struct {
-	position         Position
-	direction        Direction
-	length           ConveyorLength
-	resourcesIngress []int
-	resourcesEgress  []int
+	position  Position
+	direction Direction
+	length    ConveyorLength
 }
 
 func (c Conveyor) Subtype() int {
@@ -65,17 +59,17 @@ func (c Conveyor) Subtype() int {
 type Scenario struct {
 	width     int
 	height    int
-	deposits  []*Deposit
-	obstacles []*Obstacle
-	products  []*Product
+	deposits  []Deposit
+	obstacles []Obstacle
+	products  []Product
 	turns     int
 }
 
 // Solution is the output of any algorithm that solves Profit!
 type Solution struct {
-	factories []*Factory
-	mines     []*Mine
-	conveyors []*Conveyor
+	factories []Factory
+	mines     []Mine
+	conveyors []Conveyor
 }
 
 func (d Deposit) Rectangle() Rectangle {
@@ -141,9 +135,59 @@ func (m Mine) Intersects(other Rectangle) bool {
 	return false
 }
 
-func (scenario Scenario) boundRectangles() []Rectangle {
-	return []Rectangle{{Position{0, -1}, scenario.width, 1},
-		{Position{-1, 0}, 1, scenario.height},
-		{Position{scenario.width, 0}, 1, scenario.height},
-		{Position{0, scenario.height}, scenario.width, 1}}
+func (f Factory) mineEgressPositions() []Position {
+	positions := make([]Position, 0)
+	for i := 0; i < FactoryWidth; i++ {
+		positions = append(positions, Position{
+			x: f.position.x + i,
+			y: f.position.y - 1,
+		})
+		positions = append(positions, Position{
+			x: f.position.x + i,
+			y: f.position.y + FactoryHeight,
+		})
+	}
+	for i := 0; i < FactoryHeight; i++ {
+		positions = append(positions, Position{
+			x: f.position.x - 1,
+			y: f.position.y + i,
+		})
+		positions = append(positions, Position{
+			x: f.position.x + FactoryWidth,
+			y: f.position.y + i,
+		})
+	}
+	return positions
+}
+
+func (d Deposit) mineIngressPositions() []Position {
+	positions := make([]Position, 0)
+	for i := 0; i < d.width; i++ {
+		positions = append(positions, Position{
+			x: d.position.x + i,
+			y: d.position.y - 1,
+		})
+		positions = append(positions, Position{
+			x: d.position.x + i,
+			y: d.position.y + d.height,
+		})
+	}
+	for i := 0; i < d.height; i++ {
+		positions = append(positions, Position{
+			x: d.position.x - 1,
+			y: d.position.y + i,
+		})
+		positions = append(positions, Position{
+			x: d.position.x + d.width,
+			y: d.position.y + i,
+		})
+	}
+	return positions
+}
+
+func (s Scenario) boundRectangles() []Rectangle {
+	return []Rectangle{{Position{0, -1}, s.width, 1},
+		{Position{-1, 0}, 1, s.height},
+		{Position{s.width, 0}, 1, s.height},
+		{Position{0, s.height}, s.width, 1}}
 }

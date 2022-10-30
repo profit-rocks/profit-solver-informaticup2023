@@ -29,22 +29,19 @@ type GeneticAlgorithm struct {
 
 func (c Chromosome) Solution() Solution {
 	solution := Solution{
-		factories: make([]*Factory, len(c.factories)),
-		mines:     make([]*Mine, len(c.mines)),
+		factories: make([]Factory, len(c.factories)),
+		mines:     make([]Mine, len(c.mines)),
 	}
 	for i, factory := range c.factories {
-		solution.factories[i] = &Factory{
-			position:        factory.position,
-			product:         factory.product,
-			resourceStorage: factory.resourceStorage,
+		solution.factories[i] = Factory{
+			position: factory.position,
+			product:  factory.product,
 		}
 	}
 	for i, mine := range c.mines {
-		solution.mines[i] = &Mine{
-			position:         mine.position,
-			direction:        mine.direction,
-			resourcesIngress: mine.resourcesIngress,
-			resourcesEgress:  mine.resourcesEgress,
+		solution.mines[i] = Mine{
+			position:  mine.position,
+			direction: mine.direction,
 		}
 	}
 	return solution
@@ -82,7 +79,7 @@ func (g *GeneticAlgorithm) mutation(chromosome Chromosome) Chromosome {
 			success := false
 			for _, deposit := range g.scenario.deposits {
 				if deposit.Rectangle().Intersects(Rectangle{Position{mine.Ingress().x - 1, mine.Ingress().y - 1}, 3, 3}) {
-					newMine, err := g.getRandomMine(*deposit, newChromosome)
+					newMine, err := g.getRandomMine(deposit, newChromosome)
 					if err == nil {
 						newChromosome.mines = append(newChromosome.mines, newMine)
 						success = true
@@ -147,7 +144,7 @@ func (g *GeneticAlgorithm) generateChromosome() (Chromosome, error) {
 	chromosome := Chromosome{mines: make([]Mine, 0), factories: make([]Factory, 0)}
 	for i := 0; i < g.numMines; i++ {
 		deposit := g.scenario.deposits[i%len(g.scenario.deposits)]
-		mine, err := g.getRandomMine(*deposit, chromosome)
+		mine, err := g.getRandomMine(deposit, chromosome)
 		if err != nil {
 			return chromosome, err
 		}
@@ -203,7 +200,7 @@ func (s *Scenario) isPositionAvailableForFactory(factories []Factory, mines []Mi
 		return false
 	}
 	for _, obstacle := range s.obstacles {
-		if factoryRectangle.Intersects(*obstacle) {
+		if factoryRectangle.Intersects(obstacle) {
 			return false
 		}
 	}
@@ -265,7 +262,7 @@ func (s *Scenario) isPositionAvailableForMine(factories []Factory, mines []Mine,
 		}
 	}
 	for _, obstacle := range s.obstacles {
-		if mine.Intersects(*obstacle) {
+		if mine.Intersects(obstacle) {
 			return false
 		}
 	}

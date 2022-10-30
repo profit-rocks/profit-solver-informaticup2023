@@ -6,37 +6,70 @@ const DepositResourceFactor = 5
 const MaxDepositWithdrawPerMine = 3
 const NumResourceTypes = 8
 
-type SimulationState struct {
-	scenario *Scenario
-	solution *Solution
+type Simulation struct {
+	scenario  Scenario
+	factories []SimulatedFactory
+	deposits  []SimulatedDeposit
+	mines     []SimulatedMine
+	conveyors []SimulatedConveyor
 }
 
-func (s *Scenario) evaluateSolution(solution Solution) (int, error) {
+type SimulatedDeposit struct {
+	deposit            Deposit
+	remainingResources int
+}
+
+type SimulatedFactory struct {
+	factory         Factory
+	resourceStorage []int
+}
+
+type SimulatedMine struct {
+	mine             Mine
+	resourcesIngress []int
+	resourcesEgress  []int
+}
+
+type SimulatedConveyor struct {
+	conveyor         Conveyor
+	resourcesIngress []int
+	resourcesEgress  []int
+}
+
+func (s Scenario) checkValidity(solution Solution) error {
 	mines := make([]Mine, len(solution.mines))
 	for i, mine := range solution.mines {
-		mines[i] = *mine
+		mines[i] = mine
 	}
 	factories := make([]Factory, len(solution.factories))
 	for i, factory := range solution.factories {
-		factories[i] = *factory
+		factories[i] = factory
 	}
 	for i, mine := range solution.mines {
-		if !s.isPositionAvailableForMine(factories, mines[:i], *mine) {
-			return 0, errors.New("solution includes a mine which position is invalid, can't evaluate this solution")
+		if !s.isPositionAvailableForMine(factories, mines[:i], mine) {
+			return errors.New("solution includes a mine which position is invalid, can't evaluate this solution")
 		}
 	}
 
 	for i, factory := range solution.factories {
 		if !s.isPositionAvailableForFactory(factories[:i], mines, factory.position) {
-			return 0, errors.New("solution includes a factory which position is invalid, can't evaluate this solution")
+			return errors.New("solution includes a factory which position is invalid, can't evaluate this solution")
 		}
 	}
-	simulationState := simulationStateFromScenarioAndSolution(s, &solution)
+	return nil
+}
+
+func (s Scenario) evaluateSolution(solution Solution) (int, error) {
+	err := s.checkValidity(solution)
+	if err != nil {
+		return 0, err
+	}
+	simulation := simulationFromScenarioAndSolution(s, solution)
 	for i := 0; i < s.turns; i++ {
-		simulationState.simulateOneRound()
+		simulation.simulateOneRound()
 	}
 	score := 0
-	for _, factory := range solution.factories {
+	for _, factory := range simulation.factories {
 		for i := 0; i < NumResourceTypes; i++ {
 			score += factory.resourceStorage[i]
 		}
@@ -44,24 +77,40 @@ func (s *Scenario) evaluateSolution(solution Solution) (int, error) {
 	return score, nil
 }
 
-func simulationStateFromScenarioAndSolution(scenario *Scenario, solution *Solution) SimulationState {
-	for _, deposit := range scenario.deposits {
-		deposit.remainingResources = deposit.width * deposit.height * DepositResourceFactor
+func simulationFromScenarioAndSolution(scenario Scenario, solution Solution) Simulation {
+	simulation := Simulation{
+		scenario:  scenario,
+		factories: make([]SimulatedFactory, len(solution.factories)),
+		deposits:  make([]SimulatedDeposit, len(scenario.deposits)),
+		mines:     make([]SimulatedMine, len(solution.mines)),
+		conveyors: make([]SimulatedConveyor, len(solution.conveyors)),
 	}
-	for _, factory := range solution.factories {
-		factory.resourceStorage = []int{0, 0, 0, 0, 0, 0, 0, 0}
+	for i, deposit := range scenario.deposits {
+		simulation.deposits[i] = SimulatedDeposit{
+			deposit:            deposit,
+			remainingResources: deposit.width * deposit.height * DepositResourceFactor,
+		}
 	}
-	for _, mine := range solution.mines {
-		mine.resourcesEgress = []int{0, 0, 0, 0, 0, 0, 0, 0}
-		mine.resourcesIngress = []int{0, 0, 0, 0, 0, 0, 0, 0}
+	for i, factory := range solution.factories {
+		simulation.factories[i] = SimulatedFactory{
+			factory:         factory,
+			resourceStorage: []int{0, 0, 0, 0, 0, 0, 0, 0},
+		}
 	}
-	return SimulationState{scenario: scenario, solution: solution}
+	for i, mine := range solution.mines {
+		simulation.mines[i] = SimulatedMine{
+			mine:             mine,
+			resourcesIngress: []int{0, 0, 0, 0, 0, 0, 0, 0},
+			resourcesEgress:  []int{0, 0, 0, 0, 0, 0, 0, 0},
+		}
+	}
+	return simulation
 }
 
-func (state *SimulationState) simulateOneRound() {
+func (s *Simulation) simulateOneRound() {
 	// Transfer resources from mine egresses to factories
-	for _, factory := range state.solution.factories {
-		for _, mine := range factory.getAdjacentMines(state.solution) {
+	for _, factory := range s.factories {
+		for _, mine := range s.adjacentMinesToFactory(factory) {
 			for i := 0; i < NumResourceTypes; i++ {
 				factory.resourceStorage[i] += mine.resourcesEgress[i]
 				mine.resourcesEgress[i] = 0
@@ -69,15 +118,15 @@ func (state *SimulationState) simulateOneRound() {
 		}
 	}
 	// Transfer resources from mine ingresses to mine egresses
-	for _, mine := range state.solution.mines {
+	for _, mine := range s.mines {
 		for i := 0; i < NumResourceTypes; i++ {
 			mine.resourcesEgress[i] += mine.resourcesIngress[i]
 			mine.resourcesIngress[i] = 0
 		}
 	}
 	// Transfer resources from deposits to mine ingresses
-	for _, deposit := range state.scenario.deposits {
-		adjacentMines := deposit.getAdjacentMines(state.solution)
+	for _, deposit := range s.deposits {
+		adjacentMines := s.adjacentMinesToDeposit(deposit)
 		//TODO: mix mines
 		for _, mine := range adjacentMines {
 			withdrawAmount := 0
@@ -89,15 +138,15 @@ func (state *SimulationState) simulateOneRound() {
 				withdrawAmount = deposit.remainingResources
 			}
 			deposit.remainingResources -= withdrawAmount
-			mine.resourcesIngress[deposit.subtype] += withdrawAmount
+			mine.resourcesIngress[deposit.deposit.subtype] += withdrawAmount
 		}
 	}
 }
 
-func (f *Factory) getAdjacentMines(solution *Solution) []*Mine {
-	mines := make([]*Mine, 0)
-	for _, position := range f.mineEgressPositions() {
-		mine, foundMine := getMineWithEgressAt(solution, position)
+func (s *Simulation) adjacentMinesToFactory(factory SimulatedFactory) []*SimulatedMine {
+	mines := make([]*SimulatedMine, 0)
+	for _, position := range factory.factory.mineEgressPositions() {
+		mine, foundMine := s.getMineWithEgressAt(position)
 		if foundMine {
 			mines = append(mines, mine)
 		}
@@ -105,10 +154,10 @@ func (f *Factory) getAdjacentMines(solution *Solution) []*Mine {
 	return mines
 }
 
-func (d *Deposit) getAdjacentMines(solution *Solution) []*Mine {
-	mines := make([]*Mine, 0)
-	for _, position := range d.mineIngressPositions() {
-		mine, foundMine := getMineWithIngressAt(solution, position)
+func (s *Simulation) adjacentMinesToDeposit(deposit SimulatedDeposit) []*SimulatedMine {
+	mines := make([]*SimulatedMine, 0)
+	for _, position := range deposit.deposit.mineIngressPositions() {
+		mine, foundMine := s.getMineWithIngressAt(position)
 		if foundMine {
 			mines = append(mines, mine)
 		}
@@ -116,70 +165,20 @@ func (d *Deposit) getAdjacentMines(solution *Solution) []*Mine {
 	return mines
 }
 
-func (f *Factory) mineEgressPositions() []Position {
-	positions := make([]Position, 0)
-	for i := 0; i < FactoryWidth; i++ {
-		positions = append(positions, Position{
-			x: f.position.x + i,
-			y: f.position.y - 1,
-		})
-		positions = append(positions, Position{
-			x: f.position.x + i,
-			y: f.position.y + FactoryHeight,
-		})
-	}
-	for i := 0; i < FactoryHeight; i++ {
-		positions = append(positions, Position{
-			x: f.position.x - 1,
-			y: f.position.y + i,
-		})
-		positions = append(positions, Position{
-			x: f.position.x + FactoryWidth,
-			y: f.position.y + i,
-		})
-	}
-	return positions
-}
-
-func (d *Deposit) mineIngressPositions() []Position {
-	positions := make([]Position, 0)
-	for i := 0; i < d.width; i++ {
-		positions = append(positions, Position{
-			x: d.position.x + i,
-			y: d.position.y - 1,
-		})
-		positions = append(positions, Position{
-			x: d.position.x + i,
-			y: d.position.y + d.height,
-		})
-	}
-	for i := 0; i < d.height; i++ {
-		positions = append(positions, Position{
-			x: d.position.x - 1,
-			y: d.position.y + i,
-		})
-		positions = append(positions, Position{
-			x: d.position.x + d.width,
-			y: d.position.y + i,
-		})
-	}
-	return positions
-}
-
-func getMineWithIngressAt(solution *Solution, position Position) (*Mine, bool) {
-	for _, mine := range solution.mines {
-		if mine.Ingress() == position {
-			return mine, true
+func (s *Simulation) getMineWithIngressAt(position Position) (*SimulatedMine, bool) {
+	for _, mine := range s.mines {
+		if mine.mine.Ingress() == position {
+			return &mine, true
 		}
 	}
-	return &Mine{}, false
+	return &SimulatedMine{}, false
 }
 
-func getMineWithEgressAt(solution *Solution, position Position) (*Mine, bool) {
-	for _, mine := range solution.mines {
-		if mine.Egress() == position {
-			return mine, true
+func (s *Simulation) getMineWithEgressAt(position Position) (*SimulatedMine, bool) {
+	for _, mine := range s.mines {
+		if mine.mine.Egress() == position {
+			return &mine, true
 		}
 	}
-	return &Mine{}, false
+	return &SimulatedMine{}, false
 }
