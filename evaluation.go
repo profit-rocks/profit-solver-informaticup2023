@@ -1,6 +1,8 @@
 package main
 
-import "errors"
+import (
+	"errors"
+)
 
 const DepositResourceFactor = 5
 const MaxDepositWithdrawPerMine = 3
@@ -66,7 +68,9 @@ func (s Scenario) evaluateSolution(solution Solution) (int, error) {
 	}
 	simulation := simulationFromScenarioAndSolution(s, solution)
 	for i := 0; i < s.turns; i++ {
-		simulation.simulateOneRound()
+		if simulation.simulateOneRound() {
+			break
+		}
 	}
 	score := 0
 	for _, factory := range simulation.factories {
@@ -107,26 +111,35 @@ func simulationFromScenarioAndSolution(scenario Scenario, solution Solution) Sim
 	return simulation
 }
 
-func (s *Simulation) simulateOneRound() {
+func (s *Simulation) simulateOneRound() bool {
+	finished := true
 	// Transfer resources from mine egresses to factories
-	for _, factory := range s.factories {
-		for _, mine := range s.adjacentMinesToFactory(factory) {
+	for i, _ := range s.factories {
+		// value is copied if used in range
+		factory := &s.factories[i]
+		for _, mine := range s.adjacentMinesToFactory(*factory) {
 			for i := 0; i < NumResourceTypes; i++ {
+				finished = finished && mine.resourcesEgress[i] == 0
 				factory.resourceStorage[i] += mine.resourcesEgress[i]
 				mine.resourcesEgress[i] = 0
 			}
 		}
 	}
 	// Transfer resources from mine ingresses to mine egresses
-	for _, mine := range s.mines {
+	for i, _ := range s.mines {
+		// value is copied if used in range
+		mine := &s.mines[i]
 		for i := 0; i < NumResourceTypes; i++ {
+			finished = finished && mine.resourcesIngress[i] == 0
 			mine.resourcesEgress[i] += mine.resourcesIngress[i]
 			mine.resourcesIngress[i] = 0
 		}
 	}
 	// Transfer resources from deposits to mine ingresses
-	for _, deposit := range s.deposits {
-		adjacentMines := s.adjacentMinesToDeposit(deposit)
+	for i, _ := range s.deposits {
+		// value is copied if used in range
+		deposit := &s.deposits[i]
+		adjacentMines := s.adjacentMinesToDeposit(*deposit)
 		//TODO: mix mines
 		for _, mine := range adjacentMines {
 			withdrawAmount := 0
@@ -137,10 +150,13 @@ func (s *Simulation) simulateOneRound() {
 				//TODO: randomize remaining amount
 				withdrawAmount = deposit.remainingResources
 			}
+			finished = finished && withdrawAmount == 0
+
 			deposit.remainingResources -= withdrawAmount
 			mine.resourcesIngress[deposit.deposit.subtype] += withdrawAmount
 		}
 	}
+	return finished
 }
 
 func (s *Simulation) adjacentMinesToFactory(factory SimulatedFactory) []*SimulatedMine {
