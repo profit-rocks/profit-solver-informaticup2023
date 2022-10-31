@@ -226,52 +226,59 @@ func (g *GeneticAlgorithm) getPath(mine Mine, factory Factory) (Path, error) {
 	heap.Fix(&queue, startItem.index)
 	distances[startPosition.y][startPosition.x] = 0
 	for queue.Len() > 0 {
-		top := queue.Pop().(*Item)
-		if top.value.Egress().NextTo(endPosition) {
-			path = append(path, top.value)
+		current := queue.Pop().(*Item)
+		currentEgress := current.value.Egress()
+		if currentEgress.NextTo(endPosition) {
+			path = append(path, current.value)
 			break
 		}
-		if top.priority != distances[top.value.Egress().y][top.value.Egress().x] {
+		if current.priority != distances[currentEgress.y][currentEgress.x] {
 			continue
 		}
-		neighborPositions := top.value.Egress().NeighborPositions()
-		for _, ingressPosition := range neighborPositions {
-			if ingressPosition.x >= g.scenario.width || ingressPosition.x < 0 || ingressPosition.y >= g.scenario.height || ingressPosition.y < 0 {
+		for _, nextIngress := range currentEgress.NeighborPositions() {
+			if !g.inBounds(nextIngress) {
 				continue
 			}
 			for i := 0; i < NumConveyorSubtypes; i++ {
-				conveyor := ConveyorFromIngressAndSubtype(ingressPosition, i)
-				position := conveyor.Egress()
-				if position.x >= g.scenario.width || position.x < 0 || position.y >= g.scenario.height || position.y < 0 {
+				nextConveyor := ConveyorFromIngressAndSubtype(nextIngress, i)
+				nextEgress := nextConveyor.Egress()
+				if !g.inBounds(nextEgress) {
 					continue
 				}
-				if top.priority+1 < distances[position.y][position.x] {
-					item := Item{
-						value:    conveyor,
-						priority: top.priority + 1,
+				if current.priority+1 < distances[nextEgress.y][nextEgress.x] {
+					next := Item{
+						value:    nextConveyor,
+						priority: current.priority + 1,
 						index:    0,
 					}
-					queue.Push(&item)
-					heap.Fix(&queue, item.index)
-					previousConveyors[position.y][position.x] = top.value
-					distances[position.y][position.x] = item.priority
+					queue.Push(&next)
+					heap.Fix(&queue, next.index)
+					previousConveyors[nextEgress.y][nextEgress.x] = current.value
+					distances[nextEgress.y][nextEgress.x] = next.priority
 				}
 			}
 		}
 	}
-	position := path[0].Egress()
-	if position == startPosition {
+	currentEgress := path[0].Egress()
+	if currentEgress == startPosition {
 		return Path{}, nil
 	}
 	for {
-		conveyor := previousConveyors[position.y][position.x]
+		conveyor := previousConveyors[currentEgress.y][currentEgress.x]
 		if conveyor.Egress() == startPosition {
 			break
 		}
 		path = append(path, conveyor)
-		position = conveyor.Egress()
+		currentEgress = conveyor.Egress()
 	}
 	return path, nil
+}
+
+func (g *GeneticAlgorithm) inBounds(p Position) bool {
+	if p.x >= g.scenario.width || p.x < 0 || p.y >= g.scenario.height || p.y < 0 {
+		return false
+	}
+	return true
 }
 
 func (g *GeneticAlgorithm) getRandomMine(deposit Deposit, chromosome Chromosome) (Mine, error) {
