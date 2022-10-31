@@ -5,9 +5,6 @@ import (
 	"github.com/draffensperger/golp"
 )
 
-const MaxWidth = 100
-const MaxHeight = 100
-
 const NoOptimum = -1
 
 func TheoreticalOptimum(scenario Scenario) (int, error) {
