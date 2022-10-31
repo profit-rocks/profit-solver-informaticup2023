@@ -19,6 +19,22 @@
       "height": 3
     }
   ],
-  "products": [],
+  "products": [
+    {
+      "type": "product",
+      "subtype": 0,
+      "resources": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "points": 1
+    }
+  ],
   "turns": 100
 }

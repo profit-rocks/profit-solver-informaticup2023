@@ -11,7 +11,7 @@ import (
 type Chromosome struct {
 	factories []Factory
 	mines     []Mine
-	fitness   float64
+	fitness   int
 }
 
 // GeneticAlgorithm contains input data as well as configuration information used by the genetic algorithm.
@@ -25,6 +25,7 @@ type GeneticAlgorithm struct {
 	crossoverProbability float64
 	numFactories         int
 	numMines             int
+	optimum              int
 }
 
 func (c Chromosome) Solution() Solution {
@@ -107,10 +108,10 @@ func (g *GeneticAlgorithm) mutation(chromosome Chromosome) Chromosome {
 	return newChromosome
 }
 
-func (g *GeneticAlgorithm) evaluateFitness(chromosome Chromosome) float64 {
+func (g *GeneticAlgorithm) evaluateFitness(chromosome Chromosome) int {
 	fitness, err := g.scenario.evaluateSolution(chromosome.Solution())
 	if err != nil {
-		return math.Inf(-1)
+		return math.MinInt
 	}
 	// sum of manhattan distances for each factory to all the mines
 	//fitness := 0.0
@@ -119,7 +120,7 @@ func (g *GeneticAlgorithm) evaluateFitness(chromosome Chromosome) float64 {
 	//		fitness += float64(factory.position.ManhattanDist(mine.position))
 	//	}
 	//}
-	return float64(fitness)
+	return fitness
 }
 
 func (g *GeneticAlgorithm) generateChromosomes() ([]Chromosome, error) {
@@ -351,6 +352,10 @@ func (g *GeneticAlgorithm) Run() (Solution, error) {
 		sort.Slice(chromosomes, func(i, j int) bool {
 			return chromosomes[i].fitness > chromosomes[j].fitness
 		})
+		if g.optimum != NoOptimum && chromosomes[0].fitness == g.optimum {
+			log.Println("starting iteration", i+1, "/", g.iterations, "fitness", g.optimum, "(optimal)")
+			break
+		}
 		log.Println("starting iteration", i+1, "/", g.iterations, "fitness", chromosomes[0].fitness)
 		chromosomes = chromosomes[:g.populationSize]
 

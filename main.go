@@ -33,6 +33,13 @@ func main() {
 
 	rand.Seed(time.Now().UnixNano())
 
+	optimum, err := TheoreticalOptimum(scenario)
+	if err != nil {
+		log.Println("no theoretical optimum found")
+	} else {
+		log.Println("theoretical optimum", optimum)
+	}
+
 	geneticAlgorithm := GeneticAlgorithm{
 		scenario:             scenario,
 		populationSize:       200,
@@ -41,6 +48,7 @@ func main() {
 		crossoverProbability: 0.7,
 		numFactories:         4,
 		numMines:             2 * len(scenario.deposits),
+		optimum:              optimum,
 	}
 	solution, err := geneticAlgorithm.Run()
 
