@@ -12,7 +12,22 @@ const NoOptimum = -1
 
 func TheoreticalOptimum(scenario Scenario) (int, error) {
 	// variables: number of used resources (8), number of units for each product (8)
-	lp := golp.NewLP(8, 16)
+	lp := golp.NewLP(32, 16)
+
+	// all variables must take integer arguments
+	for i := 0; i < 16; i++ {
+		lp.SetInt(i, true)
+	}
+
+	// all variables must be non-negative
+	for i := 0; i < 16; i++ {
+		row := [16]float64{}
+		row[i] = 1
+		err := lp.AddConstraint(row[:], golp.GE, 0)
+		if err != nil {
+			return NoOptimum, err
+		}
+	}
 
 	// constraint: each resource needs to be used as often as the number of product units requires
 	for i := 0; i < 8; i++ {
