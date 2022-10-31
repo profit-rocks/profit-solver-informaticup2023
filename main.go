@@ -29,7 +29,10 @@ func main() {
 		}
 		defer pprof.StopCPUProfile()
 	}
-	scenario := importScenarioFromJson(*inputPtr)
+	scenario, err := importScenarioFromJson(*inputPtr)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	rand.Seed(time.Now().UnixNano())
 
