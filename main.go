@@ -41,6 +41,7 @@ func main() {
 		crossoverProbability: 0.7,
 		numFactories:         4,
 		numMines:             2 * len(scenario.deposits),
+		numPaths:             1,
 	}
 	solution, err := geneticAlgorithm.Run()
 

@@ -1,16 +1,23 @@
 package main
 
 import (
+	"container/heap"
 	"errors"
+	"fmt"
 	"log"
 	"math"
 	"math/rand"
 	"sort"
 )
 
+type Path = []Conveyor
+
+const NumPathRetries = 10
+
 type Chromosome struct {
 	factories []Factory
 	mines     []Mine
+	paths     []Path
 	fitness   float64
 }
 
@@ -25,6 +32,7 @@ type GeneticAlgorithm struct {
 	crossoverProbability float64
 	numFactories         int
 	numMines             int
+	numPaths             int
 }
 
 func (c Chromosome) Solution() Solution {
@@ -42,6 +50,11 @@ func (c Chromosome) Solution() Solution {
 		solution.mines[i] = Mine{
 			position:  mine.position,
 			direction: mine.direction,
+		}
+	}
+	for _, path := range c.paths {
+		for _, conveyor := range path {
+			solution.conveyors = append(solution.conveyors, conveyor)
 		}
 	}
 	return solution
@@ -65,6 +78,7 @@ func (g *GeneticAlgorithm) crossover(chromosome Chromosome, chromosome2 Chromoso
 			newChromosome.factories = append(newChromosome.factories, chromosome2.factories[i])
 		}
 	}
+	newChromosome.paths = chromosome.paths
 	return newChromosome
 }
 
@@ -104,6 +118,7 @@ func (g *GeneticAlgorithm) mutation(chromosome Chromosome) Chromosome {
 			}
 		}
 	}
+	newChromosome.paths = chromosome.paths
 	return newChromosome
 }
 
@@ -157,7 +172,95 @@ func (g *GeneticAlgorithm) generateChromosome() (Chromosome, error) {
 		}
 		chromosome.factories = append(chromosome.factories, factory)
 	}
+	for i := 0; i < g.numPaths; i++ {
+		var path Path
+		var err error
+		for j := 0; j < NumPathRetries; j++ {
+			randomFactory := chromosome.factories[rand.Intn(len(chromosome.factories))]
+			randomMine := chromosome.mines[rand.Intn(len(chromosome.mines))]
+			path, err = g.getPath(randomMine, randomFactory)
+			if err == nil {
+				break
+			}
+		}
+		if err == nil {
+			chromosome.paths = append(chromosome.paths, path)
+		} else {
+			chromosome.paths = append(chromosome.paths, Path{})
+		}
+	}
 	return chromosome, nil
+}
+
+func (g *GeneticAlgorithm) getPath(mine Mine, factory Factory) (Path, error) {
+	startPosition := mine.Egress()
+	endPosition := factory.position
+	queue := PriorityQueue{}
+	startItem := Item{
+		value:    startPosition,
+		priority: 0,
+		index:    0,
+	}
+
+	distances := make([][]int, g.scenario.height)
+	for i := range distances {
+		distances[i] = make([]int, g.scenario.width)
+		for j := range distances[i] {
+			distances[i][j] = 1000000
+		}
+	}
+	previousPositions := make([][]Position, g.scenario.height)
+	for i := range previousPositions {
+		previousPositions[i] = make([]Position, g.scenario.width)
+	}
+
+	heap.Init(&queue)
+	queue.Push(&startItem)
+	heap.Fix(&queue, startItem.index)
+	distances[startPosition.y][startPosition.x] = 0
+	for queue.Len() > 0 {
+		top := queue.Pop().(*Item)
+		if top.value == endPosition {
+			break
+		}
+		if top.priority != distances[top.value.y][top.value.x] {
+			continue
+		}
+		neighborPositions := top.value.NeighborPositions()
+		for _, position := range neighborPositions {
+			if position.x >= g.scenario.width || position.x < 0 || position.y >= g.scenario.height || position.y < 0 {
+				continue
+			}
+			if top.priority+1 < distances[position.y][position.x] {
+				item := Item{
+					value:    position,
+					priority: top.priority + 1,
+					index:    0,
+				}
+				queue.Push(&item)
+				heap.Fix(&queue, item.index)
+				previousPositions[position.y][position.x] = top.value
+				distances[position.y][position.x] = item.priority
+			}
+		}
+	}
+
+	if distances[endPosition.y][endPosition.x] == 1000000 {
+		fmt.Println("no path available")
+		return Path{}, errors.New("no path available")
+	}
+
+	position := endPosition
+	var path Path
+	for position != startPosition {
+		path = append(path, Conveyor{
+			position:  position,
+			direction: 0,
+			length:    0,
+		})
+		position = previousPositions[position.y][position.x]
+	}
+	return path, nil
 }
 
 func (g *GeneticAlgorithm) getRandomMine(deposit Deposit, chromosome Chromosome) (Mine, error) {
@@ -331,7 +434,7 @@ func (s *Scenario) minesAroundDeposit(deposit Deposit, chromosome Chromosome) []
 	}
 
 	validPositions := make([]Mine, 0)
-	for i, _ := range positions {
+	for i := range positions {
 		if s.isPositionAvailableForMine(chromosome.factories, chromosome.mines, positions[i]) {
 			validPositions = append(validPositions, positions[i])
 		}

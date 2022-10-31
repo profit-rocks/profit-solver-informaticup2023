@@ -11,6 +11,10 @@ type Rectangle struct {
 	height   int
 }
 
+func (p Position) NeighborPositions() []Position {
+	return []Position{{p.x + 1, p.y}, {p.x - 1, p.y}, {p.x, p.y + 1}, {p.x, p.y - 1}}
+}
+
 func abs(x int) int {
 	if x < 0 {
 		return -x
