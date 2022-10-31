@@ -2,6 +2,7 @@ package main
 
 const FactoryWidth = 5
 const FactoryHeight = 5
+const NumConveyorSubtypes = 8
 
 type Deposit struct {
 	position Position
@@ -51,6 +52,81 @@ type Conveyor struct {
 	position  Position
 	direction Direction
 	length    ConveyorLength
+}
+
+func ConveyorLengthFromSubtype(subtype int) ConveyorLength {
+	return ConveyorLength(subtype >> 2)
+}
+
+func ConveyorDirectionFromSubtype(subtype int) Direction {
+	return Direction(subtype & 3)
+}
+
+func ConveyorFromIngressAndSubtype(ingress Position, subtype int) Conveyor {
+	length := ConveyorLengthFromSubtype(subtype)
+	direction := ConveyorDirectionFromSubtype(subtype)
+	var position Position
+	if direction == Right {
+		position = Position{ingress.x + 1, ingress.y}
+	} else if direction == Bottom {
+		position = Position{ingress.x, ingress.y + 1}
+	} else if direction == Left {
+		if length == Short {
+			position = Position{ingress.x - 1, ingress.y}
+		} else {
+			position = Position{ingress.x - 2, ingress.y}
+		}
+	} else if direction == Top {
+		if length == Short {
+			position = Position{ingress.x, ingress.y - 1}
+		} else {
+			position = Position{ingress.x, ingress.y - 2}
+		}
+	}
+	return Conveyor{
+		position:  position,
+		direction: direction,
+		length:    length,
+	}
+}
+
+func (c Conveyor) Egress() Position {
+	if c.direction == Right {
+		if c.length == Short {
+			return Position{c.position.x + 1, c.position.y}
+		} else {
+			return Position{c.position.x + 2, c.position.y}
+		}
+	} else if c.direction == Bottom {
+		if c.length == Short {
+			return Position{c.position.x, c.position.y + 1}
+		} else {
+			return Position{c.position.x, c.position.y + 2}
+		}
+	} else if c.direction == Left {
+		return Position{c.position.x - 1, c.position.y}
+	}
+	// Top
+	return Position{c.position.x, c.position.y - 1}
+}
+
+func (c Conveyor) Ingress() Position {
+	if c.direction == Right {
+		return Position{c.position.x - 1, c.position.y}
+	} else if c.direction == Bottom {
+		return Position{c.position.x, c.position.y - 1}
+	} else if c.direction == Left {
+		if c.length == Short {
+			return Position{c.position.x + 1, c.position.y}
+		} else {
+			return Position{c.position.x + 2, c.position.y}
+		}
+	}
+	// Top
+	if c.length == Short {
+		return Position{c.position.x, c.position.y + 1}
+	}
+	return Position{c.position.x, c.position.y + 2}
 }
 
 func (c Conveyor) Subtype() int {

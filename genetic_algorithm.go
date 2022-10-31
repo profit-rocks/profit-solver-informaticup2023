@@ -194,10 +194,21 @@ func (g *GeneticAlgorithm) generateChromosome() (Chromosome, error) {
 
 func (g *GeneticAlgorithm) getPath(mine Mine, factory Factory) (Path, error) {
 	startPosition := mine.Egress()
+	// Dummy conveyor used for backtracking
+	if mine.direction == Right {
+
+	} else if mine.direction == Bottom {
+
+	}
+	startConveyor := Conveyor{
+		position:  Position{startPosition.x - 1, startPosition.y},
+		direction: Right,
+		length:    Short,
+	}
 	endPosition := factory.position
 	queue := PriorityQueue{}
 	startItem := Item{
-		value:    startPosition,
+		value:    startConveyor,
 		priority: 0,
 		index:    0,
 	}
@@ -209,9 +220,9 @@ func (g *GeneticAlgorithm) getPath(mine Mine, factory Factory) (Path, error) {
 			distances[i][j] = 1000000
 		}
 	}
-	previousPositions := make([][]Position, g.scenario.height)
-	for i := range previousPositions {
-		previousPositions[i] = make([]Position, g.scenario.width)
+	previousConveyors := make([][]Conveyor, g.scenario.height)
+	for i := range previousConveyors {
+		previousConveyors[i] = make([]Conveyor, g.scenario.width)
 	}
 
 	heap.Init(&queue)
@@ -220,45 +231,64 @@ func (g *GeneticAlgorithm) getPath(mine Mine, factory Factory) (Path, error) {
 	distances[startPosition.y][startPosition.x] = 0
 	for queue.Len() > 0 {
 		top := queue.Pop().(*Item)
-		if top.value == endPosition {
+		if top.value.Egress().NextTo(endPosition) {
 			break
 		}
-		if top.priority != distances[top.value.y][top.value.x] {
+		if top.priority != distances[top.value.Egress().y][top.value.Egress().x] {
 			continue
 		}
-		neighborPositions := top.value.NeighborPositions()
-		for _, position := range neighborPositions {
-			if position.x >= g.scenario.width || position.x < 0 || position.y >= g.scenario.height || position.y < 0 {
+		neighborPositions := top.value.Egress().NeighborPositions()
+		for _, ingressPosition := range neighborPositions {
+			if ingressPosition.x >= g.scenario.width || ingressPosition.x < 0 || ingressPosition.y >= g.scenario.height || ingressPosition.y < 0 {
 				continue
 			}
-			if top.priority+1 < distances[position.y][position.x] {
-				item := Item{
-					value:    position,
-					priority: top.priority + 1,
-					index:    0,
+			for i := 0; i < NumConveyorSubtypes; i++ {
+				conveyor := ConveyorFromIngressAndSubtype(ingressPosition, i)
+				position := conveyor.Egress()
+				if position.x >= g.scenario.width || position.x < 0 || position.y >= g.scenario.height || position.y < 0 {
+					continue
 				}
-				queue.Push(&item)
-				heap.Fix(&queue, item.index)
-				previousPositions[position.y][position.x] = top.value
-				distances[position.y][position.x] = item.priority
+				if top.priority+1 < distances[position.y][position.x] {
+					item := Item{
+						value:    conveyor,
+						priority: top.priority + 1,
+						index:    0,
+					}
+					queue.Push(&item)
+					heap.Fix(&queue, item.index)
+					previousConveyors[position.y][position.x] = top.value
+					distances[position.y][position.x] = item.priority
+				}
 			}
 		}
 	}
-
-	if distances[endPosition.y][endPosition.x] == 1000000 {
+	// check neighbor
+	foundEndingEgress := false
+	var endingEgress Position
+	for _, possibleEndingEgress := range endPosition.NeighborPositions() {
+		if possibleEndingEgress.x >= g.scenario.width || possibleEndingEgress.x < 0 || possibleEndingEgress.y >= g.scenario.height || possibleEndingEgress.y < 0 {
+			continue
+		}
+		if distances[possibleEndingEgress.y][possibleEndingEgress.x] != 1000000 {
+			endingEgress = possibleEndingEgress
+			foundEndingEgress = true
+			break
+		}
+	}
+	if !foundEndingEgress {
 		fmt.Println("no path available")
 		return Path{}, errors.New("no path available")
 	}
 
-	position := endPosition
 	var path Path
-	for position != startPosition {
-		path = append(path, Conveyor{
-			position:  position,
-			direction: 0,
-			length:    0,
-		})
-		position = previousPositions[position.y][position.x]
+	position := endingEgress
+	for {
+		conveyor := previousConveyors[position.y][position.x]
+		if conveyor.Egress() == startPosition {
+			break
+		}
+		path = append(path, conveyor)
+		position = conveyor.Egress()
 	}
 	return path, nil
 }
