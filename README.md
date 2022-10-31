@@ -2,7 +2,7 @@
 
 ## Setup
 
-- Install `lpsolve` package
+- Install `lpsolve` package ([see here for instructions](https://pkg.go.dev/github.com/draffensperger/golp#section-readme))
 - Use the following environment variables when compiling:
 
 ```
