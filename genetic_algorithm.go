@@ -177,7 +177,7 @@ func (g *GeneticAlgorithm) generateChromosome() (Chromosome, error) {
 		for j := 0; j < NumPathRetries; j++ {
 			randomFactory := chromosome.factories[rand.Intn(len(chromosome.factories))]
 			randomMine := chromosome.mines[rand.Intn(len(chromosome.mines))]
-			path, err = g.getPath(randomMine, randomFactory)
+			path, err = g.getPath(chromosome, randomMine, randomFactory)
 			if err == nil {
 				break
 			}
@@ -191,7 +191,7 @@ func (g *GeneticAlgorithm) generateChromosome() (Chromosome, error) {
 	return chromosome, nil
 }
 
-func (g *GeneticAlgorithm) getPath(mine Mine, factory Factory) (Path, error) {
+func (g *GeneticAlgorithm) getPath(chromosome Chromosome, mine Mine, factory Factory) (Path, error) {
 	var path Path
 
 	startPosition := mine.Egress()
@@ -201,7 +201,7 @@ func (g *GeneticAlgorithm) getPath(mine Mine, factory Factory) (Path, error) {
 		direction: Right,
 		length:    Short,
 	}
-	endPosition := factory.position
+	endPositions := factory.mineEgressPositions()
 	queue := PriorityQueue{}
 	startItem := Item{
 		value:    startConveyor,
@@ -216,9 +216,47 @@ func (g *GeneticAlgorithm) getPath(mine Mine, factory Factory) (Path, error) {
 			distances[i][j] = 1000000
 		}
 	}
+	blocked := make([][]bool, g.scenario.height)
+	for i := range blocked {
+		blocked[i] = make([]bool, g.scenario.width)
+		for j := range blocked[i] {
+			blocked[i][j] = false
+		}
+	}
 	previousConveyors := make([][]Conveyor, g.scenario.height)
 	for i := range previousConveyors {
 		previousConveyors[i] = make([]Conveyor, g.scenario.width)
+	}
+
+	// keep algorithm from using occupied squares
+	for _, deposit := range g.scenario.deposits {
+		deposit.Rectangle().ForEach(func(p Position) {
+			blocked[p.y][p.x] = true
+		})
+	}
+	for _, obstacle := range g.scenario.obstacles {
+		obstacle.ForEach(func(p Position) {
+			blocked[p.y][p.x] = true
+		})
+	}
+	for _, m := range chromosome.mines {
+		for _, r := range m.Rectangles() {
+			r.ForEach(func(p Position) {
+				blocked[p.y][p.x] = true
+			})
+		}
+	}
+	for _, f := range chromosome.factories {
+		f.Rectangle().ForEach(func(p Position) {
+			blocked[p.y][p.x] = true
+		})
+	}
+	for _, otherPath := range chromosome.paths {
+		for _, conveyor := range otherPath {
+			conveyor.Rectangle().ForEach(func(p Position) {
+				blocked[p.y][p.x] = true
+			})
+		}
 	}
 
 	heap.Init(&queue)
@@ -228,8 +266,14 @@ func (g *GeneticAlgorithm) getPath(mine Mine, factory Factory) (Path, error) {
 	for queue.Len() > 0 {
 		current := queue.Pop().(*Item)
 		currentEgress := current.value.Egress()
-		if currentEgress.NextTo(endPosition) {
-			path = append(path, current.value)
+		finished := false
+		for _, p := range endPositions {
+			if currentEgress == p {
+				path = append(path, current.value)
+				finished = true
+			}
+		}
+		if finished {
 			break
 		}
 		if current.priority != distances[currentEgress.y][currentEgress.x] {
@@ -246,6 +290,15 @@ func (g *GeneticAlgorithm) getPath(mine Mine, factory Factory) (Path, error) {
 					continue
 				}
 				if current.priority+1 < distances[nextEgress.y][nextEgress.x] {
+					isBlocked := false
+					nextConveyor.Rectangle().ForEach(func(p Position) {
+						if blocked[p.y][p.x] {
+							isBlocked = true
+						}
+					})
+					if isBlocked {
+						continue
+					}
 					next := Item{
 						value:    nextConveyor,
 						priority: current.priority + 1,
@@ -258,6 +311,9 @@ func (g *GeneticAlgorithm) getPath(mine Mine, factory Factory) (Path, error) {
 				}
 			}
 		}
+	}
+	if len(path) == 0 {
+		return path, errors.New("no path found")
 	}
 	currentEgress := path[0].Egress()
 	if currentEgress == startPosition {

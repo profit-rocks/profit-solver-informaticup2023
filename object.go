@@ -133,6 +133,34 @@ func (c Conveyor) Subtype() int {
 	return (int(c.length) << 2) | int(c.direction)
 }
 
+func (c Conveyor) Rectangle() Rectangle {
+	r := Rectangle{}
+	if c.direction == Right || c.direction == Bottom {
+		r.position = c.Ingress()
+	} else {
+		r.position = c.Egress()
+	}
+
+	if c.length == Short {
+		if c.direction == Right || c.direction == Left {
+			r.width = 3
+			r.height = 1
+		} else {
+			r.width = 1
+			r.height = 3
+		}
+	} else if c.length == Long {
+		if c.direction == Right || c.direction == Left {
+			r.width = 4
+			r.height = 1
+		} else {
+			r.width = 1
+			r.height = 4
+		}
+	}
+	return r
+}
+
 // Scenario is the input to any algorithm that solves Profit!
 type Scenario struct {
 	width     int
@@ -286,4 +314,12 @@ func (s *Scenario) boundRectangles() []Rectangle {
 		{Position{-1, 0}, 1, s.height},
 		{Position{s.width, 0}, 1, s.height},
 		{Position{0, s.height}, s.width, 1}}
+}
+
+func (r Rectangle) ForEach(f func(Position)) {
+	for x := r.position.x; x < r.position.x+r.width; x++ {
+		for y := r.position.y; y < r.position.y+r.height; y++ {
+			f(Position{x, y})
+		}
+	}
 }
