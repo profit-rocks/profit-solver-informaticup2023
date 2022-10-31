@@ -3,7 +3,6 @@ package main
 import (
 	"container/heap"
 	"errors"
-	"fmt"
 	"log"
 	"math"
 	"math/rand"
@@ -193,13 +192,10 @@ func (g *GeneticAlgorithm) generateChromosome() (Chromosome, error) {
 }
 
 func (g *GeneticAlgorithm) getPath(mine Mine, factory Factory) (Path, error) {
+	var path Path
+
 	startPosition := mine.Egress()
 	// Dummy conveyor used for backtracking
-	if mine.direction == Right {
-
-	} else if mine.direction == Bottom {
-
-	}
 	startConveyor := Conveyor{
 		position:  Position{startPosition.x - 1, startPosition.y},
 		direction: Right,
@@ -232,6 +228,7 @@ func (g *GeneticAlgorithm) getPath(mine Mine, factory Factory) (Path, error) {
 	for queue.Len() > 0 {
 		top := queue.Pop().(*Item)
 		if top.value.Egress().NextTo(endPosition) {
+			path = append(path, top.value)
 			break
 		}
 		if top.priority != distances[top.value.Egress().y][top.value.Egress().x] {
@@ -262,26 +259,10 @@ func (g *GeneticAlgorithm) getPath(mine Mine, factory Factory) (Path, error) {
 			}
 		}
 	}
-	// check neighbor
-	foundEndingEgress := false
-	var endingEgress Position
-	for _, possibleEndingEgress := range endPosition.NeighborPositions() {
-		if possibleEndingEgress.x >= g.scenario.width || possibleEndingEgress.x < 0 || possibleEndingEgress.y >= g.scenario.height || possibleEndingEgress.y < 0 {
-			continue
-		}
-		if distances[possibleEndingEgress.y][possibleEndingEgress.x] != 1000000 {
-			endingEgress = possibleEndingEgress
-			foundEndingEgress = true
-			break
-		}
+	position := path[0].Egress()
+	if position == startPosition {
+		return Path{}, nil
 	}
-	if !foundEndingEgress {
-		fmt.Println("no path available")
-		return Path{}, errors.New("no path available")
-	}
-
-	var path Path
-	position := endingEgress
 	for {
 		conveyor := previousConveyors[position.y][position.x]
 		if conveyor.Egress() == startPosition {

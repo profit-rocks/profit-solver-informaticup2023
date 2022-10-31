@@ -26,7 +26,9 @@ func (p Position) NextTo(other Position) bool {
 	if p == other {
 		return false
 	}
-	return abs(p.x-other.x) <= 1 && abs(p.y-other.y) <= 1
+	xClose := abs(p.x-other.x) <= 1
+	yClose := abs(p.y-other.y) <= 1
+	return xClose && p.y == other.y || yClose && p.x == other.x
 }
 
 func (p Position) ManhattanDist(other Position) int {
