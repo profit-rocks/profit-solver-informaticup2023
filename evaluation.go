@@ -189,19 +189,19 @@ func (s *Simulation) adjacentMinesToDeposit(deposit SimulatedDeposit) []*Simulat
 }
 
 func (s *Simulation) getMineWithIngressAt(position Position) (*SimulatedMine, bool) {
-	for _, mine := range s.mines {
-		if mine.mine.Ingress() == position {
-			return &mine, true
+	for i := range s.mines {
+		if s.mines[i].mine.Ingress() == position {
+			return &s.mines[i], true
 		}
 	}
-	return &SimulatedMine{}, false
+	return nil, false
 }
 
 func (s *Simulation) getMineWithEgressAt(position Position) (*SimulatedMine, bool) {
-	for _, mine := range s.mines {
-		if mine.mine.Egress() == position {
-			return &mine, true
+	for i := range s.mines {
+		if s.mines[i].mine.Egress() == position {
+			return &s.mines[i], true
 		}
 	}
-	return &SimulatedMine{}, false
+	return nil, false
 }

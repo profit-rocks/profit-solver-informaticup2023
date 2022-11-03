@@ -211,10 +211,8 @@ func (s *Scenario) isPositionAvailableForFactory(factories []Factory, mines []Mi
 		}
 	}
 	for _, mine := range mines {
-		for _, rectangle := range mine.Rectangles() {
-			if factoryRectangle.Intersects(rectangle) {
-				return false
-			}
+		if mine.Intersects(factoryRectangle) {
+			return false
 		}
 	}
 	for _, deposit := range s.deposits {
@@ -281,7 +279,7 @@ func (s *Scenario) isPositionAvailableForMine(factories []Factory, mines []Mine,
 		if err == nil && otherMine.Ingress().NextTo(depositEgress) {
 			return false
 		}
-		if mine.IntersectsAny(otherMine.Rectangles()) {
+		if mine.IntersectsMine(otherMine) {
 			return false
 		}
 	}
