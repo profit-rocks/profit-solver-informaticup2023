@@ -39,7 +39,7 @@ func (c Chromosome) Solution() Solution {
 	solution := Solution{
 		factories: make([]Factory, len(c.factories)),
 		mines:     make([]Mine, len(c.mines)),
-		paths:     make([]Path, len(c.paths)),
+		paths:     []Path{},
 	}
 	for i, factory := range c.factories {
 		solution.factories[i] = Factory{
@@ -53,8 +53,10 @@ func (c Chromosome) Solution() Solution {
 			direction: mine.direction,
 		}
 	}
-	for i, path := range c.paths {
-		solution.paths[i] = path
+	for _, path := range c.paths {
+		if len(path) > 0 {
+			solution.paths = append(solution.paths, path)
+		}
 	}
 	return solution
 }
