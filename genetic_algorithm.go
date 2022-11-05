@@ -17,7 +17,7 @@ type Chromosome struct {
 	factories []Factory
 	mines     []Mine
 	paths     []Path
-	fitness   float64
+	fitness   int
 }
 
 // GeneticAlgorithm contains input data as well as configuration information used by the genetic algorithm.
@@ -31,6 +31,7 @@ type GeneticAlgorithm struct {
 	crossoverProbability float64
 	numFactories         int
 	numMines             int
+	optimum              int
 	numPaths             int
 }
 
@@ -121,10 +122,10 @@ func (g *GeneticAlgorithm) mutation(chromosome Chromosome) Chromosome {
 	return newChromosome
 }
 
-func (g *GeneticAlgorithm) evaluateFitness(chromosome Chromosome) float64 {
+func (g *GeneticAlgorithm) evaluateFitness(chromosome Chromosome) int {
 	fitness, err := g.scenario.evaluateSolution(chromosome.Solution())
 	if err != nil {
-		return math.Inf(-1)
+		return math.MinInt
 	}
 	// sum of manhattan distances for each factory to all the mines
 	//fitness := 0.0
@@ -133,7 +134,7 @@ func (g *GeneticAlgorithm) evaluateFitness(chromosome Chromosome) float64 {
 	//		fitness += float64(factory.position.ManhattanDist(mine.position))
 	//	}
 	//}
-	return float64(fitness)
+	return fitness
 }
 
 func (g *GeneticAlgorithm) generateChromosomes() ([]Chromosome, error) {
@@ -387,10 +388,8 @@ func (s *Scenario) isPositionAvailableForFactory(factories []Factory, mines []Mi
 		}
 	}
 	for _, mine := range mines {
-		for _, rectangle := range mine.Rectangles() {
-			if factoryRectangle.Intersects(rectangle) {
-				return false
-			}
+		if mine.Intersects(factoryRectangle) {
+			return false
 		}
 	}
 	for _, deposit := range s.deposits {
@@ -457,7 +456,7 @@ func (s *Scenario) isPositionAvailableForMine(factories []Factory, mines []Mine,
 		if err == nil && otherMine.Ingress().NextTo(depositEgress) {
 			return false
 		}
-		if mine.IntersectsAny(otherMine.Rectangles()) {
+		if mine.IntersectsMine(otherMine) {
 			return false
 		}
 	}
@@ -528,6 +527,10 @@ func (g *GeneticAlgorithm) Run() (Solution, error) {
 		sort.Slice(chromosomes, func(i, j int) bool {
 			return chromosomes[i].fitness > chromosomes[j].fitness
 		})
+		if g.optimum != NoOptimum && chromosomes[0].fitness == g.optimum {
+			log.Println("starting iteration", i+1, "/", g.iterations, "fitness", g.optimum, "(optimal)")
+			break
+		}
 		log.Println("starting iteration", i+1, "/", g.iterations, "fitness", chromosomes[0].fitness)
 		chromosomes = chromosomes[:g.populationSize]
 

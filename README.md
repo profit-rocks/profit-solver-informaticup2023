@@ -1,5 +1,15 @@
 # Solver for the challenge Profit! of informaticup2023
 
+## Setup
+
+- Install `lpsolve` package ([see here for instructions](https://pkg.go.dev/github.com/draffensperger/golp#section-readme))
+- Use the following environment variables when compiling:
+
+```
+CGO_CFLAGS="-I/usr/include/lpsolve"
+CGO_LDFLAGS="-llpsolve55 -lm -ldl -lcolamd"
+```
+
 ## Run the code
 
 - Build a scenario with deposits and obstacles [here](https://profit.phinau.de)

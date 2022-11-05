@@ -29,9 +29,19 @@ func main() {
 		}
 		defer pprof.StopCPUProfile()
 	}
-	scenario := importScenarioFromJson(*inputPtr)
+	scenario, err := importScenarioFromJson(*inputPtr)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	rand.Seed(time.Now().UnixNano())
+
+	optimum, err := TheoreticalOptimum(scenario)
+	if err != nil {
+		log.Println("no theoretical optimum found")
+	} else {
+		log.Println("theoretical optimum", optimum)
+	}
 
 	geneticAlgorithm := GeneticAlgorithm{
 		scenario:             scenario,
@@ -41,6 +51,7 @@ func main() {
 		crossoverProbability: 0.7,
 		numFactories:         4,
 		numMines:             2 * len(scenario.deposits),
+		optimum:              optimum,
 		numPaths:             2,
 	}
 	solution, err := geneticAlgorithm.Run()

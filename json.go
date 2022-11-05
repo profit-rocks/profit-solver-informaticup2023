@@ -104,17 +104,19 @@ func solutionToExportableScenario(scenario Scenario, solution Solution) Exportab
 	return exportableScenario
 }
 
-func importScenarioFromJson(path string) Scenario {
+func importScenarioFromJson(path string) (Scenario, error) {
 	jsonFile, err := os.Open(path)
 	if err != nil {
-		fmt.Println(err)
+		return Scenario{}, err
 	}
-	byteValue, _ := io.ReadAll(jsonFile)
+	byteValue, err := io.ReadAll(jsonFile)
+	if err != nil {
+		return Scenario{}, err
+	}
 	var importedScenario ExportableScenario
 	err = json.Unmarshal(byteValue, &importedScenario)
 	if err != nil {
-		fmt.Println(err)
-		return Scenario{}
+		return Scenario{}, err
 	}
 
 	scenario := Scenario{
@@ -138,14 +140,13 @@ func importScenarioFromJson(path string) Scenario {
 				width:    object.Width,
 			})
 		default:
-			fmt.Println("Unknown ObjectType: ", object.ObjectType)
+			return Scenario{}, fmt.Errorf("unknown ObjectType: %s", object.ObjectType)
 		}
 	}
 
 	for _, product := range importedScenario.Products {
 		if product.ObjectType != "product" {
-			fmt.Println("Expected ObjectType to be 'product' not", product.ObjectType)
-			continue
+			return Scenario{}, fmt.Errorf("expected ObjectType to be 'product', not %s", product.ObjectType)
 		}
 		scenario.products = append(scenario.products, Product{
 			subtype:   product.Subtype,
@@ -153,5 +154,5 @@ func importScenarioFromJson(path string) Scenario {
 			resources: product.Resources,
 		})
 	}
-	return scenario
+	return scenario, nil
 }

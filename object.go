@@ -219,44 +219,55 @@ func (m *Mine) Ingress() Position {
 }
 
 func (m *Mine) calculateRectangles() {
-	switch m.direction {
-	case Right:
-		m.cachedRectangles = []Rectangle{{m.position, 2, 1}, {Position{m.position.x - 1, m.position.y + 1}, 4, 1}}
-	case Bottom:
-		m.cachedRectangles = []Rectangle{{Position{m.position.x, m.position.y - 1}, 1, 4}, {Position{m.position.x + 1, m.position.y}, 1, 2}}
-	case Left:
-		m.cachedRectangles = []Rectangle{{Position{m.position.x - 1, m.position.y}, 4, 1}, {Position{m.position.x, m.position.y + 1}, 2, 1}}
-	case Top:
-		m.cachedRectangles = []Rectangle{{Position{m.position.x, m.position.y}, 1, 2}, {Position{m.position.x + 1, m.position.y - 1}, 1, 4}}
-	}
 }
 
-func (m *Mine) Rectangles() []Rectangle {
-	if m.cachedRectangles != nil && len(m.cachedRectangles) > 0 {
-		return m.cachedRectangles
+func (m *Mine) RectanglesEach(f func(Rectangle)) {
+	switch m.direction {
+	case Right:
+		f(Rectangle{m.position, 2, 1})
+		f(Rectangle{Position{m.position.x - 1, m.position.y + 1}, 4, 1})
+	case Bottom:
+		f(Rectangle{Position{m.position.x, m.position.y - 1}, 1, 4})
+		f(Rectangle{Position{m.position.x + 1, m.position.y}, 1, 2})
+	case Left:
+		f(Rectangle{Position{m.position.x - 1, m.position.y}, 4, 1})
+		f(Rectangle{Position{m.position.x, m.position.y + 1}, 2, 1})
+	case Top:
+		f(Rectangle{Position{m.position.x, m.position.y}, 1, 2})
+		f(Rectangle{Position{m.position.x + 1, m.position.y - 1}, 1, 4})
 	}
-	m.calculateRectangles()
-	return m.cachedRectangles
 }
 
 func (m *Mine) Intersects(other Rectangle) bool {
-	for _, r := range m.Rectangles() {
+	res := false
+	m.RectanglesEach(func(r Rectangle) {
 		if r.Intersects(other) {
-			return true
+			res = true
 		}
-	}
-	return false
+	})
+	return res
 }
 
 func (m *Mine) IntersectsAny(rectangles []Rectangle) bool {
-	for _, r1 := range m.Rectangles() {
+	res := false
+	m.RectanglesEach(func(r1 Rectangle) {
 		for _, r2 := range rectangles {
 			if r1.Intersects(r2) {
-				return true
+				res = true
 			}
 		}
-	}
-	return false
+	})
+	return res
+}
+
+func (m *Mine) IntersectsMine(m2 Mine) bool {
+	res := false
+	m.RectanglesEach(func(r Rectangle) {
+		if m2.Intersects(r) {
+			res = true
+		}
+	})
+	return res
 }
 
 func (f Factory) mineEgressPositions() []Position {

@@ -2,10 +2,18 @@ package main
 
 import "testing"
 
+func mineRectanglesSlice(mine *Mine) []Rectangle {
+	rectangles := make([]Rectangle, 0)
+	mine.RectanglesEach(func(r Rectangle) {
+		rectangles = append(rectangles, r)
+	})
+	return rectangles
+}
+
 func TestRightMineRectangles(t *testing.T) {
 	mine := Mine{position: Position{1, 0}, direction: Right}
 
-	rectangles := mine.Rectangles()
+	rectangles := mineRectanglesSlice(&mine)
 	validRectangles := []Rectangle{
 		{Position{1, 0}, 2, 1},
 		{Position{0, 1}, 4, 1},
@@ -21,7 +29,7 @@ func TestRightMineRectangles(t *testing.T) {
 func TestBottomMineRectangles(t *testing.T) {
 	mine := Mine{position: Position{0, 1}, direction: Bottom}
 
-	rectangles := mine.Rectangles()
+	rectangles := mineRectanglesSlice(&mine)
 	validRectangles := []Rectangle{
 		{Position{0, 0}, 1, 4},
 		{Position{1, 1}, 1, 2},
@@ -37,7 +45,7 @@ func TestBottomMineRectangles(t *testing.T) {
 func TestLeftMineRectangles(t *testing.T) {
 	mine := Mine{position: Position{1, 0}, direction: Left}
 
-	rectangles := mine.Rectangles()
+	rectangles := mineRectanglesSlice(&mine)
 	validRectangles := []Rectangle{
 		{Position{0, 0}, 4, 1},
 		{Position{1, 1}, 2, 1},
@@ -53,7 +61,7 @@ func TestLeftMineRectangles(t *testing.T) {
 func TestTopMineRectangles(t *testing.T) {
 	mine := Mine{position: Position{0, 1}, direction: Top}
 
-	rectangles := mine.Rectangles()
+	rectangles := mineRectanglesSlice(&mine)
 	validRectangles := []Rectangle{
 		{Position{0, 1}, 1, 2},
 		{Position{1, 0}, 1, 4},
