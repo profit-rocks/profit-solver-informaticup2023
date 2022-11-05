@@ -188,7 +188,7 @@ type Scenario struct {
 type Solution struct {
 	factories []Factory
 	mines     []Mine
-	conveyors []Conveyor
+	paths     []Path
 }
 
 func (d Deposit) Rectangle() Rectangle {
@@ -280,7 +280,7 @@ func (m *Mine) IntersectsMine(m2 Mine) bool {
 	return res
 }
 
-func (f Factory) mineEgressPositions() []Position {
+func (f Factory) nextToIngressPositions() []Position {
 	positions := make([]Position, 0)
 	for i := 0; i < FactoryWidth; i++ {
 		positions = append(positions, Position{

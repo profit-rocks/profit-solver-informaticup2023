@@ -19,8 +19,8 @@ func invalidSolutionForLargeEmptyScenario() Solution {
 			position: Position{0, 0},
 			product:  0,
 		}},
-		mines:     nil,
-		conveyors: nil,
+		mines: nil,
+		paths: nil,
 	}
 }
 
@@ -89,7 +89,7 @@ func solutionForLargeScenarioWithDeposit() Solution {
 			},
 			direction: 0,
 		}},
-		conveyors: nil,
+		paths: nil,
 	}
 }
 
@@ -103,6 +103,6 @@ func solutionWithSingleMineForLargeEmptyScenario() Solution {
 			},
 			direction: 0,
 		}},
-		conveyors: nil,
+		paths: nil,
 	}
 }

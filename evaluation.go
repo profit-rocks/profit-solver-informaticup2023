@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"golang.org/x/exp/slices"
 )
 
 const DepositResourceFactor = 5
@@ -13,7 +14,7 @@ type Simulation struct {
 	factories []SimulatedFactory
 	deposits  []SimulatedDeposit
 	mines     []SimulatedMine
-	conveyors []SimulatedConveyor
+	paths     []SimulatedPath
 }
 
 type SimulatedDeposit struct {
@@ -32,6 +33,12 @@ type SimulatedMine struct {
 	mine             Mine
 	resourcesIngress []int
 	resourcesEgress  []int
+}
+
+type SimulatedPath struct {
+	conveyors  []SimulatedConveyor
+	startMine  *SimulatedMine
+	endFactory *SimulatedFactory
 }
 
 type SimulatedConveyor struct {
@@ -60,6 +67,8 @@ func (s *Scenario) checkValidity(solution Solution) error {
 			return errors.New("solution includes a factory which position is invalid, can't evaluate this solution")
 		}
 	}
+
+	// TODO: Check validity of conveyors
 	return nil
 }
 
@@ -89,7 +98,7 @@ func simulationFromScenarioAndSolution(scenario *Scenario, solution Solution) Si
 		factories: make([]SimulatedFactory, len(solution.factories)),
 		deposits:  make([]SimulatedDeposit, len(scenario.deposits)),
 		mines:     make([]SimulatedMine, len(solution.mines)),
-		conveyors: make([]SimulatedConveyor, len(solution.conveyors)),
+		paths:     make([]SimulatedPath, len(solution.paths)),
 	}
 	for i, deposit := range scenario.deposits {
 		simulation.deposits[i] = SimulatedDeposit{
@@ -110,6 +119,25 @@ func simulationFromScenarioAndSolution(scenario *Scenario, solution Solution) Si
 			resourcesEgress:  []int{0, 0, 0, 0, 0, 0, 0, 0},
 		}
 	}
+
+	for i, path := range solution.paths {
+		if len(path) > 0 {
+			simulatedPath := SimulatedPath{
+				conveyors:  make([]SimulatedConveyor, len(path)),
+				startMine:  simulation.adjacentMineToConveyor(path[0]),
+				endFactory: simulation.adjacentFactoryToConveyor(path[len(path)-1]),
+			}
+			for j, conveyor := range path {
+				simulatedPath.conveyors[j] = SimulatedConveyor{
+					conveyor:         conveyor,
+					resourcesIngress: []int{0, 0, 0, 0, 0, 0, 0, 0},
+					resourcesEgress:  []int{0, 0, 0, 0, 0, 0, 0, 0},
+				}
+			}
+			simulation.paths[i] = simulatedPath
+		}
+	}
+
 	for i := range scenario.deposits {
 		simulation.deposits[i].mines = simulation.adjacentMinesToDeposit(simulation.deposits[i])
 	}
@@ -117,6 +145,24 @@ func simulationFromScenarioAndSolution(scenario *Scenario, solution Solution) Si
 		simulation.factories[i].mines = simulation.adjacentMinesToFactory(simulation.factories[i])
 	}
 	return simulation
+}
+
+func (s *Simulation) adjacentMineToConveyor(conveyor Conveyor) *SimulatedMine {
+	for i := range s.mines {
+		if s.mines[i].mine.Egress().NextTo(conveyor.Ingress()) {
+			return &s.mines[i]
+		}
+	}
+	return nil
+}
+
+func (s *Simulation) adjacentFactoryToConveyor(conveyor Conveyor) *SimulatedFactory {
+	for i := range s.factories {
+		if slices.Contains(s.factories[i].factory.nextToIngressPositions(), conveyor.Egress()) {
+			return &s.factories[i]
+		}
+	}
+	return nil
 }
 
 func (s *Simulation) simulateOneRound() bool {
@@ -168,7 +214,7 @@ func (s *Simulation) simulateOneRound() bool {
 
 func (s *Simulation) adjacentMinesToFactory(factory SimulatedFactory) []*SimulatedMine {
 	mines := make([]*SimulatedMine, 0)
-	for _, position := range factory.factory.mineEgressPositions() {
+	for _, position := range factory.factory.nextToIngressPositions() {
 		mine, foundMine := s.getMineWithEgressAt(position)
 		if foundMine {
 			mines = append(mines, mine)

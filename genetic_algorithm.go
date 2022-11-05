@@ -39,6 +39,7 @@ func (c Chromosome) Solution() Solution {
 	solution := Solution{
 		factories: make([]Factory, len(c.factories)),
 		mines:     make([]Mine, len(c.mines)),
+		paths:     make([]Path, len(c.paths)),
 	}
 	for i, factory := range c.factories {
 		solution.factories[i] = Factory{
@@ -52,10 +53,8 @@ func (c Chromosome) Solution() Solution {
 			direction: mine.direction,
 		}
 	}
-	for _, path := range c.paths {
-		for _, conveyor := range path {
-			solution.conveyors = append(solution.conveyors, conveyor)
-		}
+	for i, path := range c.paths {
+		solution.paths[i] = path
 	}
 	return solution
 }
@@ -202,7 +201,7 @@ func (g *GeneticAlgorithm) getPath(chromosome Chromosome, mine Mine, factory Fac
 		direction: Right,
 		length:    Short,
 	}
-	endPositions := factory.mineEgressPositions()
+	endPositions := factory.nextToIngressPositions()
 	queue := PriorityQueue{}
 	startItem := Item{
 		value:    startConveyor,
