@@ -266,6 +266,7 @@ func (g *GeneticAlgorithm) getPath(chromosome Chromosome, mine Mine, factory Fac
 	distances[startPosition.y][startPosition.x] = 0
 	for queue.Len() > 0 {
 		current := queue.Pop().(*Item)
+		currentConveyor := current.value
 		currentEgress := current.value.Egress()
 		finished := false
 		for _, p := range endPositions {
@@ -280,7 +281,7 @@ func (g *GeneticAlgorithm) getPath(chromosome Chromosome, mine Mine, factory Fac
 		if current.priority != distances[currentEgress.y][currentEgress.x] {
 			continue
 		}
-		for _, nextIngress := range currentEgress.NeighborPositions() {
+		for _, nextIngress := range currentConveyor.EgressNeighborPositions() {
 			if !g.inBounds(nextIngress) {
 				continue
 			}

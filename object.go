@@ -110,6 +110,19 @@ func (c Conveyor) Egress() Position {
 	return Position{c.position.x, c.position.y - 1}
 }
 
+func (c Conveyor) EgressNeighborPositions() []Position {
+	p := c.Egress()
+	if c.direction == Right {
+		return []Position{{p.x + 1, p.y}, {p.x, p.y + 1}, {p.x, p.y - 1}}
+	} else if c.direction == Bottom {
+		return []Position{{p.x + 1, p.y}, {p.x - 1, p.y}, {p.x, p.y + 1}}
+	} else if c.direction == Left {
+		return []Position{{p.x - 1, p.y}, {p.x, p.y + 1}, {p.x, p.y - 1}}
+	}
+	// Top
+	return []Position{{p.x + 1, p.y}, {p.x - 1, p.y}, {p.x, p.y - 1}}
+}
+
 func (c Conveyor) Ingress() Position {
 	if c.direction == Right {
 		return Position{c.position.x - 1, c.position.y}
