@@ -93,6 +93,29 @@ func solutionForLargeScenarioWithDeposit() Solution {
 	}
 }
 
+func solutionWithPathForLargeScenarioWithDeposit() Solution {
+	return Solution{
+		factories: []Factory{{
+			position: Position{
+				x: 14,
+				y: 0,
+			},
+			product: 0,
+		}},
+		mines: []Mine{{
+			position: Position{
+				x: 6,
+				y: 1,
+			},
+			direction: 0,
+		}},
+		paths: []Path{{{position: Position{9, 3}, direction: Right, length: Short},
+			{position: Position{11, 2}, direction: Right, length: Long},
+		},
+		},
+	}
+}
+
 func solutionWithSingleMineForLargeEmptyScenario() Solution {
 	return Solution{
 		factories: []Factory{},
