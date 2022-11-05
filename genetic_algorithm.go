@@ -79,7 +79,7 @@ func (g *GeneticAlgorithm) crossover(chromosome Chromosome, chromosome2 Chromoso
 			newChromosome.factories = append(newChromosome.factories, chromosome2.factories[i])
 		}
 	}
-	newChromosome.paths = chromosome.paths
+	newChromosome.paths = nil
 	return newChromosome
 }
 
@@ -119,7 +119,7 @@ func (g *GeneticAlgorithm) mutation(chromosome Chromosome) Chromosome {
 			}
 		}
 	}
-	newChromosome.paths = chromosome.paths
+	newChromosome.paths = nil
 	return newChromosome
 }
 
