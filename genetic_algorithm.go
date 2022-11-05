@@ -241,11 +241,11 @@ func (g *GeneticAlgorithm) getPath(chromosome Chromosome, mine Mine, factory Fac
 		})
 	}
 	for _, m := range chromosome.mines {
-		for _, r := range m.Rectangles() {
+		m.RectanglesEach(func(r Rectangle) {
 			r.ForEach(func(p Position) {
 				blocked[p.y][p.x] = true
 			})
-		}
+		})
 	}
 	for _, f := range chromosome.factories {
 		f.Rectangle().ForEach(func(p Position) {

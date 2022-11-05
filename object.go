@@ -218,9 +218,6 @@ func (m *Mine) Ingress() Position {
 	return Position{m.position.x + 1, m.position.y + 2}
 }
 
-func (m *Mine) calculateRectangles() {
-}
-
 func (m *Mine) RectanglesEach(f func(Rectangle)) {
 	switch m.direction {
 	case Right:
