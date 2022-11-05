@@ -99,7 +99,7 @@ func simulationFromScenarioAndSolution(scenario *Scenario, solution Solution) Si
 		factories: make([]SimulatedFactory, len(solution.factories)),
 		deposits:  make([]SimulatedDeposit, len(scenario.deposits)),
 		mines:     make([]SimulatedMine, len(solution.mines)),
-		paths:     make([]SimulatedPath, len(solution.paths)),
+		paths:     []SimulatedPath{},
 	}
 	for i, deposit := range scenario.deposits {
 		simulation.deposits[i] = SimulatedDeposit{
@@ -216,7 +216,7 @@ func (s *Simulation) simulateOneRound() bool {
 				conveyor.resourcesIngress[k] = 0
 			}
 			// Transfer resources from previous conveyor (if present) to ingress
-			if 0 >= len(path.conveyors)-1-j-1 {
+			if 0 <= len(path.conveyors)-1-j-1 {
 				previousConveyor := &path.conveyors[len(path.conveyors)-1-j-1]
 				for k := 0; k < NumResourceTypes; k++ {
 					finished = finished && previousConveyor.resourcesIngress[k] == 0
@@ -231,7 +231,7 @@ func (s *Simulation) simulateOneRound() bool {
 	for i := range s.paths {
 		// value is copied if used in range
 		path := &s.paths[i]
-		firstConveyor := path.conveyors[0]
+		firstConveyor := &path.conveyors[0]
 		for j := 0; j < NumResourceTypes; j++ {
 			finished = finished && path.startMine.resourcesEgress[j] == 0
 			firstConveyor.resourcesIngress[j] += path.startMine.resourcesEgress[j]
