@@ -288,7 +288,7 @@ func (g *GeneticAlgorithm) getPath(chromosome Chromosome, mine Mine, factory Fac
 			for i := 0; i < NumConveyorSubtypes; i++ {
 				nextConveyor := ConveyorFromIngressAndSubtype(nextIngress, i)
 				nextEgress := nextConveyor.Egress()
-				if !g.inBounds(nextEgress) {
+				if !g.inBounds(nextEgress) || nextConveyor.Rectangle().Intersects(currentConveyor.Rectangle()) {
 					continue
 				}
 				if current.priority+1 < distances[nextEgress.y][nextEgress.x] {
