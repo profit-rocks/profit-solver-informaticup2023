@@ -60,20 +60,20 @@ func (s *Scenario) checkValidity(solution Solution) error {
 		paths[i] = path
 	}
 	for i, mine := range solution.mines {
-		if !s.isPositionAvailableForMine(factories, mines[:i], paths, mine) {
+		if !s.positionAvailableForMine(factories, mines[:i], paths, mine) {
 			return errors.New("solution includes a mine which position is invalid, can't evaluate this solution")
 		}
 	}
 
 	for i, factory := range solution.factories {
-		if !s.isPositionAvailableForFactory(factories[:i], mines, paths, factory.position) {
+		if !s.positionAvailableForFactory(factories[:i], mines, paths, factory.position) {
 			return errors.New("solution includes a factory which position is invalid, can't evaluate this solution")
 		}
 	}
 
 	for i, path := range solution.paths {
 		for _, conveyor := range path {
-			if !s.isPositionAvailableForConveyor(factories, mines, paths[:i], conveyor) {
+			if !s.positionAvailableForConveyor(factories, mines, paths[:i], conveyor) {
 				return errors.New("solution includes a factory which position is invalid, can't evaluate this solution")
 			}
 		}

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"container/heap"
 	"errors"
 	"log"
 	"math"
@@ -100,7 +99,7 @@ func (g *GeneticAlgorithm) mutation(chromosome Chromosome) Chromosome {
 			success := false
 			for _, deposit := range g.scenario.deposits {
 				if deposit.Rectangle().Intersects(Rectangle{Position{mine.Ingress().x - 1, mine.Ingress().y - 1}, 3, 3}) {
-					newMine, err := g.getRandomMine(deposit, newChromosome)
+					newMine, err := g.randomMine(deposit, newChromosome)
 					if err == nil {
 						newChromosome.mines = append(newChromosome.mines, newMine)
 						success = true
@@ -117,7 +116,7 @@ func (g *GeneticAlgorithm) mutation(chromosome Chromosome) Chromosome {
 		if rand.Float64() > g.mutationProbability {
 			newChromosome.factories = append(newChromosome.factories, factory)
 		} else {
-			newFactory, err := g.getRandomFactory(newChromosome)
+			newFactory, err := g.randomFactory(newChromosome)
 			if err != nil {
 				newChromosome.factories = append(newChromosome.factories, factory)
 			} else {
@@ -148,46 +147,21 @@ func (g *GeneticAlgorithm) evaluateFitness(chromosome Chromosome) int {
 	if err != nil {
 		return math.MinInt
 	}
-	// sum of manhattan distances for each factory to all the mines
-	//fitness := 0.0
-	//for _, mine := range chromosome.mines {
-	//	for _, factory := range chromosome.factories {
-	//		fitness += float64(factory.position.ManhattanDist(mine.position))
-	//	}
-	//}
 	return fitness
-}
-
-func (g *GeneticAlgorithm) generateChromosomes() ([]Chromosome, error) {
-	chromosomes := make([]Chromosome, g.populationSize)
-	for i := 0; i < g.populationSize; i++ {
-		foundChromosome := false
-		for j := 0; j < NumTriesPerChromosome; j++ {
-			chromosome, err := g.generateChromosome()
-			if err == nil {
-				chromosomes[i] = chromosome
-				foundChromosome = true
-			}
-		}
-		if !foundChromosome {
-			return chromosomes, errors.New("exceeded NumTriesPerChromosome in generateChromosomes, probably trying to place too many factories or mines")
-		}
-	}
-	return chromosomes, nil
 }
 
 func (g *GeneticAlgorithm) generateChromosome() (Chromosome, error) {
 	chromosome := Chromosome{mines: make([]Mine, 0), factories: make([]Factory, 0)}
 	for i := 0; i < g.numMines; i++ {
 		deposit := g.scenario.deposits[i%len(g.scenario.deposits)]
-		mine, err := g.getRandomMine(deposit, chromosome)
+		mine, err := g.randomMine(deposit, chromosome)
 		if err != nil {
 			return chromosome, err
 		}
 		chromosome.mines = append(chromosome.mines, mine)
 	}
 	for i := 0; i < g.numFactories; i++ {
-		factory, err := g.getRandomFactory(chromosome)
+		factory, err := g.randomFactory(chromosome)
 		if err != nil {
 			return chromosome, err
 		}
@@ -213,440 +187,22 @@ func (g *GeneticAlgorithm) generateChromosome() (Chromosome, error) {
 	return chromosome, nil
 }
 
-func (g *GeneticAlgorithm) getPathMineToFactory(chromosome Chromosome, mine Mine, factory Factory) (Path, error) {
-	var path Path
-
-	startPosition := mine.Egress()
-	// Dummy conveyor used for backtracking
-	startConveyor := Conveyor{
-		position:  Position{startPosition.x - 1, startPosition.y},
-		direction: Right,
-		length:    Short,
-	}
-	endPositions := factory.nextToIngressPositions()
-	queue := PriorityQueue{}
-	startItem := Item{
-		value:    startConveyor,
-		priority: 0,
-		index:    0,
-	}
-
-	// TODO: Conveyors of same path may overlap
-	// TODO: Conveyors of same path may violate ingress-egress-rules
-	distances := make([][]int, g.scenario.height)
-	for i := range distances {
-		distances[i] = make([]int, g.scenario.width)
-		for j := range distances[i] {
-			distances[i][j] = 1000000
-		}
-	}
-	blocked := make([][]bool, g.scenario.height)
-	for i := range blocked {
-		blocked[i] = make([]bool, g.scenario.width)
-		for j := range blocked[i] {
-			blocked[i][j] = false
-		}
-	}
-	blockedForConveyorIngress := make([][]int, g.scenario.height)
-	for i := range blockedForConveyorIngress {
-		blockedForConveyorIngress[i] = make([]int, g.scenario.width)
-		for j := range blockedForConveyorIngress[i] {
-			blockedForConveyorIngress[i][j] = 0
-		}
-	}
-	blockedForConveyorEgress := make([][]int, g.scenario.height)
-	for i := range blockedForConveyorEgress {
-		blockedForConveyorEgress[i] = make([]int, g.scenario.width)
-		for j := range blockedForConveyorEgress[i] {
-			blockedForConveyorEgress[i][j] = 0
-		}
-	}
-	previousConveyors := make([][]Conveyor, g.scenario.height)
-	for i := range previousConveyors {
-		previousConveyors[i] = make([]Conveyor, g.scenario.width)
-	}
-
-	// keep algorithm from using occupied squares
-	for _, deposit := range g.scenario.deposits {
-		for _, position := range deposit.mineIngressPositions() {
-			if !g.scenario.inBounds(position) {
-				continue
-			}
-			blockedForConveyorIngress[position.y][position.x] += 1
-		}
-		deposit.Rectangle().ForEach(func(p Position) {
-			blocked[p.y][p.x] = true
-		})
-	}
-	for _, obstacle := range g.scenario.obstacles {
-		obstacle.ForEach(func(p Position) {
-			blocked[p.y][p.x] = true
-		})
-	}
-	for _, m := range chromosome.mines {
-		for _, position := range m.Ingress().NeighborPositions() {
-			if !g.scenario.inBounds(position) {
-				continue
-			}
-			blockedForConveyorEgress[position.y][position.x] += 1
-		}
-		for _, position := range m.Egress().NeighborPositions() {
-			if !g.scenario.inBounds(position) {
-				continue
-			}
-			blockedForConveyorIngress[position.y][position.x] += 1
-		}
-		m.RectanglesEach(func(r Rectangle) {
-			r.ForEach(func(p Position) {
-				blocked[p.y][p.x] = true
-			})
-		})
-	}
-	for _, f := range chromosome.factories {
-		for _, position := range f.nextToIngressPositions() {
-			if !g.scenario.inBounds(position) {
-				continue
-			}
-			blockedForConveyorEgress[position.y][position.x] += 1
-		}
-		f.Rectangle().ForEach(func(p Position) {
-			blocked[p.y][p.x] = true
-		})
-	}
-	for _, otherPath := range chromosome.paths {
-		for _, conveyor := range otherPath {
-			for _, position := range conveyor.Ingress().NeighborPositions() {
-				if !g.scenario.inBounds(position) {
-					continue
-				}
-				blockedForConveyorEgress[position.y][position.x] += 1
-			}
-			for _, position := range conveyor.Egress().NeighborPositions() {
-				if !g.scenario.inBounds(position) {
-					continue
-				}
-				blockedForConveyorIngress[position.y][position.x] += 1
-			}
-			conveyor.Rectangle().ForEach(func(p Position) {
-				blocked[p.y][p.x] = true
-			})
-		}
-	}
-
-	heap.Init(&queue)
-	queue.Push(&startItem)
-	heap.Fix(&queue, startItem.index)
-	distances[startPosition.y][startPosition.x] = 0
-	for queue.Len() > 0 {
-		current := queue.Pop().(*Item)
-		currentConveyor := current.value
-		currentEgress := current.value.Egress()
-		finished := false
-		for _, p := range endPositions {
-			if currentEgress == p && blockedForConveyorEgress[currentEgress.y][currentEgress.x] <= 1 {
-				path = append(path, current.value)
-				finished = true
+func (g *GeneticAlgorithm) generateChromosomes() ([]Chromosome, error) {
+	chromosomes := make([]Chromosome, g.populationSize)
+	for i := 0; i < g.populationSize; i++ {
+		foundChromosome := false
+		for j := 0; j < NumTriesPerChromosome; j++ {
+			chromosome, err := g.generateChromosome()
+			if err == nil {
+				chromosomes[i] = chromosome
+				foundChromosome = true
 			}
 		}
-		if finished {
-			break
-		}
-		if blockedForConveyorEgress[currentEgress.y][currentEgress.x] >= 1 {
-			continue
-		}
-		if current.priority != distances[currentEgress.y][currentEgress.x] {
-			continue
-		}
-		for _, nextIngress := range currentConveyor.EgressNeighborPositions() {
-			if !g.scenario.inBounds(nextIngress) {
-				continue
-			}
-			if blockedForConveyorIngress[nextIngress.y][nextIngress.x] >= 1 && currentConveyor.Egress() != startPosition || blockedForConveyorIngress[nextIngress.y][nextIngress.x] >= 2 {
-				continue
-			}
-			for i := 0; i < NumConveyorSubtypes; i++ {
-				nextConveyor := ConveyorFromIngressAndSubtype(nextIngress, i)
-				nextEgress := nextConveyor.Egress()
-				if !g.scenario.inBounds(nextEgress) || nextConveyor.Rectangle().Intersects(currentConveyor.Rectangle()) {
-					continue
-				}
-				if current.priority+1 < distances[nextEgress.y][nextEgress.x] {
-					isBlocked := false
-					nextConveyor.Rectangle().ForEach(func(p Position) {
-						if blocked[p.y][p.x] {
-							isBlocked = true
-						}
-					})
-					if isBlocked {
-						continue
-					}
-					next := Item{
-						value:    nextConveyor,
-						priority: current.priority + 1,
-						index:    0,
-					}
-					queue.Push(&next)
-					heap.Fix(&queue, next.index)
-					previousConveyors[nextEgress.y][nextEgress.x] = current.value
-					distances[nextEgress.y][nextEgress.x] = next.priority
-				}
-			}
+		if !foundChromosome {
+			return chromosomes, errors.New("exceeded NumTriesPerChromosome in generateChromosomes, probably trying to place too many factories or mines")
 		}
 	}
-	if len(path) == 0 {
-		return path, errors.New("no path found")
-	}
-	currentEgress := path[0].Egress()
-	if currentEgress == startPosition {
-		return Path{}, nil
-	}
-	for {
-		conveyor := previousConveyors[currentEgress.y][currentEgress.x]
-		if conveyor.Egress() == startPosition {
-			break
-		}
-		path = append(path, conveyor)
-		currentEgress = conveyor.Egress()
-	}
-	// Reverse the path
-	var pathMineToFactory Path
-	for i := range path {
-		pathMineToFactory = append(pathMineToFactory, path[len(path)-i-1])
-	}
-	return pathMineToFactory, nil
-}
-
-func (g *GeneticAlgorithm) getRandomMine(deposit Deposit, chromosome Chromosome) (Mine, error) {
-	availableMines := g.scenario.minesAroundDeposit(deposit, chromosome)
-	if len(availableMines) != 0 {
-		return availableMines[rand.Intn(len(availableMines))], nil
-	}
-	return Mine{}, errors.New("no mines available")
-}
-
-func (g *GeneticAlgorithm) getRandomFactory(chromosome Chromosome) (Factory, error) {
-	availablePositions := g.scenario.getAvailableFactoryPositions(chromosome)
-	if len(availablePositions) == 0 {
-		return Factory{}, errors.New("no factory positions available")
-	}
-	position := availablePositions[rand.Intn(len(availablePositions))]
-	return Factory{position: position, product: 0}, nil
-}
-
-func (s *Scenario) getAvailableFactoryPositions(chromosome Chromosome) []Position {
-	positions := make([]Position, 0)
-	for i := 0; i < s.width; i++ {
-		for j := 0; j < s.height; j++ {
-			pos := Position{i, j}
-			if s.isPositionAvailableForFactory(chromosome.factories, chromosome.mines, []Path{}, pos) {
-				positions = append(positions, pos)
-			}
-		}
-	}
-	return positions
-}
-
-func (s *Scenario) isPositionAvailableForFactory(factories []Factory, mines []Mine, paths []Path, position Position) bool {
-	factoryRectangle := Rectangle{
-		position: position,
-		width:    FactoryWidth,
-		height:   FactoryHeight,
-	}
-	if position.x+FactoryWidth > s.width || position.y+FactoryHeight > s.height {
-		return false
-	}
-	for _, obstacle := range s.obstacles {
-		if factoryRectangle.Intersects(obstacle) {
-			return false
-		}
-	}
-	for _, factory := range factories {
-		if factoryRectangle.Intersects(factory.Rectangle()) {
-			return false
-		}
-	}
-	for _, mine := range mines {
-		if mine.Intersects(factoryRectangle) {
-			return false
-		}
-	}
-	for _, deposit := range s.deposits {
-		depositRectangle := deposit.Rectangle()
-		extendedDepositRectangle := Rectangle{
-			Position{depositRectangle.position.x - 1, depositRectangle.position.y - 1},
-			depositRectangle.width + 2,
-			depositRectangle.height + 2,
-		}
-		if factoryRectangle.Intersects(extendedDepositRectangle) {
-			// top left
-			positionIsCorner := position.y+FactoryHeight == deposit.position.y && position.x+FactoryHeight == deposit.position.x
-			// top right
-			positionIsCorner = positionIsCorner || (position.y+FactoryHeight == deposit.position.y && position.x == deposit.position.x+deposit.width)
-			// bottom left
-			positionIsCorner = positionIsCorner || (position.y == deposit.position.y+deposit.height && position.x+FactoryHeight == deposit.position.x)
-			// bottom right
-			positionIsCorner = positionIsCorner || (position.y == deposit.position.y+deposit.height && position.x == deposit.position.x+deposit.width)
-			if !positionIsCorner {
-				return false
-			}
-		}
-	}
-	for _, path := range paths {
-		for _, conveyor := range path {
-			if factoryRectangle.Intersects(conveyor.Rectangle()) {
-				return false
-			}
-		}
-	}
-	return true
-}
-
-func (s *Scenario) attachedDepositEgress(mine Mine) (Position, error) {
-	ingress := mine.Ingress()
-	for _, deposit := range s.deposits {
-		depositRectangle := deposit.Rectangle()
-		for _, egressPosition := range []Position{{ingress.x + 1, ingress.y}, {ingress.x - 1, ingress.y}, {ingress.x, ingress.y + 1}, {ingress.x, ingress.y - 1}} {
-			if depositRectangle.Contains(egressPosition) {
-				return egressPosition, nil
-			}
-		}
-	}
-	return Position{}, nil
-}
-
-func (s *Scenario) isPositionAvailableForMine(factories []Factory, mines []Mine, paths []Path, mine Mine) bool {
-	// mine is out of bounds
-	boundRectangles := s.boundRectangles()
-	if mine.IntersectsAny(boundRectangles) {
-		return false
-	}
-	if mine.IntersectsAny(s.obstacles) {
-		return false
-	}
-	for _, deposit := range s.deposits {
-		if mine.Intersects(deposit.Rectangle()) {
-			return false
-		}
-	}
-	for _, factory := range factories {
-		if mine.Intersects(factory.Rectangle()) {
-			return false
-		}
-	}
-	depositEgress, err := s.attachedDepositEgress(mine)
-	for _, otherMine := range mines {
-		if mine.Egress().NextTo(otherMine.Ingress()) || mine.Ingress().NextTo(otherMine.Egress()) {
-			return false
-		}
-		if err == nil && otherMine.Ingress().NextTo(depositEgress) {
-			return false
-		}
-		if mine.IntersectsMine(otherMine) {
-			return false
-		}
-	}
-	for _, path := range paths {
-		for _, conveyor := range path {
-			if mine.Intersects(conveyor.Rectangle()) {
-				return false
-			}
-		}
-	}
-	return true
-}
-
-func (s *Scenario) minesAroundDeposit(deposit Deposit, chromosome Chromosome) []Mine {
-	/* For each mine direction, we go counter-clockwise.
-	   There is always one case where the mine corner matches the deposit edge.
-	   We always use the mine ingress coordinate as our iteration variable */
-
-	positions := make([]Mine, 0)
-
-	// Right
-	positions = append(positions, Mine{position: Position{deposit.position.x + deposit.width, deposit.position.y + deposit.height - 1}, direction: Right})
-	for i := deposit.position.y + deposit.height - 1; i >= deposit.position.y; i-- {
-		positions = append(positions, Mine{position: Position{deposit.position.x + deposit.width + 1, i - 1}, direction: Right})
-	}
-	for i := deposit.position.x + deposit.width - 1; i >= deposit.position.x; i-- {
-		positions = append(positions, Mine{position: Position{i + 1, deposit.position.y - 2}, direction: Right})
-	}
-
-	// Bottom
-	positions = append(positions, Mine{position: Position{deposit.position.x - 1, deposit.position.y + deposit.height}, direction: Bottom})
-	for i := deposit.position.x; i <= deposit.position.x+deposit.width-1; i++ {
-		positions = append(positions, Mine{position: Position{i, deposit.position.y + deposit.height + 1}, direction: Bottom})
-	}
-	for i := deposit.position.y + deposit.height - 1; i >= deposit.position.y; i-- {
-		positions = append(positions, Mine{position: Position{deposit.position.x + deposit.width, i + 1}, direction: Bottom})
-	}
-
-	// Left
-	positions = append(positions, Mine{position: Position{deposit.position.x - 2, deposit.position.y - 1}, direction: Left})
-	for i := deposit.position.y; i <= deposit.position.y+deposit.height-1; i++ {
-		positions = append(positions, Mine{position: Position{deposit.position.x - 3, i}, direction: Left})
-	}
-	for i := deposit.position.x; i <= deposit.position.x+deposit.width-1; i++ {
-		positions = append(positions, Mine{position: Position{i - 2, deposit.position.y + deposit.height}, direction: Left})
-	}
-
-	// Top
-	positions = append(positions, Mine{position: Position{deposit.position.x + deposit.width - 1, deposit.position.y - 2}, direction: Top})
-	for i := deposit.position.x + deposit.width - 1; i >= deposit.position.x; i-- {
-		positions = append(positions, Mine{position: Position{i - 1, deposit.position.y - 3}, direction: Top})
-	}
-	for i := deposit.position.y; i <= deposit.position.y+deposit.height-1; i++ {
-		positions = append(positions, Mine{position: Position{deposit.position.x - 2, i - 2}, direction: Top})
-	}
-
-	validPositions := make([]Mine, 0)
-	for i := range positions {
-		if s.isPositionAvailableForMine(chromosome.factories, chromosome.mines, chromosome.paths, positions[i]) {
-			validPositions = append(validPositions, positions[i])
-		}
-	}
-	return validPositions
-}
-
-func (s *Scenario) isPositionAvailableForConveyor(factories []Factory, mines []Mine, paths []Path, conveyor Conveyor) bool {
-	boundRectangles := s.boundRectangles()
-	for _, rectangle := range boundRectangles {
-		if conveyor.Rectangle().Intersects(rectangle) {
-			return false
-		}
-	}
-	for _, obstacle := range s.obstacles {
-		if conveyor.Rectangle().Intersects(obstacle) {
-			return false
-		}
-	}
-	for _, factory := range factories {
-		if conveyor.Rectangle().Intersects(factory.Rectangle()) {
-			return false
-		}
-	}
-	for _, mine := range mines {
-		if mine.Intersects(conveyor.Rectangle()) {
-			return false
-		}
-	}
-	for _, deposit := range s.deposits {
-		depositRectangle := deposit.Rectangle()
-		if conveyor.Rectangle().Intersects(depositRectangle) {
-			return false
-		}
-	}
-	for _, path := range paths {
-		for _, pathConveyor := range path {
-			if conveyor.Rectangle().Intersects(pathConveyor.Rectangle()) {
-				return false
-			}
-		}
-	}
-	return true
-}
-
-func (s *Scenario) inBounds(position Position) bool {
-	return !(position.y < 0 || position.y >= s.height || position.x < 0 || position.x >= s.width)
+	return chromosomes, nil
 }
 
 func (g *GeneticAlgorithm) Run() (Solution, error) {

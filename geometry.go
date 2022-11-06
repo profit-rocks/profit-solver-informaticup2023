@@ -42,3 +42,11 @@ func (r Rectangle) Contains(p Position) bool {
 func (r Rectangle) Intersects(other Rectangle) bool {
 	return r.position.x < other.position.x+other.width && r.position.x+r.width > other.position.x && r.position.y < other.position.y+other.height && r.position.y+r.height > other.position.y
 }
+
+func (r Rectangle) ForEach(f func(Position)) {
+	for x := r.position.x; x < r.position.x+r.width; x++ {
+		for y := r.position.y; y < r.position.y+r.height; y++ {
+			f(Position{x, y})
+		}
+	}
+}
