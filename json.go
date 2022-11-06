@@ -42,7 +42,7 @@ func solutionToExportableScenario(scenario Scenario, solution Solution) Exportab
 		Width:    scenario.width,
 		Objects:  []Object{},
 		Products: []Object{},
-		Turns:    100,
+		Turns:    scenario.turns,
 		Time:     100,
 	}
 
