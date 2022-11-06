@@ -179,7 +179,7 @@ func (g *GeneticAlgorithm) generateChromosome() (Chromosome, error) {
 		for j := 0; j < NumPathRetries; j++ {
 			randomFactory := chromosome.factories[rand.Intn(len(chromosome.factories))]
 			randomMine := chromosome.mines[rand.Intn(len(chromosome.mines))]
-			path, err = g.getPath(chromosome, randomMine, randomFactory)
+			path, err = g.getPathMineToFactory(chromosome, randomMine, randomFactory)
 			if err == nil {
 				break
 			}
@@ -193,7 +193,7 @@ func (g *GeneticAlgorithm) generateChromosome() (Chromosome, error) {
 	return chromosome, nil
 }
 
-func (g *GeneticAlgorithm) getPath(chromosome Chromosome, mine Mine, factory Factory) (Path, error) {
+func (g *GeneticAlgorithm) getPathMineToFactory(chromosome Chromosome, mine Mine, factory Factory) (Path, error) {
 	var path Path
 
 	startPosition := mine.Egress()
@@ -330,7 +330,12 @@ func (g *GeneticAlgorithm) getPath(chromosome Chromosome, mine Mine, factory Fac
 		path = append(path, conveyor)
 		currentEgress = conveyor.Egress()
 	}
-	return path, nil
+	// Reverse the path
+	var pathMineToFactory Path
+	for i := range path {
+		pathMineToFactory = append(pathMineToFactory, path[len(path)-i-1])
+	}
+	return pathMineToFactory, nil
 }
 
 func (g *GeneticAlgorithm) inBounds(p Position) bool {

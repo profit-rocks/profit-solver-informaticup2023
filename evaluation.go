@@ -123,12 +123,12 @@ func simulationFromScenarioAndSolution(scenario *Scenario, solution Solution) Si
 
 	for _, path := range solution.paths {
 		if len(path) > 0 {
-			startMine, err := simulation.adjacentMineToConveyor(path[len(path)-1])
+			startMine, err := simulation.adjacentMineToConveyor(path[0])
 			if err != nil {
 				fmt.Println("No adjacent mine, skipping path")
 				continue
 			}
-			endFactory, err := simulation.adjacentFactoryToConveyor(path[0])
+			endFactory, err := simulation.adjacentFactoryToConveyor(path[len(path)-1])
 			if err != nil {
 				fmt.Println("No adjacent factory, skipping path")
 				continue
