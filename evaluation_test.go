@@ -33,7 +33,7 @@ func TestSolutionWithPathForLargeScenarioWithDepositEvaluation(t *testing.T) {
 	if err != nil {
 		t.Errorf("evaluating empty solution should not return an error %v", err)
 	}
-	if score != 12 {
+	if score != 18 {
 		t.Errorf("score should be 18 and not %d", score)
 	}
 }

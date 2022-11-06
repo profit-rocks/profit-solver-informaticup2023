@@ -24,9 +24,9 @@ type SimulatedDeposit struct {
 }
 
 type SimulatedFactory struct {
-	factory         Factory
-	resourceStorage []int
-	mines           []*SimulatedMine
+	factory   Factory
+	resources []int
+	mines     []*SimulatedMine
 }
 
 type SimulatedMine struct {
@@ -42,9 +42,8 @@ type SimulatedPath struct {
 }
 
 type SimulatedConveyor struct {
-	conveyor         Conveyor
-	resourcesIngress []int
-	resourcesEgress  []int
+	conveyor  Conveyor
+	resources []int
 }
 
 func (s *Scenario) checkValidity(solution Solution) error {
@@ -96,7 +95,7 @@ func (s *Scenario) evaluateSolution(solution Solution) (int, error) {
 	score := 0
 	for _, factory := range simulation.factories {
 		for i := 0; i < NumResourceTypes; i++ {
-			score += factory.resourceStorage[i]
+			score += factory.resources[i]
 		}
 	}
 	return score, nil
@@ -118,8 +117,8 @@ func simulationFromScenarioAndSolution(scenario *Scenario, solution Solution) Si
 	}
 	for i, factory := range solution.factories {
 		simulation.factories[i] = SimulatedFactory{
-			factory:         factory,
-			resourceStorage: []int{0, 0, 0, 0, 0, 0, 0, 0},
+			factory:   factory,
+			resources: []int{0, 0, 0, 0, 0, 0, 0, 0},
 		}
 	}
 	for i, mine := range solution.mines {
@@ -149,9 +148,8 @@ func simulationFromScenarioAndSolution(scenario *Scenario, solution Solution) Si
 			}
 			for j, conveyor := range path {
 				simulatedPath.conveyors[j] = SimulatedConveyor{
-					conveyor:         conveyor,
-					resourcesIngress: []int{0, 0, 0, 0, 0, 0, 0, 0},
-					resourcesEgress:  []int{0, 0, 0, 0, 0, 0, 0, 0},
+					conveyor:  conveyor,
+					resources: []int{0, 0, 0, 0, 0, 0, 0, 0},
 				}
 			}
 			simulation.paths = append(simulation.paths, simulatedPath)
@@ -194,9 +192,9 @@ func (s *Simulation) simulateOneRound() bool {
 		path := &s.paths[i]
 		lastConveyor := path.conveyors[len(path.conveyors)-1]
 		for j := 0; j < NumResourceTypes; j++ {
-			finished = finished && lastConveyor.resourcesEgress[j] == 0
-			path.endFactory.resourceStorage[j] += lastConveyor.resourcesEgress[j]
-			lastConveyor.resourcesEgress[j] = 0
+			finished = finished && lastConveyor.resources[j] == 0
+			path.endFactory.resources[j] += lastConveyor.resources[j]
+			lastConveyor.resources[j] = 0
 		}
 	}
 	// Transfer resources from mine egresses to factories
@@ -206,7 +204,7 @@ func (s *Simulation) simulateOneRound() bool {
 		for _, mine := range factory.mines {
 			for j := 0; j < NumResourceTypes; j++ {
 				finished = finished && mine.resourcesEgress[j] == 0
-				factory.resourceStorage[j] += mine.resourcesEgress[j]
+				factory.resources[j] += mine.resourcesEgress[j]
 				mine.resourcesEgress[j] = 0
 			}
 		}
@@ -218,19 +216,13 @@ func (s *Simulation) simulateOneRound() bool {
 		for j := range path.conveyors {
 			// value is copied if used in range
 			conveyor := &path.conveyors[len(path.conveyors)-1-j]
-			// Transfer resources from conveyor ingress to egress
-			for k := 0; k < NumResourceTypes; k++ {
-				finished = finished && conveyor.resourcesIngress[k] == 0
-				conveyor.resourcesEgress[k] += conveyor.resourcesIngress[k]
-				conveyor.resourcesIngress[k] = 0
-			}
-			// Transfer resources from previous conveyor (if present) to ingress
+			// Transfer resources from previous conveyor (if present) to current conveyor
 			if 0 <= len(path.conveyors)-1-j-1 {
 				previousConveyor := &path.conveyors[len(path.conveyors)-1-j-1]
 				for k := 0; k < NumResourceTypes; k++ {
-					finished = finished && previousConveyor.resourcesIngress[k] == 0
-					conveyor.resourcesIngress[k] += previousConveyor.resourcesEgress[k]
-					previousConveyor.resourcesEgress[k] = 0
+					finished = finished && previousConveyor.resources[k] == 0
+					conveyor.resources[k] += previousConveyor.resources[k]
+					previousConveyor.resources[k] = 0
 				}
 			}
 		}
@@ -243,7 +235,7 @@ func (s *Simulation) simulateOneRound() bool {
 		firstConveyor := &path.conveyors[0]
 		for j := 0; j < NumResourceTypes; j++ {
 			finished = finished && path.startMine.resourcesEgress[j] == 0
-			firstConveyor.resourcesIngress[j] += path.startMine.resourcesEgress[j]
+			firstConveyor.resources[j] += path.startMine.resourcesEgress[j]
 			path.startMine.resourcesEgress[j] = 0
 		}
 	}
