@@ -31,6 +31,8 @@ func (pq *PriorityQueue) Push(x any) {
 	item := x.(*Item)
 	item.index = n
 	*pq = append(*pq, item)
+
+	heap.Fix(pq, item.index)
 }
 
 func (pq *PriorityQueue) Pop() any {

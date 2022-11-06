@@ -280,7 +280,6 @@ func (g *GeneticAlgorithm) getPathMineToFactory(chromosome Chromosome, mine Mine
 	startItem := Item{
 		value:    startConveyor,
 		priority: 0,
-		index:    0,
 	}
 
 	// TODO: Conveyors of same path may overlap
@@ -332,10 +331,8 @@ func (g *GeneticAlgorithm) getPathMineToFactory(chromosome Chromosome, mine Mine
 					next := Item{
 						value:    nextConveyor,
 						priority: current.priority + 1,
-						index:    0,
 					}
 					queue.Push(&next)
-					heap.Fix(&queue, next.index)
 					cellInfo[nextEgress.y][nextEgress.x].previousConveyor = current.value
 					cellInfo[nextEgress.y][nextEgress.x].distance = next.priority
 				}
