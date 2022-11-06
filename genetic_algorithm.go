@@ -79,7 +79,7 @@ func (g *GeneticAlgorithm) crossover(chromosome Chromosome, chromosome2 Chromoso
 			newChromosome.factories = append(newChromosome.factories, chromosome2.factories[i])
 		}
 	}
-	newChromosome.paths = nil
+	newChromosome.paths = chromosome.paths
 	return newChromosome
 }
 
@@ -119,7 +119,7 @@ func (g *GeneticAlgorithm) mutation(chromosome Chromosome) Chromosome {
 			}
 		}
 	}
-	newChromosome.paths = nil
+	newChromosome.paths = chromosome.paths
 	return newChromosome
 }
 
@@ -367,7 +367,7 @@ func (s *Scenario) getAvailableFactoryPositions(chromosome Chromosome) []Positio
 	for i := 0; i < s.width; i++ {
 		for j := 0; j < s.height; j++ {
 			pos := Position{i, j}
-			if s.isPositionAvailableForFactory(chromosome.factories, chromosome.mines, pos) {
+			if s.isPositionAvailableForFactory(chromosome.factories, chromosome.mines, chromosome.paths, pos) {
 				positions = append(positions, pos)
 			}
 		}
@@ -375,7 +375,7 @@ func (s *Scenario) getAvailableFactoryPositions(chromosome Chromosome) []Positio
 	return positions
 }
 
-func (s *Scenario) isPositionAvailableForFactory(factories []Factory, mines []Mine, position Position) bool {
+func (s *Scenario) isPositionAvailableForFactory(factories []Factory, mines []Mine, paths []Path, position Position) bool {
 	factoryRectangle := Rectangle{
 		position: position,
 		width:    FactoryWidth,
@@ -420,6 +420,13 @@ func (s *Scenario) isPositionAvailableForFactory(factories []Factory, mines []Mi
 			}
 		}
 	}
+	for _, path := range paths {
+		for _, conveyor := range path {
+			if factoryRectangle.Intersects(conveyor.Rectangle()) {
+				return false
+			}
+		}
+	}
 	return true
 }
 
@@ -436,7 +443,7 @@ func (s *Scenario) attachedDepositEgress(mine Mine) (Position, error) {
 	return Position{}, nil
 }
 
-func (s *Scenario) isPositionAvailableForMine(factories []Factory, mines []Mine, mine Mine) bool {
+func (s *Scenario) isPositionAvailableForMine(factories []Factory, mines []Mine, paths []Path, mine Mine) bool {
 	// mine is out of bounds
 	boundRectangles := s.boundRectangles()
 	if mine.IntersectsAny(boundRectangles) {
@@ -465,6 +472,13 @@ func (s *Scenario) isPositionAvailableForMine(factories []Factory, mines []Mine,
 		}
 		if mine.IntersectsMine(otherMine) {
 			return false
+		}
+	}
+	for _, path := range paths {
+		for _, conveyor := range path {
+			if mine.Intersects(conveyor.Rectangle()) {
+				return false
+			}
 		}
 	}
 	return true
@@ -515,11 +529,49 @@ func (s *Scenario) minesAroundDeposit(deposit Deposit, chromosome Chromosome) []
 
 	validPositions := make([]Mine, 0)
 	for i := range positions {
-		if s.isPositionAvailableForMine(chromosome.factories, chromosome.mines, positions[i]) {
+		if s.isPositionAvailableForMine(chromosome.factories, chromosome.mines, chromosome.paths, positions[i]) {
 			validPositions = append(validPositions, positions[i])
 		}
 	}
 	return validPositions
+}
+
+func (s *Scenario) isPositionAvailableForConveyor(factories []Factory, mines []Mine, paths []Path, conveyor Conveyor) bool {
+	boundRectangles := s.boundRectangles()
+	for _, rectangle := range boundRectangles {
+		if conveyor.Rectangle().Intersects(rectangle) {
+			return false
+		}
+	}
+	for _, obstacle := range s.obstacles {
+		if conveyor.Rectangle().Intersects(obstacle) {
+			return false
+		}
+	}
+	for _, factory := range factories {
+		if conveyor.Rectangle().Intersects(factory.Rectangle()) {
+			return false
+		}
+	}
+	for _, mine := range mines {
+		if mine.Intersects(conveyor.Rectangle()) {
+			return false
+		}
+	}
+	for _, deposit := range s.deposits {
+		depositRectangle := deposit.Rectangle()
+		if conveyor.Rectangle().Intersects(depositRectangle) {
+			return false
+		}
+	}
+	for _, path := range paths {
+		for _, pathConveyor := range path {
+			if conveyor.Rectangle().Intersects(pathConveyor.Rectangle()) {
+				return false
+			}
+		}
+	}
+	return true
 }
 
 func (g *GeneticAlgorithm) Run() (Solution, error) {
