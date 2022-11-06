@@ -178,6 +178,7 @@ func (s *Scenario) positionAvailableForConveyor(factories []Factory, mines []Min
 	return true
 }
 
+// CellInfo contains information on each cell that is used while pathfinding.
 type CellInfo struct {
 	distance            int
 	blocked             bool
@@ -186,6 +187,7 @@ type CellInfo struct {
 	previousConveyor    Conveyor
 }
 
+// We allocate a 2D array of CellInfo structs in static storage to decrease the number of dynamic allocations.
 var cellInfo [100][100]CellInfo
 
 func (g *GeneticAlgorithm) populateCellInfoWithIngress(ingress Position) {
