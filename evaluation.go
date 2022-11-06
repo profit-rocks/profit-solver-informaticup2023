@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"golang.org/x/exp/slices"
 )
 
 const DepositResourceFactor = 5
@@ -176,8 +175,10 @@ func (s *Simulation) adjacentMineToConveyor(conveyor Conveyor) (*SimulatedMine, 
 
 func (s *Simulation) adjacentFactoryToConveyor(conveyor Conveyor) (*SimulatedFactory, error) {
 	for i := range s.factories {
-		if slices.Contains(s.factories[i].factory.nextToIngressPositions(), conveyor.Egress()) {
-			return &s.factories[i], nil
+		for _, egress := range s.factories[i].factory.nextToIngressPositions() {
+			if egress == conveyor.Egress() {
+				return &s.factories[i], nil
+			}
 		}
 	}
 	return nil, errors.New("conveyor has no adjacent factory")
