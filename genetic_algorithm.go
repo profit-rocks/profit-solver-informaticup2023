@@ -231,6 +231,8 @@ func (g *GeneticAlgorithm) getPathMineToFactory(chromosome Chromosome, mine Mine
 		index:    0,
 	}
 
+	// TODO: Conveyors of same path may overlap
+	// TODO: Conveyors of same path may violate ingress-egress-rules
 	distances := make([][]int, g.scenario.height)
 	for i := range distances {
 		distances[i] = make([]int, g.scenario.width)
@@ -245,6 +247,20 @@ func (g *GeneticAlgorithm) getPathMineToFactory(chromosome Chromosome, mine Mine
 			blocked[i][j] = false
 		}
 	}
+	blockedForConveyorIngress := make([][]int, g.scenario.height)
+	for i := range blockedForConveyorIngress {
+		blockedForConveyorIngress[i] = make([]int, g.scenario.width)
+		for j := range blockedForConveyorIngress[i] {
+			blockedForConveyorIngress[i][j] = 0
+		}
+	}
+	blockedForConveyorEgress := make([][]int, g.scenario.height)
+	for i := range blockedForConveyorEgress {
+		blockedForConveyorEgress[i] = make([]int, g.scenario.width)
+		for j := range blockedForConveyorEgress[i] {
+			blockedForConveyorEgress[i][j] = 0
+		}
+	}
 	previousConveyors := make([][]Conveyor, g.scenario.height)
 	for i := range previousConveyors {
 		previousConveyors[i] = make([]Conveyor, g.scenario.width)
@@ -252,6 +268,12 @@ func (g *GeneticAlgorithm) getPathMineToFactory(chromosome Chromosome, mine Mine
 
 	// keep algorithm from using occupied squares
 	for _, deposit := range g.scenario.deposits {
+		for _, position := range deposit.mineIngressPositions() {
+			if !g.scenario.inBounds(position) {
+				continue
+			}
+			blockedForConveyorIngress[position.y][position.x] += 1
+		}
 		deposit.Rectangle().ForEach(func(p Position) {
 			blocked[p.y][p.x] = true
 		})
@@ -262,6 +284,18 @@ func (g *GeneticAlgorithm) getPathMineToFactory(chromosome Chromosome, mine Mine
 		})
 	}
 	for _, m := range chromosome.mines {
+		for _, position := range m.Ingress().NeighborPositions() {
+			if !g.scenario.inBounds(position) {
+				continue
+			}
+			blockedForConveyorEgress[position.y][position.x] += 1
+		}
+		for _, position := range m.Egress().NeighborPositions() {
+			if !g.scenario.inBounds(position) {
+				continue
+			}
+			blockedForConveyorIngress[position.y][position.x] += 1
+		}
 		m.RectanglesEach(func(r Rectangle) {
 			r.ForEach(func(p Position) {
 				blocked[p.y][p.x] = true
@@ -269,12 +303,30 @@ func (g *GeneticAlgorithm) getPathMineToFactory(chromosome Chromosome, mine Mine
 		})
 	}
 	for _, f := range chromosome.factories {
+		for _, position := range f.nextToIngressPositions() {
+			if !g.scenario.inBounds(position) {
+				continue
+			}
+			blockedForConveyorEgress[position.y][position.x] += 1
+		}
 		f.Rectangle().ForEach(func(p Position) {
 			blocked[p.y][p.x] = true
 		})
 	}
 	for _, otherPath := range chromosome.paths {
 		for _, conveyor := range otherPath {
+			for _, position := range conveyor.Ingress().NeighborPositions() {
+				if !g.scenario.inBounds(position) {
+					continue
+				}
+				blockedForConveyorEgress[position.y][position.x] += 1
+			}
+			for _, position := range conveyor.Egress().NeighborPositions() {
+				if !g.scenario.inBounds(position) {
+					continue
+				}
+				blockedForConveyorIngress[position.y][position.x] += 1
+			}
 			conveyor.Rectangle().ForEach(func(p Position) {
 				blocked[p.y][p.x] = true
 			})
@@ -291,7 +343,7 @@ func (g *GeneticAlgorithm) getPathMineToFactory(chromosome Chromosome, mine Mine
 		currentEgress := current.value.Egress()
 		finished := false
 		for _, p := range endPositions {
-			if currentEgress == p {
+			if currentEgress == p && blockedForConveyorEgress[currentEgress.y][currentEgress.x] <= 1 {
 				path = append(path, current.value)
 				finished = true
 			}
@@ -299,17 +351,23 @@ func (g *GeneticAlgorithm) getPathMineToFactory(chromosome Chromosome, mine Mine
 		if finished {
 			break
 		}
+		if blockedForConveyorEgress[currentEgress.y][currentEgress.x] >= 1 {
+			continue
+		}
 		if current.priority != distances[currentEgress.y][currentEgress.x] {
 			continue
 		}
 		for _, nextIngress := range currentConveyor.EgressNeighborPositions() {
-			if !g.inBounds(nextIngress) {
+			if !g.scenario.inBounds(nextIngress) {
+				continue
+			}
+			if blockedForConveyorIngress[nextIngress.y][nextIngress.x] >= 1 && currentConveyor.Egress() != startPosition || blockedForConveyorIngress[nextIngress.y][nextIngress.x] >= 2 {
 				continue
 			}
 			for i := 0; i < NumConveyorSubtypes; i++ {
 				nextConveyor := ConveyorFromIngressAndSubtype(nextIngress, i)
 				nextEgress := nextConveyor.Egress()
-				if !g.inBounds(nextEgress) || nextConveyor.Rectangle().Intersects(currentConveyor.Rectangle()) {
+				if !g.scenario.inBounds(nextEgress) || nextConveyor.Rectangle().Intersects(currentConveyor.Rectangle()) {
 					continue
 				}
 				if current.priority+1 < distances[nextEgress.y][nextEgress.x] {
@@ -356,13 +414,6 @@ func (g *GeneticAlgorithm) getPathMineToFactory(chromosome Chromosome, mine Mine
 		pathMineToFactory = append(pathMineToFactory, path[len(path)-i-1])
 	}
 	return pathMineToFactory, nil
-}
-
-func (g *GeneticAlgorithm) inBounds(p Position) bool {
-	if p.x >= g.scenario.width || p.x < 0 || p.y >= g.scenario.height || p.y < 0 {
-		return false
-	}
-	return true
 }
 
 func (g *GeneticAlgorithm) getRandomMine(deposit Deposit, chromosome Chromosome) (Mine, error) {
@@ -592,6 +643,10 @@ func (s *Scenario) isPositionAvailableForConveyor(factories []Factory, mines []M
 		}
 	}
 	return true
+}
+
+func (s *Scenario) inBounds(position Position) bool {
+	return !(position.y < 0 || position.y >= s.height || position.x < 0 || position.x >= s.width)
 }
 
 func (g *GeneticAlgorithm) Run() (Solution, error) {
