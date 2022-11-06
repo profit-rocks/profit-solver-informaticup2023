@@ -11,6 +11,10 @@ type Rectangle struct {
 	height   int
 }
 
+func (p Position) NeighborPositions() []Position {
+	return []Position{{p.x + 1, p.y}, {p.x - 1, p.y}, {p.x, p.y + 1}, {p.x, p.y - 1}}
+}
+
 func abs(x int) int {
 	if x < 0 {
 		return -x
@@ -22,7 +26,9 @@ func (p Position) NextTo(other Position) bool {
 	if p == other {
 		return false
 	}
-	return abs(p.x-other.x) <= 1 && abs(p.y-other.y) <= 1
+	xClose := abs(p.x-other.x) <= 1
+	yClose := abs(p.y-other.y) <= 1
+	return xClose && p.y == other.y || yClose && p.x == other.x
 }
 
 func (p Position) ManhattanDist(other Position) int {
