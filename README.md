@@ -2,7 +2,6 @@
 
 ## Setup
 
-- Get the slices package with `go get golang.org/x/exp/slices`
 - Install `lpsolve` package ([see here for instructions](https://pkg.go.dev/github.com/draffensperger/golp#section-readme))
 - Use the following environment variables when compiling:
 
