@@ -277,7 +277,7 @@ func (s *Simulation) simulateOneRound() bool {
 func (s *Simulation) adjacentMinesToFactory(factory SimulatedFactory) []*SimulatedMine {
 	mines := make([]*SimulatedMine, 0)
 	for _, position := range factory.factory.nextToIngressPositions() {
-		mine, foundMine := s.getMineWithEgressAt(position)
+		mine, foundMine := s.mineWithEgress(position)
 		if foundMine {
 			mines = append(mines, mine)
 		}
@@ -288,7 +288,7 @@ func (s *Simulation) adjacentMinesToFactory(factory SimulatedFactory) []*Simulat
 func (s *Simulation) adjacentMinesToDeposit(deposit SimulatedDeposit) []*SimulatedMine {
 	mines := make([]*SimulatedMine, 0)
 	for _, position := range deposit.deposit.mineIngressPositions() {
-		mine, foundMine := s.getMineWithIngressAt(position)
+		mine, foundMine := s.mineWithIngress(position)
 		if foundMine {
 			mines = append(mines, mine)
 		}
@@ -296,7 +296,7 @@ func (s *Simulation) adjacentMinesToDeposit(deposit SimulatedDeposit) []*Simulat
 	return mines
 }
 
-func (s *Simulation) getMineWithIngressAt(position Position) (*SimulatedMine, bool) {
+func (s *Simulation) mineWithIngress(position Position) (*SimulatedMine, bool) {
 	for i := range s.mines {
 		if s.mines[i].mine.Ingress() == position {
 			return &s.mines[i], true
@@ -305,7 +305,7 @@ func (s *Simulation) getMineWithIngressAt(position Position) (*SimulatedMine, bo
 	return nil, false
 }
 
-func (s *Simulation) getMineWithEgressAt(position Position) (*SimulatedMine, bool) {
+func (s *Simulation) mineWithEgress(position Position) (*SimulatedMine, bool) {
 	for i := range s.mines {
 		if s.mines[i].mine.Egress() == position {
 			return &s.mines[i], true

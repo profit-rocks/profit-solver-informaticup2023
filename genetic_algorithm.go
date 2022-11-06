@@ -130,7 +130,7 @@ func (g *GeneticAlgorithm) mutation(chromosome Chromosome) Chromosome {
 		} else {
 			randomFactory := newChromosome.factories[rand.Intn(len(newChromosome.factories))]
 			randomMine := newChromosome.mines[rand.Intn(len(newChromosome.mines))]
-			newPath, err := g.getPathMineToFactory(newChromosome, randomMine, randomFactory)
+			newPath, err := g.pathMineToFactory(newChromosome, randomMine, randomFactory)
 			if err != nil {
 				newChromosome.paths = append(newChromosome.paths, path)
 			} else {
@@ -173,7 +173,7 @@ func (g *GeneticAlgorithm) generateChromosome() (Chromosome, error) {
 		for j := 0; j < NumPathRetries; j++ {
 			randomFactory := chromosome.factories[rand.Intn(len(chromosome.factories))]
 			randomMine := chromosome.mines[rand.Intn(len(chromosome.mines))]
-			path, err = g.getPathMineToFactory(chromosome, randomMine, randomFactory)
+			path, err = g.pathMineToFactory(chromosome, randomMine, randomFactory)
 			if err == nil {
 				break
 			}

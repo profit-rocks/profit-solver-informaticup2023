@@ -265,7 +265,7 @@ func (g *GeneticAlgorithm) populateCellInfo(chromosome Chromosome, mine Mine, fa
 	}
 }
 
-func (g *GeneticAlgorithm) getPathMineToFactory(chromosome Chromosome, mine Mine, factory Factory) (Path, error) {
+func (g *GeneticAlgorithm) pathMineToFactory(chromosome Chromosome, mine Mine, factory Factory) (Path, error) {
 	var path Path
 
 	g.populateCellInfo(chromosome, mine, factory)
@@ -288,7 +288,7 @@ func (g *GeneticAlgorithm) getPathMineToFactory(chromosome Chromosome, mine Mine
 	// TODO: Conveyors of same path may violate ingress-egress-rules
 	heap.Init(&queue)
 	queue.Push(&startItem)
-	heap.Fix(&queue, startItem.index)
+
 	cellInfo[startPosition.y][startPosition.x].distance = 0
 	for queue.Len() > 0 {
 		current := queue.Pop().(*Item)
