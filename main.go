@@ -46,13 +46,13 @@ func main() {
 	geneticAlgorithm := GeneticAlgorithm{
 		scenario:             scenario,
 		populationSize:       200,
-		iterations:           0,
+		iterations:           40,
 		mutationProbability:  0.18,
 		crossoverProbability: 0.7,
 		numFactories:         4,
 		numMines:             2 * len(scenario.deposits),
 		optimum:              optimum,
-		numPaths:             2,
+		numPaths:             4,
 	}
 	solution, err := geneticAlgorithm.Run()
 
