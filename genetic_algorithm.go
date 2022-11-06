@@ -79,7 +79,13 @@ func (g *GeneticAlgorithm) crossover(chromosome Chromosome, chromosome2 Chromoso
 			newChromosome.factories = append(newChromosome.factories, chromosome2.factories[i])
 		}
 	}
-	newChromosome.paths = chromosome.paths
+	for i := 0; i < len(chromosome.paths); i++ {
+		if rand.Float64() > g.crossoverProbability {
+			newChromosome.paths = append(newChromosome.paths, chromosome.paths[i])
+		} else {
+			newChromosome.paths = append(newChromosome.paths, chromosome2.paths[i])
+		}
+	}
 	return newChromosome
 }
 
@@ -119,7 +125,21 @@ func (g *GeneticAlgorithm) mutation(chromosome Chromosome) Chromosome {
 			}
 		}
 	}
-	newChromosome.paths = chromosome.paths
+	for _, path := range chromosome.paths {
+		if rand.Float64() > g.mutationProbability {
+			newChromosome.paths = append(newChromosome.paths, path)
+		} else {
+			randomFactory := newChromosome.factories[rand.Intn(len(newChromosome.factories))]
+			randomMine := newChromosome.mines[rand.Intn(len(newChromosome.mines))]
+			newPath, err := g.getPathMineToFactory(newChromosome, randomMine, randomFactory)
+			if err != nil {
+				newChromosome.paths = append(newChromosome.paths, path)
+			} else {
+				newChromosome.paths = append(newChromosome.paths, newPath)
+			}
+		}
+
+	}
 	return newChromosome
 }
 
@@ -367,7 +387,7 @@ func (s *Scenario) getAvailableFactoryPositions(chromosome Chromosome) []Positio
 	for i := 0; i < s.width; i++ {
 		for j := 0; j < s.height; j++ {
 			pos := Position{i, j}
-			if s.isPositionAvailableForFactory(chromosome.factories, chromosome.mines, chromosome.paths, pos) {
+			if s.isPositionAvailableForFactory(chromosome.factories, chromosome.mines, []Path{}, pos) {
 				positions = append(positions, pos)
 			}
 		}

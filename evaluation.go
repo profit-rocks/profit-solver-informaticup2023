@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"golang.org/x/exp/slices"
 )
 
@@ -135,12 +134,12 @@ func simulationFromScenarioAndSolution(scenario *Scenario, solution Solution) Si
 		if len(path) > 0 {
 			startMine, err := simulation.adjacentMineToConveyor(path[0])
 			if err != nil {
-				fmt.Println("No adjacent mine, skipping path")
+				//fmt.Println("No adjacent mine, skipping path")
 				continue
 			}
 			endFactory, err := simulation.adjacentFactoryToConveyor(path[len(path)-1])
 			if err != nil {
-				fmt.Println("No adjacent factory, skipping path")
+				//fmt.Println("No adjacent factory, skipping path")
 				continue
 			}
 			simulatedPath := SimulatedPath{
