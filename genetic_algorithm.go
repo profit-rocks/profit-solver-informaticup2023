@@ -137,22 +137,20 @@ func (c Chromosome) copy() Chromosome {
 }
 
 func (g *GeneticAlgorithm) addFactoryMutation(chromosome Chromosome) Chromosome {
-	newChromosome := chromosome.copy()
-	newFactory, err := g.randomFactory(newChromosome)
+	newFactory, err := g.randomFactory(chromosome)
 	if err == nil {
-		newChromosome.factories = append(newChromosome.factories, newFactory)
+		chromosome.factories = append(chromosome.factories, newFactory)
 	}
-	return newChromosome
+	return chromosome
 }
 
 func (g *GeneticAlgorithm) removeFactoryMutation(chromosome Chromosome) Chromosome {
-	newChromosome := chromosome.copy()
-	if len(newChromosome.factories) > 0 {
-		removeIndex := rand.Intn(len(newChromosome.factories))
-		newChromosome.factories[removeIndex] = newChromosome.factories[len(newChromosome.factories)-1]
-		newChromosome.factories = newChromosome.factories[:len(newChromosome.factories)-1]
+	if len(chromosome.factories) > 0 {
+		removeIndex := rand.Intn(len(chromosome.factories))
+		chromosome.factories[removeIndex] = chromosome.factories[len(chromosome.factories)-1]
+		chromosome.factories = chromosome.factories[:len(chromosome.factories)-1]
 	}
-	return newChromosome
+	return chromosome
 }
 
 func (g *GeneticAlgorithm) mutation(chromosome Chromosome) Chromosome {
@@ -303,7 +301,12 @@ func (g *GeneticAlgorithm) Run() (Solution, error) {
 			chromosomes = append(chromosomes, newChromosome)
 		}
 		for j := 0; j < g.populationSize; j++ {
-			newChromosome := g.addFactoryMutation(chromosomes[rand.Intn(len(chromosomes))])
+			newChromosome := g.addFactoryMutation(chromosomes[rand.Intn(len(chromosomes))].copy())
+			newChromosome.fitness = g.evaluateFitness(newChromosome)
+			chromosomes = append(chromosomes, newChromosome)
+		}
+		for j := 0; j < g.populationSize; j++ {
+			newChromosome := g.removeFactoryMutation(chromosomes[rand.Intn(len(chromosomes))].copy())
 			newChromosome.fitness = g.evaluateFitness(newChromosome)
 			chromosomes = append(chromosomes, newChromosome)
 		}
