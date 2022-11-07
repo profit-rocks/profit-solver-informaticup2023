@@ -44,18 +44,16 @@ func main() {
 	}
 
 	geneticAlgorithm := GeneticAlgorithm{
-		scenario:                         scenario,
-		populationSize:                   200,
-		iterations:                       40,
-		mutationProbability:              0.18,
-		mutationAddFactoryProbability:    0.5,
-		mutationRemoveFactoryProbability: 0.7,
-		crossoverProbability:             0.7,
-		initialMinNumFactories:           2,
-		initialMaxNumFactories:           6,
-		numMines:                         2 * len(scenario.deposits),
-		optimum:                          optimum,
-		numPaths:                         0,
+		scenario:               scenario,
+		populationSize:         200,
+		iterations:             40,
+		mutationProbability:    0.18,
+		crossoverProbability:   0.7,
+		initialMinNumFactories: 2,
+		initialMaxNumFactories: 6,
+		initialNumMines:        1 * len(scenario.deposits),
+		optimum:                optimum,
+		numPaths:               2,
 	}
 	solution, err := geneticAlgorithm.Run()
 

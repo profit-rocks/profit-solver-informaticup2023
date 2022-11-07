@@ -23,18 +23,16 @@ type Chromosome struct {
 // Data in this struct is passed around, but never changed. If there is context information that needs to be
 // changed, it should probably be stored in a chromosome.
 type GeneticAlgorithm struct {
-	scenario                         Scenario
-	iterations                       int
-	populationSize                   int
-	mutationProbability              float64
-	mutationAddFactoryProbability    float64
-	mutationRemoveFactoryProbability float64
-	crossoverProbability             float64
-	initialMinNumFactories           int
-	initialMaxNumFactories           int
-	numMines                         int
-	optimum                          int
-	numPaths                         int
+	scenario               Scenario
+	iterations             int
+	populationSize         int
+	mutationProbability    float64
+	crossoverProbability   float64
+	initialMinNumFactories int
+	initialMaxNumFactories int
+	initialNumMines        int
+	optimum                int
+	numPaths               int
 }
 
 func (c Chromosome) Solution() Solution {
@@ -67,11 +65,22 @@ const NumTriesPerChromosome = 10
 
 func (g *GeneticAlgorithm) crossover(chromosome Chromosome, chromosome2 Chromosome) Chromosome {
 	newChromosome := Chromosome{}
-	for i := 0; i < len(chromosome.mines); i++ {
+	for i := 0; i < int(math.Min(float64(len(chromosome.mines)), float64(len(chromosome2.mines)))); i++ {
 		if rand.Float64() > g.crossoverProbability {
 			newChromosome.mines = append(newChromosome.mines, chromosome.mines[i])
 		} else {
 			newChromosome.mines = append(newChromosome.mines, chromosome2.mines[i])
+		}
+	}
+	if rand.Float64() > 0.5 {
+		if len(chromosome.mines) > len(chromosome2.mines) {
+			for i := len(chromosome2.mines); i < len(chromosome.mines); i++ {
+				newChromosome.mines = append(newChromosome.mines, chromosome.mines[i])
+			}
+		} else {
+			for i := len(chromosome.mines); i < len(chromosome2.mines); i++ {
+				newChromosome.mines = append(newChromosome.mines, chromosome2.mines[i])
+			}
 		}
 	}
 	for i := 0; i < int(math.Min(float64(len(chromosome.factories)), float64(len(chromosome2.factories)))); i++ {
@@ -153,6 +162,23 @@ func (g *GeneticAlgorithm) removeFactoryMutation(chromosome Chromosome) Chromoso
 	return chromosome
 }
 
+func (g *GeneticAlgorithm) addMineMutation(chromosome Chromosome) Chromosome {
+	newMine, err := g.randomMine(g.scenario.deposits[rand.Intn(len(g.scenario.deposits))], chromosome)
+	if err == nil {
+		chromosome.mines = append(chromosome.mines, newMine)
+	}
+	return chromosome
+}
+
+func (g *GeneticAlgorithm) removeMineMutation(chromosome Chromosome) Chromosome {
+	if len(chromosome.mines) > 0 {
+		removeIndex := rand.Intn(len(chromosome.mines))
+		chromosome.mines[removeIndex] = chromosome.mines[len(chromosome.mines)-1]
+		chromosome.mines = chromosome.mines[:len(chromosome.mines)-1]
+	}
+	return chromosome
+}
+
 func (g *GeneticAlgorithm) mutation(chromosome Chromosome) Chromosome {
 	newChromosome := Chromosome{}
 	for _, mine := range chromosome.mines {
@@ -217,7 +243,7 @@ func (g *GeneticAlgorithm) evaluateFitness(chromosome Chromosome) int {
 
 func (g *GeneticAlgorithm) generateChromosome() (Chromosome, error) {
 	chromosome := Chromosome{mines: make([]Mine, 0), factories: make([]Factory, 0)}
-	for i := 0; i < g.numMines; i++ {
+	for i := 0; i < g.initialNumMines; i++ {
 		deposit := g.scenario.deposits[i%len(g.scenario.deposits)]
 		mine, err := g.randomMine(deposit, chromosome)
 		if err != nil {
@@ -311,7 +337,12 @@ func (g *GeneticAlgorithm) Run() (Solution, error) {
 			chromosomes = append(chromosomes, newChromosome)
 		}
 		for j := 0; j < g.populationSize; j++ {
-			newChromosome := g.removeFactoryMutation(chromosomes[rand.Intn(len(chromosomes))])
+			newChromosome := g.removeMineMutation(chromosomes[rand.Intn(len(chromosomes))].copy())
+			newChromosome.fitness = g.evaluateFitness(newChromosome)
+			chromosomes = append(chromosomes, newChromosome)
+		}
+		for j := 0; j < g.populationSize; j++ {
+			newChromosome := g.addMineMutation(chromosomes[rand.Intn(len(chromosomes))].copy())
 			newChromosome.fitness = g.evaluateFitness(newChromosome)
 			chromosomes = append(chromosomes, newChromosome)
 		}
