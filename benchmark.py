@@ -7,6 +7,7 @@ import time
 
 NUM_RUNS_PER_FILE = 3
 
+
 def output_to_fitness(output):
     for line in output.decode().split("\n"):
         if "final fitness" in line:
@@ -14,7 +15,7 @@ def output_to_fitness(output):
             return fitness
 
 
-def input_to_benchmark_dicts(input_file):
+def input_to_benchmark_dicts(file):
     output_file = file + ".out"
     start = time.time()
     p = subprocess.Popen(["./profit-solver-icup23", "-input", "tasks/" + file, "-output", output_file], stderr=subprocess.PIPE)
@@ -26,7 +27,7 @@ def input_to_benchmark_dicts(input_file):
         print("stderr", p.stderr.read())
         exit(1)
     os.unlink(output_file)
-    return output_to_fitness(p.stderr.read), end-start
+    return output_to_fitness(p.stderr.read()), end-start
 
 
 if __name__ == '__main__':
