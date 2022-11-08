@@ -214,7 +214,7 @@ func (g *GeneticAlgorithm) blockCellInfoWithRectangle(rectangle Rectangle) {
 	})
 }
 
-func (g *GeneticAlgorithm) populateCellInfo(chromosome Chromosome, mine Mine, factory Factory) {
+func (g *GeneticAlgorithm) populateCellInfo(chromosome Chromosome) {
 	for y := 0; y < g.scenario.height; y++ {
 		for x := 0; x < g.scenario.width; x++ {
 			cellInfo[y][x] = CellInfo{
@@ -268,7 +268,7 @@ func (g *GeneticAlgorithm) populateCellInfo(chromosome Chromosome, mine Mine, fa
 func (g *GeneticAlgorithm) pathMineToFactory(chromosome Chromosome, mine Mine, factory Factory) (Path, error) {
 	var path Path
 
-	g.populateCellInfo(chromosome, mine, factory)
+	g.populateCellInfo(chromosome)
 
 	startPosition := mine.Egress()
 	// Dummy conveyor used for backtracking
