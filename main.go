@@ -49,8 +49,8 @@ func main() {
 		iterations:           40,
 		mutationProbability:  0.18,
 		crossoverProbability: 0.7,
-		numFactories:         4,
-		numMines:             2 * len(scenario.deposits),
+		numFactories:         1,
+		numMines:             1 * len(scenario.deposits),
 		optimum:              optimum,
 		numPaths:             4,
 	}
