@@ -5,6 +5,7 @@ import subprocess
 import sys
 import time
 
+NUM_RUNS_PER_FILE = 3
 
 def output_to_fitness(output):
     for line in output.decode().split("\n"):
@@ -24,25 +25,30 @@ def input_to_benchmark_dicts(input_file):
         print("return code", p.returncode)
         print("stderr", p.stderr.read())
         exit(1)
-    fitness_dict = {
-        "name": f"{input_file} - fitness",
-        "unit": "points",
-        "value": output_to_fitness(p.stderr.read())
-    }
-    time_dict = {
-        "name": f"{input_file} - time",
-        "unit": "seconds",
-        "value": end - start
-    }
     os.unlink(output_file)
-    return fitness_dict, time_dict
+    return output_to_fitness(p.stderr.read), end-start
 
 
 if __name__ == '__main__':
     l = []
     for file in os.listdir("tasks"):
         print(file, file=sys.stderr)
-        fitness_dict, time_dict = input_to_benchmark_dicts(file)
+        total_time = 0
+        total_fitness = 0
+        for _ in range(NUM_RUNS_PER_FILE):
+            fitness, time = input_to_benchmark_dicts(file)
+            total_time += time
+            total_fitness += fitness
+        fitness_dict = {
+            "name": f"{file} - fitness",
+            "unit": "points",
+            "value": total_fitness / NUM_RUNS_PER_FILE,
+        }
+        time_dict = {
+            "name": f"{file} - time",
+            "unit": "seconds",
+            "value": total_time / NUM_RUNS_PER_FILE,
+        }
         l.append(fitness_dict)
         l.append(time_dict)
     print(json.dumps(l))
