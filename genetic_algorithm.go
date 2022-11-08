@@ -7,7 +7,9 @@ import (
 	"sort"
 )
 
-type Path = []Conveyor
+type Path struct {
+	conveyors []Conveyor
+}
 
 const NumPathRetries = 10
 
@@ -53,11 +55,19 @@ func (c Chromosome) Solution() Solution {
 		}
 	}
 	for _, path := range c.paths {
-		if len(path) > 0 {
+		if len(path.conveyors) > 0 {
 			solution.paths = append(solution.paths, path)
 		}
 	}
 	return solution
+}
+
+func (p Path) copy() Path {
+	path := Path{}
+	for _, c := range p.conveyors {
+		path.conveyors = append(path.conveyors, c.copy())
+	}
+	return path
 }
 
 func (g *GeneticAlgorithm) crossover(chromosome Chromosome, chromosome2 Chromosome) Chromosome {

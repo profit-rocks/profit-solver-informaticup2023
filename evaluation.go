@@ -71,7 +71,7 @@ func (s *Scenario) checkValidity(solution Solution) error {
 	}
 
 	for i, path := range solution.paths {
-		for _, conveyor := range path {
+		for _, conveyor := range path.conveyors {
 			if !s.positionAvailableForConveyor(factories, mines, paths[:i], conveyor) {
 				return errors.New("solution includes a factory which position is invalid, can't evaluate this solution")
 			}
@@ -129,23 +129,23 @@ func simulationFromScenarioAndSolution(scenario *Scenario, solution Solution) Si
 	}
 
 	for _, path := range solution.paths {
-		if len(path) > 0 {
-			startMine, err := simulation.adjacentMineToConveyor(path[0])
+		if len(path.conveyors) > 0 {
+			startMine, err := simulation.adjacentMineToConveyor(path.conveyors[0])
 			if err != nil {
 				//fmt.Println("No adjacent mine, skipping path")
 				continue
 			}
-			endFactory, err := simulation.adjacentFactoryToConveyor(path[len(path)-1])
+			endFactory, err := simulation.adjacentFactoryToConveyor(path.conveyors[len(path.conveyors)-1])
 			if err != nil {
 				//fmt.Println("No adjacent factory, skipping path")
 				continue
 			}
 			simulatedPath := SimulatedPath{
-				conveyors:  make([]SimulatedConveyor, len(path)),
+				conveyors:  make([]SimulatedConveyor, len(path.conveyors)),
 				startMine:  startMine,
 				endFactory: endFactory,
 			}
-			for j, conveyor := range path {
+			for j, conveyor := range path.conveyors {
 				simulatedPath.conveyors[j] = SimulatedConveyor{
 					conveyor:  conveyor,
 					resources: []int{0, 0, 0, 0, 0, 0, 0, 0},
