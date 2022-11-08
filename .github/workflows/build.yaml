@@ -1,0 +1,33 @@
+name: Build, test and benchmark
+
+env:
+  CGO_CFLAGS: "-I/usr/include/lpsolve"
+  CGO_LDFLAGS: "-llpsolve55 -lm -ldl -lcolamd"
+
+
+on:
+  push:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+      - name: "Install required package"
+        run: sudo apt install liblpsolve55-dev
+      - name: Build
+        run: go build -v
+      - name: Test
+        run: go test -v
+      - name: Run benchmarks
+        run: python3 benchmark.py > benchmark.json
+      - name: Store benchmark result
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          tool: 'customBiggerIsBetter'
+          output-file-path: benchmark.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true
