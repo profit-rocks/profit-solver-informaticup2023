@@ -328,23 +328,24 @@ func (g *GeneticAlgorithm) Run() Solution {
 			newChromosome.fitness = g.evaluateFitness(newChromosome)
 			chromosomes = append(chromosomes, newChromosome)
 		}
+		numChromosomes = len(chromosomes)
 		for j := 0; j < g.populationSize; j++ {
-			newChromosome := g.addFactoryMutation(chromosomes[rand.Intn(len(chromosomes))].copy())
+			newChromosome := g.addFactoryMutation(chromosomes[rand.Intn(numChromosomes)].copy())
 			newChromosome.fitness = g.evaluateFitness(newChromosome)
 			chromosomes = append(chromosomes, newChromosome)
 		}
 		for j := 0; j < g.populationSize; j++ {
-			newChromosome := g.removeFactoryMutation(chromosomes[rand.Intn(len(chromosomes))].copy())
+			newChromosome := g.removeFactoryMutation(chromosomes[rand.Intn(numChromosomes)].copy())
 			newChromosome.fitness = g.evaluateFitness(newChromosome)
 			chromosomes = append(chromosomes, newChromosome)
 		}
 		for j := 0; j < g.populationSize; j++ {
-			newChromosome := g.removeMineMutation(chromosomes[rand.Intn(len(chromosomes))].copy())
+			newChromosome := g.removeMineMutation(chromosomes[rand.Intn(numChromosomes)].copy())
 			newChromosome.fitness = g.evaluateFitness(newChromosome)
 			chromosomes = append(chromosomes, newChromosome)
 		}
 		for j := 0; j < g.populationSize; j++ {
-			newChromosome := g.addMineMutation(chromosomes[rand.Intn(len(chromosomes))].copy())
+			newChromosome := g.addMineMutation(chromosomes[rand.Intn(numChromosomes)].copy())
 			newChromosome.fitness = g.evaluateFitness(newChromosome)
 			chromosomes = append(chromosomes, newChromosome)
 		}
