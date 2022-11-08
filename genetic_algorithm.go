@@ -187,6 +187,26 @@ func (g *GeneticAlgorithm) removeMineMutation(chromosome Chromosome) Chromosome 
 	return chromosome
 }
 
+func (g *GeneticAlgorithm) buildNewPaths(chromosome Chromosome, numPaths int) Chromosome {
+	chromosome.paths = nil
+	for i := 0; i < numPaths; i++ {
+		var path Path
+		for j := 0; j < NumPathRetries; j++ {
+			var err error
+			if len(chromosome.factories) > 0 && len(chromosome.mines) > 0 {
+				randomFactory := chromosome.factories[rand.Intn(len(chromosome.factories))]
+				randomMine := chromosome.mines[rand.Intn(len(chromosome.mines))]
+				path, err = g.pathMineToFactory(chromosome, randomMine, randomFactory)
+				if err == nil {
+					break
+				}
+				chromosome.paths = append(chromosome.paths, path)
+			}
+		}
+	}
+	return chromosome
+}
+
 func (g *GeneticAlgorithm) mutation(chromosome Chromosome) Chromosome {
 	newChromosome := Chromosome{}
 	for _, mine := range chromosome.mines {
@@ -346,6 +366,12 @@ func (g *GeneticAlgorithm) Run() Solution {
 		}
 		for j := 0; j < g.populationSize; j++ {
 			newChromosome := g.addMineMutation(chromosomes[rand.Intn(numChromosomes)].copy())
+			newChromosome.fitness = g.evaluateFitness(newChromosome)
+			chromosomes = append(chromosomes, newChromosome)
+		}
+		numChromosomes = len(chromosomes)
+		for j := 0; j < g.populationSize; j++ {
+			newChromosome := g.buildNewPaths(chromosomes[rand.Intn(numChromosomes)].copy(), g.numPaths)
 			newChromosome.fitness = g.evaluateFitness(newChromosome)
 			chromosomes = append(chromosomes, newChromosome)
 		}
