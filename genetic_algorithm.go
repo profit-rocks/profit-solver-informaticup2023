@@ -98,11 +98,22 @@ func (g *GeneticAlgorithm) crossover(chromosome Chromosome, chromosome2 Chromoso
 			}
 		}
 	}
-	for i := 0; i < len(chromosome.paths); i++ {
+	for i := 0; i < int(math.Min(float64(len(chromosome.paths)), float64(len(chromosome2.paths)))); i++ {
 		if rand.Float64() > g.crossoverProbability {
 			newChromosome.paths = append(newChromosome.paths, chromosome.paths[i])
 		} else {
 			newChromosome.paths = append(newChromosome.paths, chromosome2.paths[i])
+		}
+	}
+	if rand.Float64() > 0.5 {
+		if len(chromosome.paths) > len(chromosome2.paths) {
+			for i := len(chromosome2.paths); i < len(chromosome.paths); i++ {
+				newChromosome.paths = append(newChromosome.paths, chromosome.paths[i])
+			}
+		} else {
+			for i := len(chromosome.paths); i < len(chromosome2.paths); i++ {
+				newChromosome.paths = append(newChromosome.paths, chromosome2.paths[i])
+			}
 		}
 	}
 	return newChromosome
