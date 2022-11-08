@@ -17,7 +17,7 @@ jobs:
         with:
           go-version: 1.19
       - name: "Install required package"
-        run: apt install liblpsolve55-dev
+        run: sudo apt install liblpsolve55-dev
       - name: Build
         run: go build -v
       - name: Test
