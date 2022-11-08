@@ -297,7 +297,13 @@ func (g *GeneticAlgorithm) Run() Solution {
 			log.Println("starting iteration", i+1, "/", g.iterations, "fitness", g.optimum, "(optimal)")
 			break
 		}
-		log.Println("starting iteration", i+1, "/", g.iterations, "fitness", chromosomes[0].fitness)
+		numBadChromosomes := 0
+		for _, c := range chromosomes {
+			if c.fitness < 10 {
+				numBadChromosomes += 1
+			}
+		}
+		log.Println("starting iteration", i+1, "/", g.iterations, "fitness", chromosomes[0].fitness, "bad chromosomes", numBadChromosomes, "/", len(chromosomes))
 		chromosomes = chromosomes[:g.populationSize]
 
 		for j := 0; j < g.populationSize; j++ {
