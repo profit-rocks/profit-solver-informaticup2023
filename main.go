@@ -42,6 +42,11 @@ func main() {
 	} else {
 		log.Println("theoretical optimum", optimum)
 	}
+	totalResources := 0
+	for _, deposit := range scenario.deposits {
+		totalResources += deposit.width * deposit.height * DepositResourceFactor
+	}
+	log.Println("total amount of resources", totalResources)
 
 	geneticAlgorithm := GeneticAlgorithm{
 		scenario:               scenario,
