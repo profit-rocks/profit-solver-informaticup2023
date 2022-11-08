@@ -37,8 +37,8 @@ if __name__ == '__main__':
         total_time = 0
         total_fitness = 0
         for _ in range(NUM_RUNS_PER_FILE):
-            fitness, time = input_to_benchmark_dicts(file)
-            total_time += time
+            fitness, elapsed_time = input_to_benchmark_dicts(file)
+            total_time += elapsed_time
             total_fitness += fitness
         fitness_dict = {
             "name": f"{file} - fitness",
