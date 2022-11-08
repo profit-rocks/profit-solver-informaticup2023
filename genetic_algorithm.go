@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"log"
 	"math"
 	"math/rand"
@@ -60,8 +59,6 @@ func (c Chromosome) Solution() Solution {
 	}
 	return solution
 }
-
-const NumTriesPerChromosome = 10
 
 func (g *GeneticAlgorithm) crossover(chromosome Chromosome, chromosome2 Chromosome) Chromosome {
 	newChromosome := Chromosome{}
@@ -241,20 +238,20 @@ func (g *GeneticAlgorithm) evaluateFitness(chromosome Chromosome) int {
 	return fitness
 }
 
-func (g *GeneticAlgorithm) generateChromosome() (Chromosome, error) {
+func (g *GeneticAlgorithm) generateChromosome() Chromosome {
 	chromosome := Chromosome{mines: make([]Mine, 0), factories: make([]Factory, 0)}
 	for i := 0; i < g.initialNumMines; i++ {
 		deposit := g.scenario.deposits[i%len(g.scenario.deposits)]
 		mine, err := g.randomMine(deposit, chromosome)
 		if err != nil {
-			return chromosome, err
+			break
 		}
 		chromosome.mines = append(chromosome.mines, mine)
 	}
 	for i := 0; i < g.initialMinNumFactories+rand.Intn(g.initialMaxNumFactories-g.initialMinNumFactories); i++ {
 		factory, err := g.randomFactory(chromosome)
 		if err != nil {
-			return chromosome, err
+			break
 		}
 		chromosome.factories = append(chromosome.factories, factory)
 	}
@@ -275,32 +272,20 @@ func (g *GeneticAlgorithm) generateChromosome() (Chromosome, error) {
 			chromosome.paths = append(chromosome.paths, Path{})
 		}
 	}
-	return chromosome, nil
+	return chromosome
 }
 
-func (g *GeneticAlgorithm) generateChromosomes() ([]Chromosome, error) {
+func (g *GeneticAlgorithm) generateChromosomes() []Chromosome {
 	chromosomes := make([]Chromosome, g.populationSize)
 	for i := 0; i < g.populationSize; i++ {
-		foundChromosome := false
-		for j := 0; j < NumTriesPerChromosome; j++ {
-			chromosome, err := g.generateChromosome()
-			if err == nil {
-				chromosomes[i] = chromosome
-				foundChromosome = true
-			}
-		}
-		if !foundChromosome {
-			return chromosomes, errors.New("exceeded NumTriesPerChromosome in generateChromosomes, probably trying to place too many factories or mines")
-		}
+		chromosome := g.generateChromosome()
+		chromosomes[i] = chromosome
 	}
-	return chromosomes, nil
+	return chromosomes
 }
 
-func (g *GeneticAlgorithm) Run() (Solution, error) {
-	chromosomes, err := g.generateChromosomes()
-	if err != nil {
-		return Solution{}, err
-	}
+func (g *GeneticAlgorithm) Run() Solution {
+	chromosomes := g.generateChromosomes()
 	for i, chromosome := range chromosomes {
 		chromosomes[i].fitness = g.evaluateFitness(chromosome)
 	}
@@ -351,5 +336,5 @@ func (g *GeneticAlgorithm) Run() (Solution, error) {
 		return chromosomes[i].fitness > chromosomes[j].fitness
 	})
 	log.Println("final fitness", chromosomes[0].fitness)
-	return chromosomes[0].Solution(), nil
+	return chromosomes[0].Solution()
 }

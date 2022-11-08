@@ -55,11 +55,8 @@ func main() {
 		optimum:                optimum,
 		numPaths:               2,
 	}
-	solution, err := geneticAlgorithm.Run()
+	solution := geneticAlgorithm.Run()
 
-	if err != nil {
-		log.Fatal(err)
-	}
 	err = exportSolution(scenario, solution, *outputPtr)
 	if err != nil {
 		log.Fatal(err)
