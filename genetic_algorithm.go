@@ -74,55 +74,55 @@ func (g *GeneticAlgorithm) crossover(chromosome Chromosome, chromosome2 Chromoso
 	newChromosome := Chromosome{}
 	for i := 0; i < int(math.Min(float64(len(chromosome.mines)), float64(len(chromosome2.mines)))); i++ {
 		if rand.Float64() > g.crossoverProbability {
-			newChromosome.mines = append(newChromosome.mines, chromosome.mines[i])
+			newChromosome.mines = append(newChromosome.mines, chromosome.mines[i].copy())
 		} else {
-			newChromosome.mines = append(newChromosome.mines, chromosome2.mines[i])
+			newChromosome.mines = append(newChromosome.mines, chromosome2.mines[i].copy())
 		}
 	}
 	if rand.Float64() > 0.5 {
 		if len(chromosome.mines) > len(chromosome2.mines) {
 			for i := len(chromosome2.mines); i < len(chromosome.mines); i++ {
-				newChromosome.mines = append(newChromosome.mines, chromosome.mines[i])
+				newChromosome.mines = append(newChromosome.mines, chromosome.mines[i].copy())
 			}
 		} else {
 			for i := len(chromosome.mines); i < len(chromosome2.mines); i++ {
-				newChromosome.mines = append(newChromosome.mines, chromosome2.mines[i])
+				newChromosome.mines = append(newChromosome.mines, chromosome2.mines[i].copy())
 			}
 		}
 	}
 	for i := 0; i < int(math.Min(float64(len(chromosome.factories)), float64(len(chromosome2.factories)))); i++ {
 		if rand.Float64() > g.crossoverProbability {
-			newChromosome.factories = append(newChromosome.factories, chromosome.factories[i])
+			newChromosome.factories = append(newChromosome.factories, chromosome.factories[i].copy())
 		} else {
-			newChromosome.factories = append(newChromosome.factories, chromosome2.factories[i])
+			newChromosome.factories = append(newChromosome.factories, chromosome2.factories[i].copy())
 		}
 	}
 	if rand.Float64() > 0.5 {
 		if len(chromosome.factories) > len(chromosome2.factories) {
 			for i := len(chromosome2.factories); i < len(chromosome.factories); i++ {
-				newChromosome.factories = append(newChromosome.factories, chromosome.factories[i])
+				newChromosome.factories = append(newChromosome.factories, chromosome.factories[i].copy())
 			}
 		} else {
 			for i := len(chromosome.factories); i < len(chromosome2.factories); i++ {
-				newChromosome.factories = append(newChromosome.factories, chromosome2.factories[i])
+				newChromosome.factories = append(newChromosome.factories, chromosome2.factories[i].copy())
 			}
 		}
 	}
 	for i := 0; i < int(math.Min(float64(len(chromosome.paths)), float64(len(chromosome2.paths)))); i++ {
 		if rand.Float64() > g.crossoverProbability {
-			newChromosome.paths = append(newChromosome.paths, chromosome.paths[i])
+			newChromosome.paths = append(newChromosome.paths, chromosome.paths[i].copy())
 		} else {
-			newChromosome.paths = append(newChromosome.paths, chromosome2.paths[i])
+			newChromosome.paths = append(newChromosome.paths, chromosome2.paths[i].copy())
 		}
 	}
 	if rand.Float64() > 0.5 {
 		if len(chromosome.paths) > len(chromosome2.paths) {
 			for i := len(chromosome2.paths); i < len(chromosome.paths); i++ {
-				newChromosome.paths = append(newChromosome.paths, chromosome.paths[i])
+				newChromosome.paths = append(newChromosome.paths, chromosome.paths[i].copy())
 			}
 		} else {
 			for i := len(chromosome.paths); i < len(chromosome2.paths); i++ {
-				newChromosome.paths = append(newChromosome.paths, chromosome2.paths[i])
+				newChromosome.paths = append(newChromosome.paths, chromosome2.paths[i].copy())
 			}
 		}
 	}
@@ -134,31 +134,13 @@ func (c Chromosome) copy() Chromosome {
 		fitness: 0,
 	}
 	for _, factory := range c.factories {
-		newFactory := Factory{
-			position: Position{factory.position.x, factory.position.y},
-			product:  0,
-		}
-		newChromosome.factories = append(newChromosome.factories, newFactory)
+		newChromosome.factories = append(newChromosome.factories, factory.copy())
 	}
 	for _, mine := range c.mines {
-		newMine := Mine{
-			position:         Position{mine.position.x, mine.position.y},
-			direction:        mine.direction,
-			cachedRectangles: nil,
-		}
-		newChromosome.mines = append(newChromosome.mines, newMine)
+		newChromosome.mines = append(newChromosome.mines, mine.copy())
 	}
 	for _, path := range c.paths {
-		newPath := Path{}
-		for _, conveyor := range path {
-			newConveyor := Conveyor{
-				position:  Position{conveyor.position.x, conveyor.position.y},
-				direction: conveyor.direction,
-				length:    conveyor.length,
-			}
-			newPath = append(newPath, newConveyor)
-		}
-		newChromosome.paths = append(newChromosome.paths, newPath)
+		newChromosome.paths = append(newChromosome.paths, path.copy())
 	}
 	return newChromosome
 }
@@ -221,7 +203,7 @@ func (g *GeneticAlgorithm) mutation(chromosome Chromosome) Chromosome {
 	newChromosome := Chromosome{}
 	for _, mine := range chromosome.mines {
 		if rand.Float64() > g.mutationProbability {
-			newChromosome.mines = append(newChromosome.mines, mine)
+			newChromosome.mines = append(newChromosome.mines, mine.copy())
 		} else {
 			// attach new mine to deposit of old mine.
 			// TODO: this does not work correctly when a mine is attached to multiple deposits
@@ -237,17 +219,17 @@ func (g *GeneticAlgorithm) mutation(chromosome Chromosome) Chromosome {
 				}
 			}
 			if !success {
-				newChromosome.mines = append(newChromosome.mines, mine)
+				newChromosome.mines = append(newChromosome.mines, mine.copy())
 			}
 		}
 	}
 	for _, factory := range chromosome.factories {
 		if rand.Float64() > g.mutationProbability {
-			newChromosome.factories = append(newChromosome.factories, factory)
+			newChromosome.factories = append(newChromosome.factories, factory.copy())
 		} else {
 			newFactory, err := g.randomFactory(newChromosome)
 			if err != nil {
-				newChromosome.factories = append(newChromosome.factories, factory)
+				newChromosome.factories = append(newChromosome.factories, factory.copy())
 			} else {
 				newChromosome.factories = append(newChromosome.factories, newFactory)
 			}
@@ -255,13 +237,13 @@ func (g *GeneticAlgorithm) mutation(chromosome Chromosome) Chromosome {
 	}
 	for _, path := range chromosome.paths {
 		if rand.Float64() > g.mutationProbability {
-			newChromosome.paths = append(newChromosome.paths, path)
+			newChromosome.paths = append(newChromosome.paths, path.copy())
 		} else {
 			randomFactory := newChromosome.factories[rand.Intn(len(newChromosome.factories))]
 			randomMine := newChromosome.mines[rand.Intn(len(newChromosome.mines))]
 			newPath, err := g.pathMineToFactory(newChromosome, randomMine, randomFactory)
 			if err != nil {
-				newChromosome.paths = append(newChromosome.paths, path)
+				newChromosome.paths = append(newChromosome.paths, path.copy())
 			} else {
 				newChromosome.paths = append(newChromosome.paths, newPath)
 			}

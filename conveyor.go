@@ -20,6 +20,14 @@ type Conveyor struct {
 	length    ConveyorLength
 }
 
+func (c Conveyor) copy() Conveyor {
+	return Conveyor{
+		position:  Position{c.position.x, c.position.y},
+		direction: c.direction,
+		length:    c.length,
+	}
+}
+
 func ConveyorLengthFromSubtype(subtype int) ConveyorLength {
 	return ConveyorLength(subtype >> 2)
 }

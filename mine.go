@@ -12,6 +12,22 @@ type Mine struct {
 	cachedRectangles []Rectangle
 }
 
+func (m *Mine) copy() Mine {
+	mine := Mine{
+		position:         Position{m.position.x, m.position.y},
+		direction:        m.direction,
+		cachedRectangles: nil,
+	}
+	for _, r := range m.cachedRectangles {
+		mine.cachedRectangles = append(mine.cachedRectangles, Rectangle{
+			position: Position{r.position.x, r.position.y},
+			width:    r.width,
+			height:   r.height,
+		})
+	}
+	return mine
+}
+
 func (m *Mine) Egress() Position {
 	if m.direction == Right {
 		return Position{m.position.x + 2, m.position.y + 1}
