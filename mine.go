@@ -14,16 +14,11 @@ type Mine struct {
 
 func (m *Mine) copy() Mine {
 	mine := Mine{
-		position:         Position{m.position.x, m.position.y},
-		direction:        m.direction,
-		cachedRectangles: nil,
+		position:  m.position,
+		direction: m.direction,
 	}
 	for _, r := range m.cachedRectangles {
-		mine.cachedRectangles = append(mine.cachedRectangles, Rectangle{
-			position: Position{r.position.x, r.position.y},
-			width:    r.width,
-			height:   r.height,
-		})
+		mine.cachedRectangles = append(mine.cachedRectangles, r)
 	}
 	return mine
 }

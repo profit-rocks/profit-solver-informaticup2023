@@ -65,7 +65,7 @@ func (c Chromosome) Solution() Solution {
 func (p Path) copy() Path {
 	path := Path{}
 	for _, c := range p.conveyors {
-		path.conveyors = append(path.conveyors, c.copy())
+		path.conveyors = append(path.conveyors, c)
 	}
 	return path
 }
@@ -92,19 +92,19 @@ func (g *GeneticAlgorithm) crossover(chromosome Chromosome, chromosome2 Chromoso
 	}
 	for i := 0; i < int(math.Min(float64(len(chromosome.factories)), float64(len(chromosome2.factories)))); i++ {
 		if rand.Float64() > g.crossoverProbability {
-			newChromosome.factories = append(newChromosome.factories, chromosome.factories[i].copy())
+			newChromosome.factories = append(newChromosome.factories, chromosome.factories[i])
 		} else {
-			newChromosome.factories = append(newChromosome.factories, chromosome2.factories[i].copy())
+			newChromosome.factories = append(newChromosome.factories, chromosome2.factories[i])
 		}
 	}
 	if rand.Float64() > 0.5 {
 		if len(chromosome.factories) > len(chromosome2.factories) {
 			for i := len(chromosome2.factories); i < len(chromosome.factories); i++ {
-				newChromosome.factories = append(newChromosome.factories, chromosome.factories[i].copy())
+				newChromosome.factories = append(newChromosome.factories, chromosome.factories[i])
 			}
 		} else {
 			for i := len(chromosome.factories); i < len(chromosome2.factories); i++ {
-				newChromosome.factories = append(newChromosome.factories, chromosome2.factories[i].copy())
+				newChromosome.factories = append(newChromosome.factories, chromosome2.factories[i])
 			}
 		}
 	}
@@ -134,7 +134,7 @@ func (c Chromosome) copy() Chromosome {
 		fitness: 0,
 	}
 	for _, factory := range c.factories {
-		newChromosome.factories = append(newChromosome.factories, factory.copy())
+		newChromosome.factories = append(newChromosome.factories, factory)
 	}
 	for _, mine := range c.mines {
 		newChromosome.mines = append(newChromosome.mines, mine.copy())
@@ -225,11 +225,11 @@ func (g *GeneticAlgorithm) mutation(chromosome Chromosome) Chromosome {
 	}
 	for _, factory := range chromosome.factories {
 		if rand.Float64() > g.mutationProbability {
-			newChromosome.factories = append(newChromosome.factories, factory.copy())
+			newChromosome.factories = append(newChromosome.factories, factory)
 		} else {
 			newFactory, err := g.randomFactory(newChromosome)
 			if err != nil {
-				newChromosome.factories = append(newChromosome.factories, factory.copy())
+				newChromosome.factories = append(newChromosome.factories, factory)
 			} else {
 				newChromosome.factories = append(newChromosome.factories, newFactory)
 			}

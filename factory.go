@@ -13,13 +13,6 @@ type Factory struct {
 	product  int
 }
 
-func (f Factory) copy() Factory {
-	return Factory{
-		position: Position{f.position.x, f.position.y},
-		product:  f.product,
-	}
-}
-
 func (f Factory) Rectangle() Rectangle {
 	return Rectangle{
 		position: f.position,
