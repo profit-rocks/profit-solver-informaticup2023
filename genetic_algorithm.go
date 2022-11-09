@@ -81,19 +81,19 @@ func (g *GeneticAlgorithm) crossover(chromosome Chromosome, chromosome2 Chromoso
 	newChromosome := Chromosome{}
 	for i := 0; i < minInt(len(chromosome.mines), len(chromosome2.mines)); i++ {
 		if rand.Float64() > g.crossoverProbability {
-			newChromosome.mines = append(newChromosome.mines, chromosome.mines[i].copy())
+			newChromosome.mines = append(newChromosome.mines, chromosome.mines[i])
 		} else {
-			newChromosome.mines = append(newChromosome.mines, chromosome2.mines[i].copy())
+			newChromosome.mines = append(newChromosome.mines, chromosome2.mines[i])
 		}
 	}
 	if rand.Float64() > 0.5 {
 		if len(chromosome.mines) > len(chromosome2.mines) {
 			for i := len(chromosome2.mines); i < len(chromosome.mines); i++ {
-				newChromosome.mines = append(newChromosome.mines, chromosome.mines[i].copy())
+				newChromosome.mines = append(newChromosome.mines, chromosome.mines[i])
 			}
 		} else {
 			for i := len(chromosome.mines); i < len(chromosome2.mines); i++ {
-				newChromosome.mines = append(newChromosome.mines, chromosome2.mines[i].copy())
+				newChromosome.mines = append(newChromosome.mines, chromosome2.mines[i])
 			}
 		}
 	}
@@ -144,7 +144,7 @@ func (c Chromosome) copy() Chromosome {
 		newChromosome.factories = append(newChromosome.factories, factory)
 	}
 	for _, mine := range c.mines {
-		newChromosome.mines = append(newChromosome.mines, mine.copy())
+		newChromosome.mines = append(newChromosome.mines, mine)
 	}
 	for _, path := range c.paths {
 		newChromosome.paths = append(newChromosome.paths, path.copy())
@@ -210,7 +210,7 @@ func (g *GeneticAlgorithm) mutation(chromosome Chromosome) Chromosome {
 	newChromosome := Chromosome{}
 	for _, mine := range chromosome.mines {
 		if rand.Float64() > g.mutationProbability {
-			newChromosome.mines = append(newChromosome.mines, mine.copy())
+			newChromosome.mines = append(newChromosome.mines, mine)
 		} else {
 			// attach new mine to deposit of old mine.
 			// TODO: this does not work correctly when a mine is attached to multiple deposits
@@ -226,7 +226,7 @@ func (g *GeneticAlgorithm) mutation(chromosome Chromosome) Chromosome {
 				}
 			}
 			if !success {
-				newChromosome.mines = append(newChromosome.mines, mine.copy())
+				newChromosome.mines = append(newChromosome.mines, mine)
 			}
 		}
 	}

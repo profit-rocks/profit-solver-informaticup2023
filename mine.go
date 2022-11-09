@@ -8,19 +8,6 @@ import (
 type Mine struct {
 	position  Position
 	direction Direction
-
-	cachedRectangles []Rectangle
-}
-
-func (m *Mine) copy() Mine {
-	mine := Mine{
-		position:  m.position,
-		direction: m.direction,
-	}
-	for _, r := range m.cachedRectangles {
-		mine.cachedRectangles = append(mine.cachedRectangles, r)
-	}
-	return mine
 }
 
 func (m *Mine) Egress() Position {
