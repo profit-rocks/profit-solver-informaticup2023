@@ -70,9 +70,16 @@ func (p Path) copy() Path {
 	return path
 }
 
+func minInt(x int, y int) int {
+	if x < y {
+		return x
+	}
+	return y
+}
+
 func (g *GeneticAlgorithm) crossover(chromosome Chromosome, chromosome2 Chromosome) Chromosome {
 	newChromosome := Chromosome{}
-	for i := 0; i < int(math.Min(float64(len(chromosome.mines)), float64(len(chromosome2.mines)))); i++ {
+	for i := 0; i < minInt(len(chromosome.mines), len(chromosome2.mines)); i++ {
 		if rand.Float64() > g.crossoverProbability {
 			newChromosome.mines = append(newChromosome.mines, chromosome.mines[i].copy())
 		} else {
@@ -90,7 +97,7 @@ func (g *GeneticAlgorithm) crossover(chromosome Chromosome, chromosome2 Chromoso
 			}
 		}
 	}
-	for i := 0; i < int(math.Min(float64(len(chromosome.factories)), float64(len(chromosome2.factories)))); i++ {
+	for i := 0; i < minInt(len(chromosome.factories), len(chromosome2.factories)); i++ {
 		if rand.Float64() > g.crossoverProbability {
 			newChromosome.factories = append(newChromosome.factories, chromosome.factories[i])
 		} else {
@@ -108,7 +115,7 @@ func (g *GeneticAlgorithm) crossover(chromosome Chromosome, chromosome2 Chromoso
 			}
 		}
 	}
-	for i := 0; i < int(math.Min(float64(len(chromosome.paths)), float64(len(chromosome2.paths)))); i++ {
+	for i := 0; i < minInt(len(chromosome.paths), len(chromosome2.paths)); i++ {
 		if rand.Float64() > g.crossoverProbability {
 			newChromosome.paths = append(newChromosome.paths, chromosome.paths[i].copy())
 		} else {
