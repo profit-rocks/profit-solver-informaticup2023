@@ -109,8 +109,8 @@ func solutionWithPathForLargeScenarioWithDeposit() Solution {
 			},
 			direction: 0,
 		}},
-		paths: []Path{{{position: Position{9, 3}, direction: Right, length: Short},
-			{position: Position{11, 2}, direction: Right, length: Long},
+		paths: []Path{{conveyors: []Conveyor{{position: Position{9, 3}, direction: Right, length: Short},
+			{position: Position{11, 2}, direction: Right, length: Long}},
 		},
 		},
 	}

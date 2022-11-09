@@ -85,7 +85,7 @@ func solutionToExportableScenario(scenario Scenario, solution Solution) Exportab
 	}
 
 	for _, path := range solution.paths {
-		for _, conveyor := range path {
+		for _, conveyor := range path.conveyors {
 			exportableScenario.Objects = append(exportableScenario.Objects, Object{
 				ObjectType: "conveyor",
 				Subtype:    conveyor.Subtype(),

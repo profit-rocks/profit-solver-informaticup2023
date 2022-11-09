@@ -169,7 +169,7 @@ func (s *Scenario) positionAvailableForConveyor(factories []Factory, mines []Min
 		}
 	}
 	for _, path := range paths {
-		for _, pathConveyor := range path {
+		for _, pathConveyor := range path.conveyors {
 			if conveyor.Rectangle().Intersects(pathConveyor.Rectangle()) {
 				return false
 			}
@@ -214,7 +214,7 @@ func (g *GeneticAlgorithm) blockCellInfoWithRectangle(rectangle Rectangle) {
 	})
 }
 
-func (g *GeneticAlgorithm) populateCellInfo(chromosome Chromosome, mine Mine, factory Factory) {
+func (g *GeneticAlgorithm) populateCellInfo(chromosome Chromosome) {
 	for y := 0; y < g.scenario.height; y++ {
 		for x := 0; x < g.scenario.width; x++ {
 			cellInfo[y][x] = CellInfo{
@@ -257,7 +257,7 @@ func (g *GeneticAlgorithm) populateCellInfo(chromosome Chromosome, mine Mine, fa
 		g.blockCellInfoWithRectangle(f.Rectangle())
 	}
 	for _, otherPath := range chromosome.paths {
-		for _, conveyor := range otherPath {
+		for _, conveyor := range otherPath.conveyors {
 			g.populateCellInfoWithIngress(conveyor.Ingress())
 			g.populateCellInfoWithEgress(conveyor.Egress())
 			g.blockCellInfoWithRectangle(conveyor.Rectangle())
@@ -268,7 +268,7 @@ func (g *GeneticAlgorithm) populateCellInfo(chromosome Chromosome, mine Mine, fa
 func (g *GeneticAlgorithm) pathMineToFactory(chromosome Chromosome, mine Mine, factory Factory) (Path, error) {
 	var path Path
 
-	g.populateCellInfo(chromosome, mine, factory)
+	g.populateCellInfo(chromosome)
 
 	startPosition := mine.Egress()
 	// Dummy conveyor used for backtracking
@@ -297,7 +297,7 @@ func (g *GeneticAlgorithm) pathMineToFactory(chromosome Chromosome, mine Mine, f
 		finished := false
 		for _, p := range endPositions {
 			if currentEgress == p && cellInfo[currentEgress.y][currentEgress.x].numIngressNeighbors <= 1 {
-				path = append(path, current.value)
+				path.conveyors = append(path.conveyors, current.value)
 				finished = true
 			}
 		}
@@ -341,10 +341,10 @@ func (g *GeneticAlgorithm) pathMineToFactory(chromosome Chromosome, mine Mine, f
 			}
 		}
 	}
-	if len(path) == 0 {
+	if len(path.conveyors) == 0 {
 		return path, errors.New("no path found")
 	}
-	currentEgress := path[0].Egress()
+	currentEgress := path.conveyors[0].Egress()
 	if currentEgress == startPosition {
 		return Path{}, nil
 	}
@@ -353,13 +353,13 @@ func (g *GeneticAlgorithm) pathMineToFactory(chromosome Chromosome, mine Mine, f
 		if conveyor.Egress() == startPosition {
 			break
 		}
-		path = append(path, conveyor)
+		path.conveyors = append(path.conveyors, conveyor)
 		currentEgress = conveyor.Egress()
 	}
 	// Reverse the path
 	var pathMineToFactory Path
-	for i := range path {
-		pathMineToFactory = append(pathMineToFactory, path[len(path)-i-1])
+	for i := range path.conveyors {
+		pathMineToFactory.conveyors = append(pathMineToFactory.conveyors, path.conveyors[len(path.conveyors)-i-1])
 	}
 	return pathMineToFactory, nil
 }

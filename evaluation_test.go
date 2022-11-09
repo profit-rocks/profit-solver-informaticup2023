@@ -1,6 +1,8 @@
 package main
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestEmptySolutionEvaluation(t *testing.T) {
 	scenario := largeEmptyScenario()
@@ -47,5 +49,22 @@ func TestInvalidSolutionEvaluation(t *testing.T) {
 	}
 	if score != 0 {
 		t.Errorf("score of invalid solution should be 0 and not %d", score)
+	}
+}
+
+func TestSolutionWithOverlappingFactoriesInvalid(t *testing.T) {
+	scenario := largeEmptyScenario()
+	solution := Solution{
+		factories: []Factory{{
+			position: Position{0, 0},
+			product:  0,
+		}, {
+			position: Position{0, 0},
+			product:  0,
+		}},
+	}
+	err := scenario.checkValidity(solution)
+	if err == nil {
+		t.Errorf("two factories at same position should not be valid")
 	}
 }

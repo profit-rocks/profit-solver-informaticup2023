@@ -1,14 +1,15 @@
 package main
 
 import (
-	"errors"
 	"log"
 	"math"
 	"math/rand"
 	"sort"
 )
 
-type Path = []Conveyor
+type Path struct {
+	conveyors []Conveyor
+}
 
 const NumPathRetries = 10
 
@@ -23,15 +24,16 @@ type Chromosome struct {
 // Data in this struct is passed around, but never changed. If there is context information that needs to be
 // changed, it should probably be stored in a chromosome.
 type GeneticAlgorithm struct {
-	scenario             Scenario
-	iterations           int
-	populationSize       int
-	mutationProbability  float64
-	crossoverProbability float64
-	numFactories         int
-	numMines             int
-	optimum              int
-	numPaths             int
+	scenario               Scenario
+	iterations             int
+	populationSize         int
+	mutationProbability    float64
+	crossoverProbability   float64
+	initialMinNumFactories int
+	initialMaxNumFactories int
+	initialNumMines        int
+	optimum                int
+	numPaths               int
 }
 
 func (c Chromosome) Solution() Solution {
@@ -53,39 +55,155 @@ func (c Chromosome) Solution() Solution {
 		}
 	}
 	for _, path := range c.paths {
-		if len(path) > 0 {
+		if len(path.conveyors) > 0 {
 			solution.paths = append(solution.paths, path)
 		}
 	}
 	return solution
 }
 
-const NumTriesPerChromosome = 10
+func (p Path) copy() Path {
+	path := Path{}
+	for _, c := range p.conveyors {
+		path.conveyors = append(path.conveyors, c)
+	}
+	return path
+}
+
+func minInt(x int, y int) int {
+	if x < y {
+		return x
+	}
+	return y
+}
 
 func (g *GeneticAlgorithm) crossover(chromosome Chromosome, chromosome2 Chromosome) Chromosome {
 	newChromosome := Chromosome{}
-	for i := 0; i < len(chromosome.mines); i++ {
+	for i := 0; i < minInt(len(chromosome.mines), len(chromosome2.mines)); i++ {
 		if rand.Float64() > g.crossoverProbability {
 			newChromosome.mines = append(newChromosome.mines, chromosome.mines[i])
 		} else {
 			newChromosome.mines = append(newChromosome.mines, chromosome2.mines[i])
 		}
 	}
-	for i := 0; i < len(chromosome.factories); i++ {
+	if rand.Float64() > 0.5 {
+		if len(chromosome.mines) > len(chromosome2.mines) {
+			for i := len(chromosome2.mines); i < len(chromosome.mines); i++ {
+				newChromosome.mines = append(newChromosome.mines, chromosome.mines[i])
+			}
+		} else {
+			for i := len(chromosome.mines); i < len(chromosome2.mines); i++ {
+				newChromosome.mines = append(newChromosome.mines, chromosome2.mines[i])
+			}
+		}
+	}
+	for i := 0; i < minInt(len(chromosome.factories), len(chromosome2.factories)); i++ {
 		if rand.Float64() > g.crossoverProbability {
 			newChromosome.factories = append(newChromosome.factories, chromosome.factories[i])
 		} else {
 			newChromosome.factories = append(newChromosome.factories, chromosome2.factories[i])
 		}
 	}
-	for i := 0; i < len(chromosome.paths); i++ {
-		if rand.Float64() > g.crossoverProbability {
-			newChromosome.paths = append(newChromosome.paths, chromosome.paths[i])
+	if rand.Float64() > 0.5 {
+		if len(chromosome.factories) > len(chromosome2.factories) {
+			for i := len(chromosome2.factories); i < len(chromosome.factories); i++ {
+				newChromosome.factories = append(newChromosome.factories, chromosome.factories[i])
+			}
 		} else {
-			newChromosome.paths = append(newChromosome.paths, chromosome2.paths[i])
+			for i := len(chromosome.factories); i < len(chromosome2.factories); i++ {
+				newChromosome.factories = append(newChromosome.factories, chromosome2.factories[i])
+			}
+		}
+	}
+	for i := 0; i < minInt(len(chromosome.paths), len(chromosome2.paths)); i++ {
+		if rand.Float64() > g.crossoverProbability {
+			newChromosome.paths = append(newChromosome.paths, chromosome.paths[i].copy())
+		} else {
+			newChromosome.paths = append(newChromosome.paths, chromosome2.paths[i].copy())
+		}
+	}
+	if rand.Float64() > 0.5 {
+		if len(chromosome.paths) > len(chromosome2.paths) {
+			for i := len(chromosome2.paths); i < len(chromosome.paths); i++ {
+				newChromosome.paths = append(newChromosome.paths, chromosome.paths[i].copy())
+			}
+		} else {
+			for i := len(chromosome.paths); i < len(chromosome2.paths); i++ {
+				newChromosome.paths = append(newChromosome.paths, chromosome2.paths[i].copy())
+			}
 		}
 	}
 	return newChromosome
+}
+
+func (c Chromosome) copy() Chromosome {
+	newChromosome := Chromosome{
+		fitness: 0,
+	}
+	for _, factory := range c.factories {
+		newChromosome.factories = append(newChromosome.factories, factory)
+	}
+	for _, mine := range c.mines {
+		newChromosome.mines = append(newChromosome.mines, mine)
+	}
+	for _, path := range c.paths {
+		newChromosome.paths = append(newChromosome.paths, path.copy())
+	}
+	return newChromosome
+}
+
+func (g *GeneticAlgorithm) addFactoryMutation(chromosome Chromosome) Chromosome {
+	newFactory, err := g.randomFactory(chromosome)
+	if err == nil {
+		chromosome.factories = append(chromosome.factories, newFactory)
+	}
+	return chromosome
+}
+
+func (g *GeneticAlgorithm) removeFactoryMutation(chromosome Chromosome) Chromosome {
+	if len(chromosome.factories) > 0 {
+		removeIndex := rand.Intn(len(chromosome.factories))
+		chromosome.factories[removeIndex] = chromosome.factories[len(chromosome.factories)-1]
+		chromosome.factories = chromosome.factories[:len(chromosome.factories)-1]
+	}
+	return chromosome
+}
+
+func (g *GeneticAlgorithm) addMineMutation(chromosome Chromosome) Chromosome {
+	newMine, err := g.randomMine(g.scenario.deposits[rand.Intn(len(g.scenario.deposits))], chromosome)
+	if err == nil {
+		chromosome.mines = append(chromosome.mines, newMine)
+	}
+	return chromosome
+}
+
+func (g *GeneticAlgorithm) removeMineMutation(chromosome Chromosome) Chromosome {
+	if len(chromosome.mines) > 0 {
+		removeIndex := rand.Intn(len(chromosome.mines))
+		chromosome.mines[removeIndex] = chromosome.mines[len(chromosome.mines)-1]
+		chromosome.mines = chromosome.mines[:len(chromosome.mines)-1]
+	}
+	return chromosome
+}
+
+func (g *GeneticAlgorithm) buildNewPaths(chromosome Chromosome, numPaths int) Chromosome {
+	chromosome.paths = nil
+	for i := 0; i < numPaths; i++ {
+		var path Path
+		for j := 0; j < NumPathRetries; j++ {
+			var err error
+			if len(chromosome.factories) > 0 && len(chromosome.mines) > 0 {
+				randomFactory := chromosome.factories[rand.Intn(len(chromosome.factories))]
+				randomMine := chromosome.mines[rand.Intn(len(chromosome.mines))]
+				path, err = g.pathMineToFactory(chromosome, randomMine, randomFactory)
+				if err == nil {
+					break
+				}
+				chromosome.paths = append(chromosome.paths, path)
+			}
+		}
+	}
+	return chromosome
 }
 
 func (g *GeneticAlgorithm) mutation(chromosome Chromosome) Chromosome {
@@ -126,13 +244,13 @@ func (g *GeneticAlgorithm) mutation(chromosome Chromosome) Chromosome {
 	}
 	for _, path := range chromosome.paths {
 		if rand.Float64() > g.mutationProbability {
-			newChromosome.paths = append(newChromosome.paths, path)
+			newChromosome.paths = append(newChromosome.paths, path.copy())
 		} else {
 			randomFactory := newChromosome.factories[rand.Intn(len(newChromosome.factories))]
 			randomMine := newChromosome.mines[rand.Intn(len(newChromosome.mines))]
 			newPath, err := g.pathMineToFactory(newChromosome, randomMine, randomFactory)
 			if err != nil {
-				newChromosome.paths = append(newChromosome.paths, path)
+				newChromosome.paths = append(newChromosome.paths, path.copy())
 			} else {
 				newChromosome.paths = append(newChromosome.paths, newPath)
 			}
@@ -150,20 +268,20 @@ func (g *GeneticAlgorithm) evaluateFitness(chromosome Chromosome) int {
 	return fitness
 }
 
-func (g *GeneticAlgorithm) generateChromosome() (Chromosome, error) {
+func (g *GeneticAlgorithm) generateChromosome() Chromosome {
 	chromosome := Chromosome{mines: make([]Mine, 0), factories: make([]Factory, 0)}
-	for i := 0; i < g.numMines; i++ {
+	for i := 0; i < g.initialNumMines; i++ {
 		deposit := g.scenario.deposits[i%len(g.scenario.deposits)]
 		mine, err := g.randomMine(deposit, chromosome)
 		if err != nil {
-			return chromosome, err
+			break
 		}
 		chromosome.mines = append(chromosome.mines, mine)
 	}
-	for i := 0; i < g.numFactories; i++ {
+	for i := 0; i < g.initialMinNumFactories+rand.Intn(g.initialMaxNumFactories-g.initialMinNumFactories); i++ {
 		factory, err := g.randomFactory(chromosome)
 		if err != nil {
-			return chromosome, err
+			break
 		}
 		chromosome.factories = append(chromosome.factories, factory)
 	}
@@ -184,32 +302,20 @@ func (g *GeneticAlgorithm) generateChromosome() (Chromosome, error) {
 			chromosome.paths = append(chromosome.paths, Path{})
 		}
 	}
-	return chromosome, nil
+	return chromosome
 }
 
-func (g *GeneticAlgorithm) generateChromosomes() ([]Chromosome, error) {
+func (g *GeneticAlgorithm) generateChromosomes() []Chromosome {
 	chromosomes := make([]Chromosome, g.populationSize)
 	for i := 0; i < g.populationSize; i++ {
-		foundChromosome := false
-		for j := 0; j < NumTriesPerChromosome; j++ {
-			chromosome, err := g.generateChromosome()
-			if err == nil {
-				chromosomes[i] = chromosome
-				foundChromosome = true
-			}
-		}
-		if !foundChromosome {
-			return chromosomes, errors.New("exceeded NumTriesPerChromosome in generateChromosomes, probably trying to place too many factories or mines")
-		}
+		chromosome := g.generateChromosome()
+		chromosomes[i] = chromosome
 	}
-	return chromosomes, nil
+	return chromosomes
 }
 
-func (g *GeneticAlgorithm) Run() (Solution, error) {
-	chromosomes, err := g.generateChromosomes()
-	if err != nil {
-		return Solution{}, err
-	}
+func (g *GeneticAlgorithm) Run() Solution {
+	chromosomes := g.generateChromosomes()
 	for i, chromosome := range chromosomes {
 		chromosomes[i].fitness = g.evaluateFitness(chromosome)
 	}
@@ -221,7 +327,13 @@ func (g *GeneticAlgorithm) Run() (Solution, error) {
 			log.Println("starting iteration", i+1, "/", g.iterations, "fitness", g.optimum, "(optimal)")
 			break
 		}
-		log.Println("starting iteration", i+1, "/", g.iterations, "fitness", chromosomes[0].fitness)
+		numBadChromosomes := 0
+		for _, c := range chromosomes {
+			if c.fitness < 10 {
+				numBadChromosomes += 1
+			}
+		}
+		log.Println("starting iteration", i+1, "/", g.iterations, "fitness", chromosomes[0].fitness, "bad chromosomes", numBadChromosomes, "/", len(chromosomes))
 		chromosomes = chromosomes[:g.populationSize]
 
 		for j := 0; j < g.populationSize; j++ {
@@ -235,10 +347,37 @@ func (g *GeneticAlgorithm) Run() (Solution, error) {
 			newChromosome.fitness = g.evaluateFitness(newChromosome)
 			chromosomes = append(chromosomes, newChromosome)
 		}
+		numChromosomes = len(chromosomes)
+		for j := 0; j < g.populationSize; j++ {
+			newChromosome := g.addFactoryMutation(chromosomes[rand.Intn(numChromosomes)].copy())
+			newChromosome.fitness = g.evaluateFitness(newChromosome)
+			chromosomes = append(chromosomes, newChromosome)
+		}
+		for j := 0; j < g.populationSize; j++ {
+			newChromosome := g.removeFactoryMutation(chromosomes[rand.Intn(numChromosomes)].copy())
+			newChromosome.fitness = g.evaluateFitness(newChromosome)
+			chromosomes = append(chromosomes, newChromosome)
+		}
+		for j := 0; j < g.populationSize; j++ {
+			newChromosome := g.removeMineMutation(chromosomes[rand.Intn(numChromosomes)].copy())
+			newChromosome.fitness = g.evaluateFitness(newChromosome)
+			chromosomes = append(chromosomes, newChromosome)
+		}
+		for j := 0; j < g.populationSize; j++ {
+			newChromosome := g.addMineMutation(chromosomes[rand.Intn(numChromosomes)].copy())
+			newChromosome.fitness = g.evaluateFitness(newChromosome)
+			chromosomes = append(chromosomes, newChromosome)
+		}
+		numChromosomes = len(chromosomes)
+		for j := 0; j < g.populationSize; j++ {
+			newChromosome := g.buildNewPaths(chromosomes[rand.Intn(numChromosomes)].copy(), g.numPaths)
+			newChromosome.fitness = g.evaluateFitness(newChromosome)
+			chromosomes = append(chromosomes, newChromosome)
+		}
 	}
 	sort.Slice(chromosomes, func(i, j int) bool {
 		return chromosomes[i].fitness > chromosomes[j].fitness
 	})
 	log.Println("final fitness", chromosomes[0].fitness)
-	return chromosomes[0].Solution(), nil
+	return chromosomes[0].Solution()
 }

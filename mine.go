@@ -8,8 +8,6 @@ import (
 type Mine struct {
 	position  Position
 	direction Direction
-
-	cachedRectangles []Rectangle
 }
 
 func (m *Mine) Egress() Position {
@@ -117,7 +115,7 @@ func (s *Scenario) positionAvailableForMine(factories []Factory, mines []Mine, p
 		}
 	}
 	for _, path := range paths {
-		for _, conveyor := range path {
+		for _, conveyor := range path.conveyors {
 			if mine.Intersects(conveyor.Rectangle()) {
 				return false
 			}
