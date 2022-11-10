@@ -197,9 +197,9 @@ func (g *GeneticAlgorithm) buildNewPaths(chromosome Chromosome, numPaths int) Ch
 				randomMine := chromosome.mines[rand.Intn(len(chromosome.mines))]
 				path, err = g.pathMineToFactory(chromosome, randomMine, randomFactory)
 				if err == nil {
+					chromosome.paths = append(chromosome.paths, path)
 					break
 				}
-				chromosome.paths = append(chromosome.paths, path)
 			}
 		}
 	}
