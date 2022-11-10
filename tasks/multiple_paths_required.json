@@ -1,0 +1,127 @@
+{
+  "width": 40,
+  "height": 40,
+  "objects": [
+    {
+      "type": "deposit",
+      "x": 0,
+      "y": 0,
+      "subtype": 0,
+      "width": 6,
+      "height": 6
+    },
+    {
+      "type": "obstacle",
+      "x": 0,
+      "y": 10,
+      "width": 10,
+      "height": 2
+    },
+    {
+      "type": "obstacle",
+      "x": 10,
+      "y": 0,
+      "width": 2,
+      "height": 7
+    },
+    {
+      "type": "deposit",
+      "x": 30,
+      "y": 0,
+      "subtype": 0,
+      "width": 10,
+      "height": 4
+    },
+    {
+      "type": "deposit",
+      "x": 0,
+      "y": 26,
+      "subtype": 1,
+      "width": 4,
+      "height": 12
+    },
+    {
+      "type": "deposit",
+      "x": 32,
+      "y": 14,
+      "subtype": 2,
+      "width": 4,
+      "height": 14
+    },
+    {
+      "type": "obstacle",
+      "x": 28,
+      "y": 9,
+      "width": 12,
+      "height": 1
+    },
+    {
+      "type": "obstacle",
+      "x": 25,
+      "y": 13,
+      "width": 3,
+      "height": 6
+    },
+    {
+      "type": "obstacle",
+      "x": 25,
+      "y": 21,
+      "width": 3,
+      "height": 9
+    },
+    {
+      "type": "obstacle",
+      "x": 28,
+      "y": 29,
+      "width": 12,
+      "height": 3
+    },
+    {
+      "type": "obstacle",
+      "x": 24,
+      "y": 0,
+      "width": 3,
+      "height": 6
+    },
+    {
+      "type": "obstacle",
+      "x": 0,
+      "y": 21,
+      "width": 10,
+      "height": 2
+    },
+    {
+      "type": "obstacle",
+      "x": 8,
+      "y": 24,
+      "width": 2,
+      "height": 16
+    },
+    {
+      "type": "deposit",
+      "x": 28,
+      "y": 35,
+      "subtype": 4,
+      "width": 12,
+      "height": 5
+    }
+  ],
+  "products": [
+    {
+      "type": "product",
+      "subtype": 0,
+      "resources": [
+        10,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "points": 10
+    }
+  ],
+  "turns": 40
+}
