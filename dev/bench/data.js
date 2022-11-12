@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1668108936256,
+  "lastUpdate": 1668240879616,
   "repoUrl": "https://github.com/jacob271/profit-solver-icup23",
   "entries": {
     "Benchmark": [
@@ -1563,6 +1563,160 @@ window.BENCHMARK_DATA = {
           {
             "name": "alex.json - time",
             "value": 16.5481059551239,
+            "unit": "seconds"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "richard@rgwohlbold.de",
+            "name": "Richard Wohlbold",
+            "username": "rgwohlbold"
+          },
+          "committer": {
+            "email": "richard@rgwohlbold.de",
+            "name": "Richard Wohlbold",
+            "username": "rgwohlbold"
+          },
+          "distinct": true,
+          "id": "74039dc0cd1d48683ec6561da6a1d6c593dfcdb1",
+          "message": "Generalize mutation code and temporarily use resource amount for optimum",
+          "timestamp": "2022-11-12T09:04:11+01:00",
+          "tree_id": "0587f9cec0fd631dfe2c687cb7a5d26bfb257fee",
+          "url": "https://github.com/jacob271/profit-solver-icup23/commit/74039dc0cd1d48683ec6561da6a1d6c593dfcdb1"
+        },
+        "date": 1668240878881,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "002.task.json - fitness",
+            "value": 90,
+            "unit": "points"
+          },
+          {
+            "name": "002.task.json - time",
+            "value": 2.7725752194722495,
+            "unit": "seconds"
+          },
+          {
+            "name": "jacob.json - fitness",
+            "value": 1260,
+            "unit": "points"
+          },
+          {
+            "name": "jacob.json - time",
+            "value": 5.179219325383504,
+            "unit": "seconds"
+          },
+          {
+            "name": "004.task.json - fitness",
+            "value": 264,
+            "unit": "points"
+          },
+          {
+            "name": "004.task.json - time",
+            "value": 8.56793737411499,
+            "unit": "seconds"
+          },
+          {
+            "name": "003.task.json - fitness",
+            "value": 273.3333333333333,
+            "unit": "points"
+          },
+          {
+            "name": "003.task.json - time",
+            "value": 22.51652240753174,
+            "unit": "seconds"
+          },
+          {
+            "name": "nils.json - fitness",
+            "value": 588,
+            "unit": "points"
+          },
+          {
+            "name": "nils.json - time",
+            "value": 20.417894283930462,
+            "unit": "seconds"
+          },
+          {
+            "name": "jacob_few_turns.json - fitness",
+            "value": 1053,
+            "unit": "points"
+          },
+          {
+            "name": "jacob_few_turns.json - time",
+            "value": 34.57026934623718,
+            "unit": "seconds"
+          },
+          {
+            "name": "exampleScenario.json - fitness",
+            "value": 935,
+            "unit": "points"
+          },
+          {
+            "name": "exampleScenario.json - time",
+            "value": 2.3699425061543784,
+            "unit": "seconds"
+          },
+          {
+            "name": "richard.json - fitness",
+            "value": 120,
+            "unit": "points"
+          },
+          {
+            "name": "richard.json - time",
+            "value": 14.602608680725098,
+            "unit": "seconds"
+          },
+          {
+            "name": "001.task.json - fitness",
+            "value": 495,
+            "unit": "points"
+          },
+          {
+            "name": "001.task.json - time",
+            "value": 0.38744695981343585,
+            "unit": "seconds"
+          },
+          {
+            "name": "two_deposits.json - fitness",
+            "value": 90,
+            "unit": "points"
+          },
+          {
+            "name": "two_deposits.json - time",
+            "value": 0.02936855951944987,
+            "unit": "seconds"
+          },
+          {
+            "name": "richard2.json - fitness",
+            "value": 120,
+            "unit": "points"
+          },
+          {
+            "name": "richard2.json - time",
+            "value": 13.266323328018188,
+            "unit": "seconds"
+          },
+          {
+            "name": "multiple_paths_required.json - fitness",
+            "value": 949,
+            "unit": "points"
+          },
+          {
+            "name": "multiple_paths_required.json - time",
+            "value": 40.9175812403361,
+            "unit": "seconds"
+          },
+          {
+            "name": "alex.json - fitness",
+            "value": 962,
+            "unit": "points"
+          },
+          {
+            "name": "alex.json - time",
+            "value": 32.38798634211222,
             "unit": "seconds"
           }
         ]
