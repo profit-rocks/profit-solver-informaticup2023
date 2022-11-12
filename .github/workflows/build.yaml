@@ -3,8 +3,9 @@ name: Build, test and benchmark
 env:
   CGO_CFLAGS: "-I/usr/include/lpsolve"
   CGO_LDFLAGS: "-llpsolve55 -lm -ldl -lcolamd"
-
-
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 on:
   push:
 jobs:
