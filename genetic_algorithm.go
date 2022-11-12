@@ -216,16 +216,10 @@ func (g *GeneticAlgorithm) removePathMutation(chromosome Chromosome) Chromosome 
 	return chromosome
 }
 
-func copySlice[T any](a []T) []T {
-	b := make([]T, len(a))
-	copy(b, a)
-	return b
-}
-
 func (g *GeneticAlgorithm) moveMinesMutation(chromosome Chromosome) Chromosome {
 	newChromosome := Chromosome{
-		factories: copySlice(chromosome.factories),
-		paths:     copySlice(chromosome.paths),
+		factories: chromosome.factories,
+		paths:     chromosome.paths,
 	}
 	for _, mine := range chromosome.mines {
 		if rand.Float64() > g.mutationProbability {
@@ -254,7 +248,7 @@ func (g *GeneticAlgorithm) moveMinesMutation(chromosome Chromosome) Chromosome {
 
 func (g *GeneticAlgorithm) moveFactoriesMutation(chromosome Chromosome) Chromosome {
 	newChromosome := Chromosome{
-		mines: copySlice(chromosome.mines),
+		mines: chromosome.mines,
 	}
 	for _, path := range chromosome.paths {
 		newChromosome.paths = append(newChromosome.paths, path.copy())
@@ -276,8 +270,8 @@ func (g *GeneticAlgorithm) moveFactoriesMutation(chromosome Chromosome) Chromoso
 
 func (g *GeneticAlgorithm) movePathMutation(chromosome Chromosome) Chromosome {
 	newChromosome := Chromosome{
-		mines:     copySlice(chromosome.mines),
-		factories: copySlice(chromosome.factories),
+		mines:     chromosome.mines,
+		factories: chromosome.factories,
 	}
 	// If no factories or mines exist, it does not make sense to have any paths
 	if len(chromosome.factories) == 0 || len(chromosome.mines) == 0 {
