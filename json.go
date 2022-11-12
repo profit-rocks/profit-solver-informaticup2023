@@ -125,6 +125,7 @@ func importScenarioFromJson(path string) (Scenario, error) {
 		width:  importedScenario.Width,
 		height: importedScenario.Height,
 		turns:  importedScenario.Turns,
+		time:   importedScenario.Time,
 	}
 	for _, object := range importedScenario.Objects {
 		switch object.ObjectType {

@@ -26,6 +26,7 @@ type Scenario struct {
 	obstacles []Obstacle
 	products  []Product
 	turns     int
+	time      int
 }
 
 // Solution is the output of any algorithm that solves Profit!
