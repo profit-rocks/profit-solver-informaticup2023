@@ -65,16 +65,7 @@ func TheoreticalOptimum(scenario Scenario) (int, error) {
 
 	sol := lp.Solve()
 	if sol == golp.OPTIMAL {
-		return int(lp.Objective()), nil
+		return int(lp.Objective() + 0.5), nil
 	}
 	return NoOptimum, errors.New("no optimal solution found")
-}
-
-func TheoreticalOptimumNoProducts(scenario Scenario) (int, error) {
-	// TODO: replace with proper theoretical optimum
-	sum := 0
-	for _, deposit := range scenario.deposits {
-		sum += deposit.width * deposit.height * DepositResourceFactor
-	}
-	return sum, nil
 }
