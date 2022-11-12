@@ -69,3 +69,12 @@ func TheoreticalOptimum(scenario Scenario) (int, error) {
 	}
 	return NoOptimum, errors.New("no optimal solution found")
 }
+
+func TheoreticalOptimumNoProducts(scenario Scenario) (int, error) {
+	// TODO: replace with proper theoretical optimum
+	sum := 0
+	for _, deposit := range scenario.deposits {
+		sum += deposit.width * deposit.height * DepositResourceFactor
+	}
+	return sum, nil
+}

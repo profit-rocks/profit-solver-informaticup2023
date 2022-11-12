@@ -36,29 +36,20 @@ func main() {
 
 	rand.Seed(time.Now().UnixNano())
 
-	optimum, err := TheoreticalOptimum(scenario)
+	optimum, err := TheoreticalOptimumNoProducts(scenario)
 	if err != nil {
 		log.Println("no theoretical optimum found")
 	} else {
 		log.Println("theoretical optimum", optimum)
 	}
-	totalResources := 0
-	for _, deposit := range scenario.deposits {
-		totalResources += deposit.width * deposit.height * DepositResourceFactor
-	}
-	log.Println("total amount of resources", totalResources)
 
 	geneticAlgorithm := GeneticAlgorithm{
-		scenario:               scenario,
-		populationSize:         200,
-		iterations:             40,
-		mutationProbability:    0.18,
-		crossoverProbability:   0.7,
-		initialMinNumFactories: 2,
-		initialMaxNumFactories: 6,
-		initialNumMines:        1 * len(scenario.deposits),
-		optimum:                optimum,
-		numPaths:               2,
+		scenario:             scenario,
+		populationSize:       200,
+		iterations:           120,
+		mutationProbability:  0.18,
+		crossoverProbability: 0.7,
+		optimum:              optimum,
 	}
 	solution := geneticAlgorithm.Run()
 
