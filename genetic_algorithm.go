@@ -11,6 +11,9 @@ type Path struct {
 	conveyors []Conveyor
 }
 
+const NumRoundsPerIteration = 200
+const NumMutationsPerRound = 10
+
 const NumPathRetries = 10
 
 type Chromosome struct {
@@ -323,10 +326,16 @@ func (g *GeneticAlgorithm) generateChromosomes() []Chromosome {
 type MutationFunction func(algorithm *GeneticAlgorithm, chromosome Chromosome) Chromosome
 
 // Mutations contains all mutation functions, performed in multiple layers. Each layer operates on the same set of chromosomes
-var Mutations = [][]MutationFunction{
-	{(*GeneticAlgorithm).addMineMutation, (*GeneticAlgorithm).removeMineMutation, (*GeneticAlgorithm).moveMinesMutation},
-	{(*GeneticAlgorithm).addFactoryMutation, (*GeneticAlgorithm).removeFactoryMutation, (*GeneticAlgorithm).moveFactoriesMutation},
-	{(*GeneticAlgorithm).addPathMutation, (*GeneticAlgorithm).removePathMutation, (*GeneticAlgorithm).movePathMutation},
+var Mutations = []MutationFunction{
+	(*GeneticAlgorithm).addMineMutation,
+	(*GeneticAlgorithm).removeMineMutation,
+	(*GeneticAlgorithm).moveMinesMutation,
+	(*GeneticAlgorithm).addFactoryMutation,
+	(*GeneticAlgorithm).removeFactoryMutation,
+	(*GeneticAlgorithm).moveFactoriesMutation,
+	(*GeneticAlgorithm).addPathMutation,
+	(*GeneticAlgorithm).removePathMutation,
+	(*GeneticAlgorithm).movePathMutation,
 }
 
 func (g *GeneticAlgorithm) Run() Solution {
@@ -348,8 +357,8 @@ func (g *GeneticAlgorithm) Run() Solution {
 				numBadChromosomes += 1
 			}
 		}
-		log.Println("starting iteration", i+1, "/", g.iterations, "fitness", chromosomes[0].fitness, "bad chromosomes", numBadChromosomes, "/", len(chromosomes))
 		chromosomes = chromosomes[:g.populationSize]
+		log.Println("starting iteration", i+1, "/", g.iterations, "max fitness", chromosomes[0].fitness, "min fitness", chromosomes[len(chromosomes)-1].fitness, "bad chromosomes", numBadChromosomes, "/", len(chromosomes)+NumMutationsPerRound*NumRoundsPerIteration)
 
 		for j := 0; j < g.populationSize; j++ {
 			newChromosome := g.crossover(chromosomes[rand.Intn(g.populationSize)], chromosomes[rand.Intn(g.populationSize)])
@@ -357,14 +366,13 @@ func (g *GeneticAlgorithm) Run() Solution {
 			chromosomes = append(chromosomes, newChromosome)
 		}
 
-		for _, mutationLayer := range Mutations {
-			numChromosomes := len(chromosomes)
-			for _, mutation := range mutationLayer {
-				for j := 0; j < g.populationSize; j++ {
-					newChromosome := mutation(g, chromosomes[rand.Intn(numChromosomes)].copy())
-					newChromosome.fitness = g.evaluateFitness(newChromosome)
-					chromosomes = append(chromosomes, newChromosome)
-				}
+		for j := 0; j < NumRoundsPerIteration; j++ {
+			mutation := Mutations[rand.Intn(len(Mutations))]
+			chromosome := chromosomes[rand.Intn(len(chromosomes))]
+			for k := 0; k < NumMutationsPerRound; k++ {
+				chromosome = mutation(g, chromosome.copy())
+				chromosome.fitness = g.evaluateFitness(chromosome)
+				chromosomes = append(chromosomes, chromosome)
 			}
 		}
 	}
