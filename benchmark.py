@@ -5,7 +5,7 @@ import subprocess
 import sys
 import time
 
-NUM_RUNS_PER_FILE = 3
+NUM_RUNS_PER_FILE = 1
 
 
 def output_to_fitness(output):
