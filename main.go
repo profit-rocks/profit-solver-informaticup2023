@@ -42,23 +42,14 @@ func main() {
 	} else {
 		log.Println("theoretical optimum", optimum)
 	}
-	totalResources := 0
-	for _, deposit := range scenario.deposits {
-		totalResources += deposit.width * deposit.height * DepositResourceFactor
-	}
-	log.Println("total amount of resources", totalResources)
 
 	geneticAlgorithm := GeneticAlgorithm{
-		scenario:               scenario,
-		populationSize:         200,
-		iterations:             40,
-		mutationProbability:    0.18,
-		crossoverProbability:   0.7,
-		initialMinNumFactories: 2,
-		initialMaxNumFactories: 6,
-		initialNumMines:        1 * len(scenario.deposits),
-		optimum:                optimum,
-		numPaths:               2,
+		scenario:             scenario,
+		populationSize:       200,
+		iterations:           50,
+		mutationProbability:  0.18,
+		crossoverProbability: 0.7,
+		optimum:              optimum,
 	}
 	solution := geneticAlgorithm.Run()
 

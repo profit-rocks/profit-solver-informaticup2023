@@ -23,8 +23,9 @@ func TestSolutionForLargeScenarioWithDepositEvaluation(t *testing.T) {
 	if err != nil {
 		t.Errorf("evaluating empty solution should not return an error %v", err)
 	}
-	if score != 24 {
-		t.Errorf("score should be 24 and not %d", score)
+	expectedScore := 240
+	if score != expectedScore {
+		t.Errorf("score should be %d and not %d", expectedScore, score)
 	}
 }
 
@@ -35,8 +36,9 @@ func TestSolutionWithPathForLargeScenarioWithDepositEvaluation(t *testing.T) {
 	if err != nil {
 		t.Errorf("evaluating empty solution should not return an error %v", err)
 	}
-	if score != 18 {
-		t.Errorf("score should be 18 and not %d", score)
+	expectedScore := 180
+	if score != expectedScore {
+		t.Errorf("score should be %d and not %d", expectedScore, score)
 	}
 }
 

@@ -65,7 +65,7 @@ func TheoreticalOptimum(scenario Scenario) (int, error) {
 
 	sol := lp.Solve()
 	if sol == golp.OPTIMAL {
-		return int(lp.Objective()), nil
+		return int(lp.Objective() + 0.5), nil
 	}
 	return NoOptimum, errors.New("no optimal solution found")
 }

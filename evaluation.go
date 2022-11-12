@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"math"
 )
 
 const DepositResourceFactor = 5
@@ -93,8 +94,18 @@ func (s *Scenario) evaluateSolution(solution Solution) (int, error) {
 	}
 	score := 0
 	for _, factory := range simulation.factories {
-		for i := 0; i < NumResourceTypes; i++ {
-			score += factory.resources[i]
+		units := math.MaxInt32
+		// TODO: efficiency can be improved by precomputing a subtype -> product map
+		for _, product := range s.products {
+			if product.subtype == factory.factory.product {
+				for i, resource := range product.resources {
+					if resource != 0 {
+						units = minInt(units, factory.resources[i]/resource)
+					}
+				}
+				score += units * product.points
+				break
+			}
 		}
 	}
 	return score, nil
