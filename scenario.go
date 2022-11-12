@@ -45,3 +45,17 @@ func (s *Scenario) boundRectangles() []Rectangle {
 func (s *Scenario) inBounds(position Position) bool {
 	return !(position.y < 0 || position.y >= s.height || position.x < 0 || position.x >= s.width)
 }
+
+func (s *Scenario) resourceTypes() []int {
+	availableResourceTypes := make([]int, 0)
+	for i := 0; i < NumResourceTypes; i++ {
+		for _, product := range s.products {
+			if product.resources[i] > 0 {
+				availableResourceTypes = append(availableResourceTypes, i)
+				break
+			}
+
+		}
+	}
+	return availableResourceTypes
+}
