@@ -23,6 +23,22 @@ type Chromosome struct {
 	fitness   int
 }
 
+// MutationFunction expects a copy of the chromosome which it can modify.
+type MutationFunction func(algorithm *GeneticAlgorithm, chromosome Chromosome) Chromosome
+
+// Mutations contains all mutation functions, performed in multiple layers. Each layer operates on the same set of chromosomes
+var Mutations = []MutationFunction{
+	(*GeneticAlgorithm).addMineMutation,
+	(*GeneticAlgorithm).removeMineMutation,
+	(*GeneticAlgorithm).moveMinesMutation,
+	(*GeneticAlgorithm).addFactoryMutation,
+	(*GeneticAlgorithm).removeFactoryMutation,
+	(*GeneticAlgorithm).moveFactoriesMutation,
+	(*GeneticAlgorithm).addPathMutation,
+	(*GeneticAlgorithm).removePathMutation,
+	(*GeneticAlgorithm).movePathMutation,
+}
+
 // GeneticAlgorithm contains input data as well as configuration information used by the genetic algorithm.
 // Data in this struct is passed around, but never changed. If there is context information that needs to be
 // changed, it should probably be stored in a chromosome.
@@ -249,9 +265,7 @@ func (g *GeneticAlgorithm) moveMinesMutation(chromosome Chromosome) Chromosome {
 func (g *GeneticAlgorithm) moveFactoriesMutation(chromosome Chromosome) Chromosome {
 	newChromosome := Chromosome{
 		mines: chromosome.mines,
-	}
-	for _, path := range chromosome.paths {
-		newChromosome.paths = append(newChromosome.paths, path.copy())
+		paths: chromosome.paths,
 	}
 	for _, factory := range chromosome.factories {
 		if rand.Float64() > g.mutationProbability {
@@ -280,13 +294,13 @@ func (g *GeneticAlgorithm) movePathMutation(chromosome Chromosome) Chromosome {
 
 	for _, path := range chromosome.paths {
 		if rand.Float64() > g.mutationProbability {
-			newChromosome.paths = append(newChromosome.paths, path.copy())
+			newChromosome.paths = append(newChromosome.paths, path)
 		} else {
 			randomFactory := newChromosome.factories[rand.Intn(len(newChromosome.factories))]
 			randomMine := newChromosome.mines[rand.Intn(len(newChromosome.mines))]
 			newPath, err := g.pathMineToFactory(newChromosome, randomMine, randomFactory)
 			if err != nil {
-				newChromosome.paths = append(newChromosome.paths, path.copy())
+				newChromosome.paths = append(newChromosome.paths, path)
 			} else {
 				newChromosome.paths = append(newChromosome.paths, newPath)
 			}
@@ -315,21 +329,6 @@ func (g *GeneticAlgorithm) generateChromosomes() []Chromosome {
 		chromosomes[i] = chromosome
 	}
 	return chromosomes
-}
-
-type MutationFunction func(algorithm *GeneticAlgorithm, chromosome Chromosome) Chromosome
-
-// Mutations contains all mutation functions, performed in multiple layers. Each layer operates on the same set of chromosomes
-var Mutations = []MutationFunction{
-	(*GeneticAlgorithm).addMineMutation,
-	(*GeneticAlgorithm).removeMineMutation,
-	(*GeneticAlgorithm).moveMinesMutation,
-	(*GeneticAlgorithm).addFactoryMutation,
-	(*GeneticAlgorithm).removeFactoryMutation,
-	(*GeneticAlgorithm).moveFactoriesMutation,
-	(*GeneticAlgorithm).addPathMutation,
-	(*GeneticAlgorithm).removePathMutation,
-	(*GeneticAlgorithm).movePathMutation,
 }
 
 func (g *GeneticAlgorithm) Run() Solution {
