@@ -11,7 +11,7 @@ type Path struct {
 	conveyors []Conveyor
 }
 
-const NumRoundsPerIteration = 200
+const NumRoundsPerIteration = 1000
 const NumMutationsPerRound = 10
 
 const NumPathRetries = 10
