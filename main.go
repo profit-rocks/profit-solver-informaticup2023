@@ -9,6 +9,7 @@ import (
 	"time"
 )
 
+// TODO: is this enough when running in docker?
 const PercentTimeUsed = 90
 
 func main() {
