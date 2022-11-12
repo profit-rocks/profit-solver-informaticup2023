@@ -36,7 +36,7 @@ func main() {
 
 	rand.Seed(time.Now().UnixNano())
 
-	optimum, err := TheoreticalOptimumNoProducts(scenario)
+	optimum, err := TheoreticalOptimum(scenario)
 	if err != nil {
 		log.Println("no theoretical optimum found")
 	} else {
