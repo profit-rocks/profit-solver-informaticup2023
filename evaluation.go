@@ -108,6 +108,17 @@ func (s *Scenario) evaluateSolution(solution Solution) (int, error) {
 			}
 		}
 	}
+	// TODO: nudge even when some products have been produced
+	// nudge solution towards collecting resources, even if not full products
+	totalResources := 0
+	for _, factory := range simulation.factories {
+		for _, resource := range factory.resources {
+			totalResources += resource
+		}
+	}
+	if score == 0 {
+		return math.MinInt32 + totalResources, nil
+	}
 	return score, nil
 }
 
