@@ -187,6 +187,7 @@ func (g *GeneticAlgorithm) removeMineMutation(chromosome Chromosome) Chromosome 
 }
 
 func (g *GeneticAlgorithm) addPathMutation(chromosome Chromosome) Chromosome {
+	// TODO: take product subtypes into account
 	newPath := Path{}
 	for j := 0; j < NumPathRetries; j++ {
 		var err error
@@ -208,24 +209,6 @@ func (g *GeneticAlgorithm) removePathMutation(chromosome Chromosome) Chromosome 
 		removeIndex := rand.Intn(len(chromosome.paths))
 		chromosome.paths[removeIndex] = chromosome.paths[len(chromosome.paths)-1]
 		chromosome.paths = chromosome.paths[:len(chromosome.paths)-1]
-	}
-	return chromosome
-}
-
-func (g *GeneticAlgorithm) buildPathMutation(chromosome Chromosome) Chromosome {
-	chromosome.paths = nil
-	var path Path
-	for j := 0; j < NumPathRetries; j++ {
-		var err error
-		if len(chromosome.factories) > 0 && len(chromosome.mines) > 0 {
-			randomFactory := chromosome.factories[rand.Intn(len(chromosome.factories))]
-			randomMine := chromosome.mines[rand.Intn(len(chromosome.mines))]
-			path, err = g.pathMineToFactory(chromosome, randomMine, randomFactory)
-			if err == nil {
-				chromosome.paths = append(chromosome.paths, path)
-				break
-			}
-		}
 	}
 	return chromosome
 }

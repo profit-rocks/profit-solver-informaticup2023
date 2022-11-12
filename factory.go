@@ -120,5 +120,6 @@ func (g *GeneticAlgorithm) randomFactory(chromosome Chromosome) (Factory, error)
 		return Factory{}, errors.New("no factory positions available")
 	}
 	position := availablePositions[rand.Intn(len(availablePositions))]
-	return Factory{position: position, product: 0}, nil
+	subtype := g.scenario.products[rand.Intn(len(g.scenario.products))].subtype
+	return Factory{position: position, product: subtype}, nil
 }
