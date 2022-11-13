@@ -115,7 +115,8 @@ func minInt(x int, y int) int {
 	return y
 }
 
-func (g *GeneticAlgorithm) crossover(chromosome Chromosome, chromosome2 Chromosome) Chromosome {
+func (g *GeneticAlgorithm) crossover(chromosome Chromosome, chromosome2 Chromosome) (Chromosome, error) {
+	// TODO: only output valid chromosomes
 	newChromosome := Chromosome{}
 	for i := 0; i < minInt(len(chromosome.mines), len(chromosome2.mines)); i++ {
 		if rand.Float64() > g.crossoverProbability {
@@ -171,7 +172,7 @@ func (g *GeneticAlgorithm) crossover(chromosome Chromosome, chromosome2 Chromoso
 			}
 		}
 	}
-	return newChromosome
+	return newChromosome, g.scenario.checkValidity(newChromosome.Solution())
 }
 
 func (c Chromosome) copy() Chromosome {
@@ -342,21 +343,16 @@ func (g *GeneticAlgorithm) Run() Solution {
 			log.Println("starting iteration", i+1, "/", g.iterations, "fitness", g.optimum, "(optimal)")
 			break
 		}
-		numBadChromosomes := 0
-		for _, c := range chromosomes {
-			if c.fitness == math.MinInt {
-				numBadChromosomes += 1
-			}
-		}
 		chromosomes = chromosomes[:g.populationSize]
-		log.Println("starting iteration", i+1, "/", g.iterations, "max fitness", chromosomes[0].fitness, "min fitness", chromosomes[len(chromosomes)-1].fitness, "bad chromosomes", numBadChromosomes, "/", len(chromosomes)+NumMutationsPerRound*NumRoundsPerIteration)
+		log.Println("starting iteration", i+1, "/", g.iterations, "max fitness", chromosomes[0].fitness, "min fitness", chromosomes[len(chromosomes)-1].fitness)
 
 		for j := 0; j < g.populationSize; j++ {
-			newChromosome := g.crossover(chromosomes[rand.Intn(g.populationSize)], chromosomes[rand.Intn(g.populationSize)])
-			newChromosome.fitness = g.evaluateFitness(newChromosome)
-			if newChromosome.fitness != math.MinInt {
-				chromosomes = append(chromosomes, newChromosome)
+			newChromosome, err := g.crossover(chromosomes[rand.Intn(g.populationSize)], chromosomes[rand.Intn(g.populationSize)])
+			if err != nil {
+				continue
 			}
+			newChromosome.fitness = g.evaluateFitness(newChromosome)
+			chromosomes = append(chromosomes, newChromosome)
 		}
 
 		for j := 0; j < NumRoundsPerIteration; j++ {
