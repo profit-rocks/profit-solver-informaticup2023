@@ -5,6 +5,8 @@ import (
 	"math/rand"
 )
 
+const NumProducts = 8
+
 const FactoryWidth = 5
 const FactoryHeight = 5
 

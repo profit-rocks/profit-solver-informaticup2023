@@ -131,6 +131,9 @@ func importFromProfitJson(path string) (Scenario, Solution, error) {
 	for _, object := range profit.Objects {
 		switch object.ObjectType {
 		case "deposit":
+			if object.Subtype >= NumResourceTypes || object.Subtype < 0 {
+				return Scenario{}, Solution{}, fmt.Errorf("invalid subtype %d for deposit", object.Subtype)
+			}
 			scenario.deposits = append(scenario.deposits, Deposit{
 				position: Position{object.X, object.Y},
 				width:    object.Width,
@@ -144,12 +147,15 @@ func importFromProfitJson(path string) (Scenario, Solution, error) {
 				width:    object.Width,
 			})
 		case "factory":
+			if object.Subtype >= NumProducts || object.Subtype < 0 {
+				return Scenario{}, Solution{}, fmt.Errorf("invalid factory subtype %d", object.Subtype)
+			}
 			solution.factories = append(solution.factories, Factory{
 				position: Position{object.X, object.Y},
 				product:  object.Subtype,
 			})
 		case "mine":
-			if object.Subtype > 3 || object.Subtype < 0 {
+			if object.Subtype > NumDirections || object.Subtype < 0 {
 				return Scenario{}, Solution{}, fmt.Errorf("invalid mine subtype: %d", object.Subtype)
 			}
 			direction := DirectionFromSubtype(object.Subtype)

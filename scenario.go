@@ -12,6 +12,8 @@ const (
 	Top    Direction = iota
 )
 
+const NumDirections = 4
+
 type Product struct {
 	subtype   int
 	points    int
