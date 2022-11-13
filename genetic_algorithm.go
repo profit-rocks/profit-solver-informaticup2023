@@ -363,9 +363,9 @@ func (g *GeneticAlgorithm) Run() {
 		}
 
 		for j := 0; j < NumRoundsPerIteration; j++ {
-			mutation := Mutations[rand.Intn(len(Mutations))]
 			chromosome := chromosomes[rand.Intn(len(chromosomes))]
 			for k := 0; k < NumMutationsPerRound; k++ {
+				mutation := Mutations[rand.Intn(len(Mutations))]
 				chromosome = mutation(g, chromosome.copy())
 				chromosome.fitness = g.evaluateFitness(chromosome)
 				chromosomes = append(chromosomes, chromosome)
