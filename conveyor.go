@@ -3,7 +3,6 @@ package main
 import (
 	"container/heap"
 	"errors"
-	"fmt"
 )
 
 const NumConveyorSubtypes = 8
@@ -21,31 +20,13 @@ type Conveyor struct {
 	length    ConveyorLength
 }
 
-func ConveyorLengthFromSubtype(subtype int) (ConveyorLength, error) {
-	if subtype > 7 || subtype < 0 {
-		return Short, errors.New("unknown subtype for conveyor, can't convert to direction")
-	}
-	return ConveyorLength(subtype >> 2), nil
-}
-
-func ConveyorDirectionFromSubtype(subtype int) (Direction, error) {
-	if subtype > 7 || subtype < 0 {
-		return Top, errors.New("unknown subtype for conveyor, can't convert to direction")
-	}
-	return Direction(subtype & 3), nil
+func ConveyorLengthFromSubtype(subtype int) ConveyorLength {
+	return ConveyorLength(subtype >> 2)
 }
 
 func ConveyorFromIngressAndSubtype(ingress Position, subtype int) Conveyor {
-	length, err := ConveyorLengthFromSubtype(subtype)
-	if err != nil {
-		fmt.Println("Error: ", err)
-		return Conveyor{}
-	}
-	direction, err := ConveyorDirectionFromSubtype(subtype)
-	if err != nil {
-		fmt.Println("Error: ", err)
-		return Conveyor{}
-	}
+	length := ConveyorLengthFromSubtype(subtype)
+	direction := DirectionFromSubtype(subtype)
 	var position Position
 	if direction == Right {
 		position = Position{ingress.x + 1, ingress.y}

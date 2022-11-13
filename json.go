@@ -183,26 +183,22 @@ func importSolutionFromJson(path string) (Solution, error) {
 				product:  object.Subtype,
 			})
 		case "mine":
-			direction, err := MineDirectionFromSubtype(object.Subtype)
-			if err != nil {
-				_ = fmt.Errorf("importing a mine failed: %s", err)
+			if object.Subtype > 3 || object.Subtype < 0 {
+				_ = fmt.Errorf("importing a mine failed, invalid subtype")
 				continue
 			}
+			direction := DirectionFromSubtype(object.Subtype)
 			solution.mines = append(solution.mines, Mine{
 				position:  Position{object.X, object.Y},
 				direction: direction,
 			})
 		case "conveyor":
-			direction, err := ConveyorDirectionFromSubtype(object.Subtype)
-			if err != nil {
-				_ = fmt.Errorf("importing a conveyor failed: %s", err)
+			if object.Subtype > 7 || object.Subtype < 0 {
+				_ = fmt.Errorf("importing a conveyor failed, invalid subtype")
 				continue
 			}
-			length, err := ConveyorLengthFromSubtype(object.Subtype)
-			if err != nil {
-				_ = fmt.Errorf("importing a conveyor failed: %s", err)
-				continue
-			}
+			direction := DirectionFromSubtype(object.Subtype)
+			length := ConveyorLengthFromSubtype(object.Subtype)
 			// TODO: Think about building proper paths
 			solution.paths = append(solution.paths, Path{
 				conveyors: []Conveyor{{
