@@ -53,6 +53,8 @@ type GeneticAlgorithm struct {
 	initialNumMines        int
 	optimum                int
 	numPaths               int
+	chromosomeChannel      chan<- Chromosome
+	doneChannel            chan<- bool
 }
 
 func (c Chromosome) Solution() Solution {
@@ -331,7 +333,7 @@ func (g *GeneticAlgorithm) generateChromosomes() []Chromosome {
 	return chromosomes
 }
 
-func (g *GeneticAlgorithm) Run() Solution {
+func (g *GeneticAlgorithm) Run() {
 	chromosomes := g.generateChromosomes()
 	for i, chromosome := range chromosomes {
 		chromosomes[i].fitness = g.evaluateFitness(chromosome)
@@ -340,6 +342,7 @@ func (g *GeneticAlgorithm) Run() Solution {
 		sort.Slice(chromosomes, func(i, j int) bool {
 			return chromosomes[i].fitness > chromosomes[j].fitness
 		})
+		g.chromosomeChannel <- chromosomes[0]
 		if g.optimum != NoOptimum && chromosomes[0].fitness == g.optimum {
 			log.Println("starting iteration", i+1, "/", g.iterations, "fitness", g.optimum, "(optimal)")
 			break
@@ -360,9 +363,9 @@ func (g *GeneticAlgorithm) Run() Solution {
 		}
 
 		for j := 0; j < NumRoundsPerIteration; j++ {
-			mutation := Mutations[rand.Intn(len(Mutations))]
 			chromosome := chromosomes[rand.Intn(len(chromosomes))]
 			for k := 0; k < NumMutationsPerRound; k++ {
+				mutation := Mutations[rand.Intn(len(Mutations))]
 				chromosome = mutation(g, chromosome.copy())
 				chromosome.fitness = g.evaluateFitness(chromosome)
 				chromosomes = append(chromosomes, chromosome)
@@ -372,6 +375,5 @@ func (g *GeneticAlgorithm) Run() Solution {
 	sort.Slice(chromosomes, func(i, j int) bool {
 		return chromosomes[i].fitness > chromosomes[j].fitness
 	})
-	log.Println("final fitness", chromosomes[0].fitness)
-	return chromosomes[0].Solution()
+	g.doneChannel <- true
 }

@@ -9,6 +9,9 @@ import (
 	"time"
 )
 
+// TODO: is this enough when running in docker?
+const PercentTimeUsed = 90
+
 func main() {
 	inputPtr := flag.String("input", "", "Path to input scenario json")
 	outputPtr := flag.String("output", "", "Path to output scenario json")
@@ -43,6 +46,9 @@ func main() {
 		log.Println("theoretical optimum", optimum)
 	}
 
+	chromosomeChannel := make(chan Chromosome)
+	doneChannel := make(chan bool)
+
 	geneticAlgorithm := GeneticAlgorithm{
 		scenario:             scenario,
 		populationSize:       200,
@@ -50,10 +56,33 @@ func main() {
 		mutationProbability:  0.18,
 		crossoverProbability: 0.7,
 		optimum:              optimum,
+		chromosomeChannel:    chromosomeChannel,
+		doneChannel:          doneChannel,
 	}
-	solution := geneticAlgorithm.Run()
+	go geneticAlgorithm.Run()
 
-	err = exportSolution(scenario, solution, *outputPtr)
+	var timeChannel <-chan time.Time
+	if scenario.time != 0 {
+		timeChannel = time.After(time.Duration(scenario.time) * time.Second * PercentTimeUsed / 100)
+	} else {
+		timeChannel = make(<-chan time.Time)
+	}
+	var chromosome Chromosome
+
+	done := false
+	for !done {
+		select {
+		case <-timeChannel:
+			log.Println("time is up")
+			done = true
+		case <-doneChannel:
+			done = true
+		case chromosome = <-chromosomeChannel:
+		}
+	}
+	log.Println("final fitness", chromosome.fitness)
+
+	err = exportSolution(scenario, chromosome.Solution(), *outputPtr)
 	if err != nil {
 		log.Fatal(err)
 	}

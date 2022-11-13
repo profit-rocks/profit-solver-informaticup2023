@@ -125,6 +125,7 @@ func importFromProfitJson(path string) (Scenario, Solution, error) {
 		width:  profit.Width,
 		height: profit.Height,
 		turns:  profit.Turns,
+		time: profit.Time,
 	}
 	solution := Solution{}
 	for _, object := range profit.Objects {
