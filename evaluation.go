@@ -84,7 +84,7 @@ func (s *Scenario) checkValidity(solution Solution) error {
 func (s *Scenario) evaluateSolution(solution Solution) (int, error) {
 	err := s.checkValidity(solution)
 	if err != nil {
-		return 0, err
+		return math.MinInt, err
 	}
 	simulation := simulationFromScenarioAndSolution(s, solution)
 	for i := 0; i < s.turns; i++ {

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"math"
 	"testing"
 )
 
@@ -49,7 +50,7 @@ func TestInvalidSolutionEvaluation(t *testing.T) {
 	if err == nil {
 		t.Errorf("evaluating empty solution should throw an error")
 	}
-	if score != 0 {
+	if score != math.MinInt {
 		t.Errorf("score of invalid solution should be 0 and not %d", score)
 	}
 }
