@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"log"
 	"math"
 	"math/rand"
@@ -362,11 +361,6 @@ func (g *GeneticAlgorithm) Run() Solution {
 				mutation := Mutations[i]
 				newChromosome, err := mutation(g, chromosome.copy())
 				if err == nil {
-					if g.scenario.checkValidity(newChromosome.Solution()) != nil {
-						_ = exportSolution(g.scenario, newChromosome.Solution(), "invalid.json")
-						fmt.Println("invalid", i)
-						panic("invalid")
-					}
 					chromosome = newChromosome
 					chromosome.fitness = g.evaluateFitness(chromosome)
 					chromosomes = append(chromosomes, chromosome)
