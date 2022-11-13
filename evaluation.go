@@ -85,7 +85,7 @@ func (s *Scenario) evaluateSolution(solution Solution) (int, error) {
 	// TODO: remove validity check
 	err := s.checkValidity(solution)
 	if err != nil {
-		panic("only valid solutions should be evaluated")
+		return 0, err
 	}
 	simulation := simulationFromScenarioAndSolution(s, solution)
 	for i := 0; i < s.turns; i++ {

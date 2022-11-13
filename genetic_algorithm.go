@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"log"
-	"math"
 	"math/rand"
 	"sort"
 )
@@ -316,7 +315,7 @@ func (g *GeneticAlgorithm) movePathMutation(chromosome Chromosome) (Chromosome, 
 func (g *GeneticAlgorithm) evaluateFitness(chromosome Chromosome) int {
 	fitness, err := g.scenario.evaluateSolution(chromosome.Solution())
 	if err != nil {
-		return math.MinInt
+		panic("invalid solution")
 	}
 	return fitness
 }
