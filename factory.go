@@ -46,6 +46,31 @@ func (f Factory) nextToIngressPositions() []Position {
 	return positions
 }
 
+func (f Factory) ingressPositions() []Position {
+	positions := make([]Position, 0)
+	for i := 0; i < FactoryWidth; i++ {
+		positions = append(positions, Position{
+			x: f.position.x + i,
+			y: f.position.y,
+		})
+		positions = append(positions, Position{
+			x: f.position.x + i,
+			y: f.position.y + FactoryHeight - 1,
+		})
+	}
+	for i := 0; i < FactoryHeight; i++ {
+		positions = append(positions, Position{
+			x: f.position.x,
+			y: f.position.y + i,
+		})
+		positions = append(positions, Position{
+			x: f.position.x + FactoryWidth - 1,
+			y: f.position.y + i,
+		})
+	}
+	return positions
+}
+
 func (s *Scenario) positionAvailableForFactory(factories []Factory, mines []Mine, paths []Path, position Position) bool {
 	factoryRectangle := Rectangle{
 		position: position,
