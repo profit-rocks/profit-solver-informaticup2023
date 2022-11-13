@@ -125,7 +125,7 @@ func importFromProfitJson(path string) (Scenario, Solution, error) {
 		width:  profit.Width,
 		height: profit.Height,
 		turns:  profit.Turns,
-		time: profit.Time,
+		time:   profit.Time,
 	}
 	solution := Solution{}
 	for _, object := range profit.Objects {
@@ -150,8 +150,7 @@ func importFromProfitJson(path string) (Scenario, Solution, error) {
 			})
 		case "mine":
 			if object.Subtype > 3 || object.Subtype < 0 {
-				_ = fmt.Errorf("importing a mine failed, invalid subtype")
-				continue
+				return Scenario{}, Solution{}, fmt.Errorf("invalid mine subtype: %d", object.Subtype)
 			}
 			direction := DirectionFromSubtype(object.Subtype)
 			solution.mines = append(solution.mines, Mine{
@@ -161,7 +160,7 @@ func importFromProfitJson(path string) (Scenario, Solution, error) {
 		case "conveyor":
 			if object.Subtype > 7 || object.Subtype < 0 {
 				_ = fmt.Errorf("importing a conveyor failed, invalid subtype")
-				continue
+				return Scenario{}, Solution{}, fmt.Errorf("invalid conveyor subtype: %d", object.Subtype)
 			}
 			direction := DirectionFromSubtype(object.Subtype)
 			length := ConveyorLengthFromSubtype(object.Subtype)
