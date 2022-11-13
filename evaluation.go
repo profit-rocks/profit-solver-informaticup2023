@@ -46,6 +46,7 @@ type SimulatedConveyor struct {
 	resources []int
 }
 
+// TODO: Try to find a faster implementation
 // Checks that all egresses are connected to a single ingress. We assume that objects don't overlap
 func (s *Scenario) checkEgressesHaveSingleIngress(solution Solution) bool {
 	Egress := 1
