@@ -15,6 +15,7 @@ const PercentTimeUsed = 90
 func main() {
 	inputPtr := flag.String("input", "", "Path to input scenario json")
 	outputPtr := flag.String("output", "", "Path to output scenario json")
+	seedPtr := flag.Int64("seed", 0, "Seed for random number generator")
 	cpuProfilePtr := flag.String("cpuprofile", "", "Path to output cpu profile")
 	flag.Parse()
 	if *inputPtr == "" || *outputPtr == "" {
@@ -36,8 +37,14 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	rand.Seed(time.Now().UnixNano())
+	var seed int64
+	if *seedPtr != 0 {
+		seed = *seedPtr
+	} else {
+		seed = time.Now().UnixNano()
+	}
+	log.Println("using seed", seed)
+	rand.Seed(seed)
 
 	optimum, err := TheoreticalOptimum(scenario)
 	if err != nil {
