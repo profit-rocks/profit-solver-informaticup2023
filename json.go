@@ -7,7 +7,7 @@ import (
 	"os"
 )
 
-type ProfitStruct struct {
+type Profit struct {
 	Height   int      `json:"height"`
 	Width    int      `json:"width"`
 	Objects  []Object `json:"objects"`
@@ -28,7 +28,7 @@ type Object struct {
 }
 
 func exportSolution(scenario Scenario, solution Solution, filePath string) error {
-	exportableScenario := solutionToExportableProfitStruct(scenario, solution)
+	exportableScenario := solutionToProfit(scenario, solution)
 	b, err := json.MarshalIndent(exportableScenario, "", " ")
 	if err != nil {
 		return err
@@ -36,8 +36,8 @@ func exportSolution(scenario Scenario, solution Solution, filePath string) error
 	return os.WriteFile(filePath, b, 0644)
 }
 
-func solutionToExportableProfitStruct(scenario Scenario, solution Solution) ProfitStruct {
-	exportableScenario := ProfitStruct{
+func solutionToProfit(scenario Scenario, solution Solution) Profit {
+	profit := Profit{
 		Height:   scenario.height,
 		Width:    scenario.width,
 		Objects:  []Object{},
@@ -47,7 +47,7 @@ func solutionToExportableProfitStruct(scenario Scenario, solution Solution) Prof
 	}
 
 	for _, deposit := range scenario.deposits {
-		exportableScenario.Objects = append(exportableScenario.Objects, Object{
+		profit.Objects = append(profit.Objects, Object{
 			ObjectType: "deposit",
 			Subtype:    deposit.subtype,
 			X:          deposit.position.x,
@@ -57,7 +57,7 @@ func solutionToExportableProfitStruct(scenario Scenario, solution Solution) Prof
 		})
 	}
 	for _, obstacle := range scenario.obstacles {
-		exportableScenario.Objects = append(exportableScenario.Objects, Object{
+		profit.Objects = append(profit.Objects, Object{
 			ObjectType: "obstacle",
 			X:          obstacle.position.x,
 			Y:          obstacle.position.y,
@@ -67,7 +67,7 @@ func solutionToExportableProfitStruct(scenario Scenario, solution Solution) Prof
 	}
 
 	for _, factory := range solution.factories {
-		exportableScenario.Objects = append(exportableScenario.Objects, Object{
+		profit.Objects = append(profit.Objects, Object{
 			ObjectType: "factory",
 			Subtype:    factory.product,
 			X:          factory.position.x,
@@ -76,7 +76,7 @@ func solutionToExportableProfitStruct(scenario Scenario, solution Solution) Prof
 	}
 
 	for _, mine := range solution.mines {
-		exportableScenario.Objects = append(exportableScenario.Objects, Object{
+		profit.Objects = append(profit.Objects, Object{
 			ObjectType: "mine",
 			Subtype:    int(mine.direction),
 			X:          mine.position.x,
@@ -86,7 +86,7 @@ func solutionToExportableProfitStruct(scenario Scenario, solution Solution) Prof
 
 	for _, path := range solution.paths {
 		for _, conveyor := range path.conveyors {
-			exportableScenario.Objects = append(exportableScenario.Objects, Object{
+			profit.Objects = append(profit.Objects, Object{
 				ObjectType: "conveyor",
 				Subtype:    conveyor.Subtype(),
 				X:          conveyor.position.x,
@@ -96,37 +96,38 @@ func solutionToExportableProfitStruct(scenario Scenario, solution Solution) Prof
 	}
 
 	for _, product := range scenario.products {
-		exportableScenario.Products = append(exportableScenario.Products, Object{
+		profit.Products = append(profit.Products, Object{
 			ObjectType: "product",
 			Subtype:    product.subtype,
 			Points:     product.points,
 			Resources:  product.resources,
 		})
 	}
-	return exportableScenario
+	return profit
 }
 
-func importScenarioFromJson(path string) (Scenario, error) {
+func importFromProfitJson(path string) (Scenario, Solution, error) {
 	jsonFile, err := os.Open(path)
 	if err != nil {
-		return Scenario{}, err
+		return Scenario{}, Solution{}, err
 	}
 	byteValue, err := io.ReadAll(jsonFile)
 	if err != nil {
-		return Scenario{}, err
+		return Scenario{}, Solution{}, err
 	}
-	var importedScenario ProfitStruct
-	err = json.Unmarshal(byteValue, &importedScenario)
+	var profit Profit
+	err = json.Unmarshal(byteValue, &profit)
 	if err != nil {
-		return Scenario{}, err
+		return Scenario{}, Solution{}, err
 	}
 
 	scenario := Scenario{
-		width:  importedScenario.Width,
-		height: importedScenario.Height,
-		turns:  importedScenario.Turns,
+		width:  profit.Width,
+		height: profit.Height,
+		turns:  profit.Turns,
 	}
-	for _, object := range importedScenario.Objects {
+	solution := Solution{}
+	for _, object := range profit.Objects {
 		switch object.ObjectType {
 		case "deposit":
 			scenario.deposits = append(scenario.deposits, Deposit{
@@ -141,42 +142,6 @@ func importScenarioFromJson(path string) (Scenario, error) {
 				height:   object.Height,
 				width:    object.Width,
 			})
-		default:
-			return Scenario{}, fmt.Errorf("unknown ObjectType: %s", object.ObjectType)
-		}
-	}
-
-	for _, product := range importedScenario.Products {
-		if product.ObjectType != "product" {
-			return Scenario{}, fmt.Errorf("expected ObjectType to be 'product', not %s", product.ObjectType)
-		}
-		scenario.products = append(scenario.products, Product{
-			subtype:   product.Subtype,
-			points:    product.Points,
-			resources: product.Resources,
-		})
-	}
-	return scenario, nil
-}
-
-func importSolutionFromJson(path string) (Solution, error) {
-	jsonFile, err := os.Open(path)
-	if err != nil {
-		return Solution{}, err
-	}
-	byteValue, err := io.ReadAll(jsonFile)
-	if err != nil {
-		return Solution{}, err
-	}
-	var importedSolution ProfitStruct
-	err = json.Unmarshal(byteValue, &importedSolution)
-	if err != nil {
-		return Solution{}, err
-	}
-
-	solution := Solution{}
-	for _, object := range importedSolution.Objects {
-		switch object.ObjectType {
 		case "factory":
 			solution.factories = append(solution.factories, Factory{
 				position: Position{object.X, object.Y},
@@ -207,13 +172,20 @@ func importSolutionFromJson(path string) (Solution, error) {
 					length:    length,
 				}},
 			})
-		case "deposit":
-			continue
-		case "obstacle":
-			continue
 		default:
-			return Solution{}, fmt.Errorf("unknown ObjectType: %s", object.ObjectType)
+			return Scenario{}, Solution{}, fmt.Errorf("unknown ObjectType: %s", object.ObjectType)
 		}
 	}
-	return solution, nil
+
+	for _, product := range profit.Products {
+		if product.ObjectType != "product" {
+			return Scenario{}, Solution{}, fmt.Errorf("expected ObjectType to be 'product', not %s", product.ObjectType)
+		}
+		scenario.products = append(scenario.products, Product{
+			subtype:   product.Subtype,
+			points:    product.Points,
+			resources: product.Resources,
+		})
+	}
+	return scenario, solution, nil
 }

@@ -72,8 +72,7 @@ func TestSolutionWithOverlappingFactoriesInvalid(t *testing.T) {
 }
 
 func TestSolutionWithMultipleIngressesAtEgressInvalid(t *testing.T) {
-	scenario := largeEmptyScenario()
-	solution, err := importSolutionFromJson("fixtures/solutionMultipleIngressesAtEgress.json")
+	scenario, solution, err := importFromProfitJson("fixtures/solutionMultipleIngressesAtEgress.json")
 	if err != nil {
 		t.Errorf("solution should be importable")
 	}
