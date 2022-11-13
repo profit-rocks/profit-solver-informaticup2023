@@ -1,0 +1,189 @@
+{
+  "width": 20,
+  "height": 20,
+  "objects": [
+    {
+      "type": "factory",
+      "x": 0,
+      "y": 0,
+      "subtype": 0
+    },
+    {
+      "type": "conveyor",
+      "x": 1,
+      "y": 5,
+      "subtype": 0
+    },
+    {
+      "type": "conveyor",
+      "x": 4,
+      "y": 5,
+      "subtype": 0
+    },
+    {
+      "type": "factory",
+      "x": 6,
+      "y": 10,
+      "subtype": 0
+    },
+    {
+      "type": "mine",
+      "x": 9,
+      "y": 15,
+      "subtype": 2
+    },
+    {
+      "type": "conveyor",
+      "x": 12,
+      "y": 14,
+      "subtype": 2
+    },
+    {
+      "type": "conveyor",
+      "x": 11,
+      "y": 9,
+      "subtype": 2
+    },
+    {
+      "type": "conveyor",
+      "x": 11,
+      "y": 8,
+      "subtype": 0
+    }
+  ],
+  "products": [],
+  "turns": 100,
+  "time": 300,
+  "form": {
+    "products": [
+      {
+        "type": "product",
+        "subtype": 0,
+        "resources": [
+          10,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "points": 10,
+        "enabled": false
+      },
+      {
+        "type": "product",
+        "subtype": 1,
+        "resources": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "points": 0,
+        "enabled": false
+      },
+      {
+        "type": "product",
+        "subtype": 2,
+        "resources": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "points": 0,
+        "enabled": false
+      },
+      {
+        "type": "product",
+        "subtype": 3,
+        "resources": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "points": 0,
+        "enabled": false
+      },
+      {
+        "type": "product",
+        "subtype": 4,
+        "resources": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "points": 0,
+        "enabled": false
+      },
+      {
+        "type": "product",
+        "subtype": 5,
+        "resources": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "points": 0,
+        "enabled": false
+      },
+      {
+        "type": "product",
+        "subtype": 6,
+        "resources": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "points": 0,
+        "enabled": false
+      },
+      {
+        "type": "product",
+        "subtype": 7,
+        "resources": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "points": 0,
+        "enabled": false
+      }
+    ]
+  }
+}
