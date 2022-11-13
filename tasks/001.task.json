@@ -58,5 +58,6 @@
       "points": 10
     }
   ],
-  "turns": 50
+  "turns": 50,
+  "time": 300
 }
