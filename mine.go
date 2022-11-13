@@ -83,6 +83,19 @@ func (m *Mine) IntersectsMine(m2 Mine) bool {
 	return res
 }
 
+func MineDirectionFromSubtype(subtype int) (Direction, error) {
+	if subtype == 0 {
+		return Right, nil
+	} else if subtype == 1 {
+		return Bottom, nil
+	} else if subtype == 2 {
+		return Left, nil
+	} else if subtype == 3 {
+		return Top, nil
+	}
+	return Top, errors.New("unknown subtype for mines, can't convert to Direction")
+}
+
 func (s *Scenario) positionAvailableForMine(factories []Factory, mines []Mine, paths []Path, mine Mine) bool {
 	// mine is out of bounds
 	boundRectangles := s.boundRectangles()

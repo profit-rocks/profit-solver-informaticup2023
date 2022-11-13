@@ -7,7 +7,7 @@ import (
 	"os"
 )
 
-type ExportableScenario struct {
+type ProfitStruct struct {
 	Height   int      `json:"height"`
 	Width    int      `json:"width"`
 	Objects  []Object `json:"objects"`
@@ -28,7 +28,7 @@ type Object struct {
 }
 
 func exportSolution(scenario Scenario, solution Solution, filePath string) error {
-	exportableScenario := solutionToExportableScenario(scenario, solution)
+	exportableScenario := solutionToExportableProfitStruct(scenario, solution)
 	b, err := json.MarshalIndent(exportableScenario, "", " ")
 	if err != nil {
 		return err
@@ -36,8 +36,8 @@ func exportSolution(scenario Scenario, solution Solution, filePath string) error
 	return os.WriteFile(filePath, b, 0644)
 }
 
-func solutionToExportableScenario(scenario Scenario, solution Solution) ExportableScenario {
-	exportableScenario := ExportableScenario{
+func solutionToExportableProfitStruct(scenario Scenario, solution Solution) ProfitStruct {
+	exportableScenario := ProfitStruct{
 		Height:   scenario.height,
 		Width:    scenario.width,
 		Objects:  []Object{},
@@ -115,7 +115,7 @@ func importScenarioFromJson(path string) (Scenario, error) {
 	if err != nil {
 		return Scenario{}, err
 	}
-	var importedScenario ExportableScenario
+	var importedScenario ProfitStruct
 	err = json.Unmarshal(byteValue, &importedScenario)
 	if err != nil {
 		return Scenario{}, err
@@ -157,4 +157,67 @@ func importScenarioFromJson(path string) (Scenario, error) {
 		})
 	}
 	return scenario, nil
+}
+
+func importSolutionFromJson(path string) (Solution, error) {
+	jsonFile, err := os.Open(path)
+	if err != nil {
+		return Solution{}, err
+	}
+	byteValue, err := io.ReadAll(jsonFile)
+	if err != nil {
+		return Solution{}, err
+	}
+	var importedSolution ProfitStruct
+	err = json.Unmarshal(byteValue, &importedSolution)
+	if err != nil {
+		return Solution{}, err
+	}
+
+	solution := Solution{}
+	for _, object := range importedSolution.Objects {
+		switch object.ObjectType {
+		case "factory":
+			solution.factories = append(solution.factories, Factory{
+				position: Position{object.X, object.Y},
+				product:  object.Subtype,
+			})
+		case "mine":
+			direction, err := MineDirectionFromSubtype(object.Subtype)
+			if err != nil {
+				_ = fmt.Errorf("importing a mine failed: %s", err)
+				continue
+			}
+			solution.mines = append(solution.mines, Mine{
+				position:  Position{object.X, object.Y},
+				direction: direction,
+			})
+		case "conveyor":
+			direction, err := ConveyorDirectionFromSubtype(object.Subtype)
+			if err != nil {
+				_ = fmt.Errorf("importing a conveyor failed: %s", err)
+				continue
+			}
+			length, err := ConveyorLengthFromSubtype(object.Subtype)
+			if err != nil {
+				_ = fmt.Errorf("importing a conveyor failed: %s", err)
+				continue
+			}
+			// TODO: Think about building proper paths
+			solution.paths = append(solution.paths, Path{
+				conveyors: []Conveyor{{
+					position:  Position{object.X, object.Y},
+					direction: direction,
+					length:    length,
+				}},
+			})
+		case "deposit":
+			continue
+		case "obstacle":
+			continue
+		default:
+			return Solution{}, fmt.Errorf("unknown ObjectType: %s", object.ObjectType)
+		}
+	}
+	return solution, nil
 }
