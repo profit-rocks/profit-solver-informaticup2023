@@ -263,6 +263,8 @@ func simulationFromScenarioAndSolution(scenario *Scenario, solution Solution) Si
 					endFactory:    endFactory,
 					subtype:       CombinerToFactory,
 				}
+			} else {
+				continue
 			}
 
 			simulatedPath.conveyors = make([]SimulatedConveyor, len(path.conveyors))
