@@ -155,7 +155,7 @@ func importFromProfitJson(path string) (Scenario, Solution, error) {
 				product:  object.Subtype,
 			})
 		case "mine":
-			if object.Subtype > NumDirections || object.Subtype < 0 {
+			if object.Subtype >= NumDirections || object.Subtype < 0 {
 				return Scenario{}, Solution{}, fmt.Errorf("invalid mine subtype: %d", object.Subtype)
 			}
 			direction := DirectionFromSubtype(object.Subtype)
@@ -164,7 +164,7 @@ func importFromProfitJson(path string) (Scenario, Solution, error) {
 				direction: direction,
 			})
 		case "conveyor":
-			if object.Subtype > 7 || object.Subtype < 0 {
+			if object.Subtype >= NumConveyorSubtypes || object.Subtype < 0 {
 				_ = fmt.Errorf("importing a conveyor failed, invalid subtype")
 				return Scenario{}, Solution{}, fmt.Errorf("invalid conveyor subtype: %d", object.Subtype)
 			}
