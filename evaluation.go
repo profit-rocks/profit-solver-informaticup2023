@@ -111,6 +111,10 @@ func (s *Scenario) checkValidity(solution Solution) error {
 	for i, factory := range solution.factories {
 		factories[i] = factory
 	}
+	combiners := make([]Combiner, len(solution.combiners))
+	for i, combiner := range solution.combiners {
+		combiners[i] = combiner
+	}
 	paths := make([]Path, len(solution.paths))
 	for i, path := range solution.paths {
 		paths[i] = path
@@ -126,7 +130,11 @@ func (s *Scenario) checkValidity(solution Solution) error {
 			return errors.New("solution includes a factory which position is invalid, can't evaluate this solution")
 		}
 	}
-
+	for i, combiner := range solution.combiners {
+		if !s.positionAvailableForCombiner(factories, mines, paths, combiners[:i], combiner) {
+			return errors.New("solution includes a combiner which position is invalid, can't evaluate this solution")
+		}
+	}
 	for i, path := range solution.paths {
 		for _, conveyor := range path.conveyors {
 			if !s.positionAvailableForConveyor(factories, mines, paths[:i], conveyor) {
