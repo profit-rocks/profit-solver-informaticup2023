@@ -94,3 +94,29 @@ func TestEvaluationOfSolutionWithCombiner(t *testing.T) {
 		t.Errorf("score should be %d and not %d", expectedScore, score)
 	}
 }
+
+func TestEvaluationOfSolutionWithMineCombinerPath(t *testing.T) {
+	scenario, solution, err := importFromProfitJson("fixtures/solutionWithMineCombinerPath.json")
+	if err != nil {
+		t.Errorf("import of fixture failed")
+	}
+
+	score, err := scenario.evaluateSolution(solution)
+	expectedScore := 20
+	if score != expectedScore {
+		t.Errorf("score should be %d and not %d", expectedScore, score)
+	}
+}
+
+func TestEvaluationOfSolutionWithMultipleCombinersPath(t *testing.T) {
+	scenario, solution, err := importFromProfitJson("fixtures/solutionWithMultipleCombinersPath.json")
+	if err != nil {
+		t.Errorf("import of fixture failed")
+	}
+
+	score, err := scenario.evaluateSolution(solution)
+	expectedScore := 80
+	if score != expectedScore {
+		t.Errorf("score should be %d and not %d", expectedScore, score)
+	}
+}

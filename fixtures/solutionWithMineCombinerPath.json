@@ -1,0 +1,51 @@
+{
+  "width": 20,
+  "height": 10,
+  "objects": [
+    {
+      "type": "deposit",
+      "x": 0,
+      "y": 0,
+      "subtype": 0,
+      "width": 3,
+      "height": 5
+    },
+    {
+      "type": "factory",
+      "x": 10,
+      "y": 0,
+      "subtype": 0
+    },
+    {
+      "type": "mine",
+      "x": 4,
+      "y": 1,
+      "subtype": 0
+    },
+    {
+      "type": "combiner",
+      "x": 8,
+      "y": 2,
+      "subtype": 0
+    }
+  ],
+  "products": [
+    {
+      "type": "product",
+      "subtype": 0,
+      "resources": [
+        10,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "points": 10
+    }
+  ],
+  "turns": 10,
+  "time": 300
+}
