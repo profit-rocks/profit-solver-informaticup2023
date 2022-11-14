@@ -33,7 +33,7 @@ func main() {
 		}
 		defer pprof.StopCPUProfile()
 	}
-	scenario, err := importScenarioFromJson(*inputPtr)
+	scenario, _, err := importFromProfitJson(*inputPtr)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -70,3 +70,14 @@ func TestSolutionWithOverlappingFactoriesInvalid(t *testing.T) {
 		t.Errorf("two factories at same position should not be valid")
 	}
 }
+
+func TestSolutionWithMultipleIngressesAtEgressInvalid(t *testing.T) {
+	scenario, solution, err := importFromProfitJson("fixtures/solutionMultipleIngressesAtEgress.json")
+	if err != nil {
+		t.Errorf("solution should be importable")
+	}
+	err = scenario.checkValidity(solution)
+	if err == nil {
+		t.Errorf("solution with two ingresses at an egress should not be valid")
+	}
+}

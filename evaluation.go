@@ -46,6 +46,55 @@ type SimulatedConveyor struct {
 	resources []int
 }
 
+// TODO: Try to find a faster implementation
+// Checks that all egresses are connected to a single ingress. We assume that objects don't overlap
+func (s *Scenario) checkEgressesHaveSingleIngress(solution Solution) bool {
+	Egress := 1
+	Ingress := 2
+	ingressEgressMatrix := make([][]int, s.width)
+	for i := range ingressEgressMatrix {
+		ingressEgressMatrix[i] = make([]int, s.height)
+	}
+	for _, mine := range solution.mines {
+		ingressEgressMatrix[mine.Egress().x][mine.Egress().y] = Egress
+		ingressEgressMatrix[mine.Ingress().x][mine.Ingress().y] = Ingress
+	}
+	for _, factory := range solution.factories {
+		for _, position := range factory.ingressPositions() {
+			ingressEgressMatrix[position.x][position.y] = Ingress
+		}
+	}
+	for _, deposit := range s.deposits {
+		for _, position := range deposit.egressPositions() {
+			ingressEgressMatrix[position.x][position.y] = Egress
+		}
+	}
+	for _, path := range solution.paths {
+		for _, conveyor := range path.conveyors {
+			ingressEgressMatrix[conveyor.Egress().x][conveyor.Egress().y] = Egress
+			ingressEgressMatrix[conveyor.Ingress().x][conveyor.Ingress().y] = Ingress
+		}
+	}
+	for i := range ingressEgressMatrix {
+		for j := range ingressEgressMatrix[i] {
+			if ingressEgressMatrix[i][j] == Egress {
+				numIngresses := 0
+				for _, position := range (Position{i, j}).NeighborPositions() {
+					if s.inBounds(position) {
+						if ingressEgressMatrix[position.x][position.y] == Ingress {
+							numIngresses += 1
+						}
+					}
+				}
+				if numIngresses > 1 {
+					return false
+				}
+			}
+		}
+	}
+	return true
+}
+
 func (s *Scenario) checkValidity(solution Solution) error {
 	mines := make([]Mine, len(solution.mines))
 	for i, mine := range solution.mines {
@@ -77,6 +126,9 @@ func (s *Scenario) checkValidity(solution Solution) error {
 				return errors.New("solution includes a factory which position is invalid, can't evaluate this solution")
 			}
 		}
+	}
+	if !s.checkEgressesHaveSingleIngress(solution) {
+		return errors.New("solution includes multiple ingresses at an egress")
 	}
 	return nil
 }

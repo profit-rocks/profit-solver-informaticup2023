@@ -12,6 +12,8 @@ const (
 	Top    Direction = iota
 )
 
+const NumDirections = 4
+
 type Product struct {
 	subtype   int
 	points    int
@@ -45,4 +47,8 @@ func (s *Scenario) boundRectangles() []Rectangle {
 
 func (s *Scenario) inBounds(position Position) bool {
 	return !(position.y < 0 || position.y >= s.height || position.x < 0 || position.x >= s.width)
+}
+
+func DirectionFromSubtype(subtype int) Direction {
+	return Direction(subtype & 3)
 }

@@ -1,0 +1,15 @@
+{
+  "width": 20,
+  "height": 20,
+  "objects": [
+    {
+      "type": "mine",
+      "x": 2,
+      "y": 2,
+      "subtype": 4
+    }
+  ],
+  "products": [],
+  "turns": 100,
+  "time": 300
+}

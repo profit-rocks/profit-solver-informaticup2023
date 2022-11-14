@@ -24,13 +24,9 @@ func ConveyorLengthFromSubtype(subtype int) ConveyorLength {
 	return ConveyorLength(subtype >> 2)
 }
 
-func ConveyorDirectionFromSubtype(subtype int) Direction {
-	return Direction(subtype & 3)
-}
-
 func ConveyorFromIngressAndSubtype(ingress Position, subtype int) Conveyor {
 	length := ConveyorLengthFromSubtype(subtype)
-	direction := ConveyorDirectionFromSubtype(subtype)
+	direction := DirectionFromSubtype(subtype)
 	var position Position
 	if direction == Right {
 		position = Position{ingress.x + 1, ingress.y}
