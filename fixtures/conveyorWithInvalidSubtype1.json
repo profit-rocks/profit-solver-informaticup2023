@@ -1,0 +1,15 @@
+{
+  "width": 20,
+  "height": 20,
+  "objects": [
+    {
+      "type": "conveyor",
+      "x": 6,
+      "y": 6,
+      "subtype": 8
+    }
+  ],
+  "products": [],
+  "turns": 100,
+  "time": 300
+}
