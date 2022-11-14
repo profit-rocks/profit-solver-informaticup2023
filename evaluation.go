@@ -36,11 +36,23 @@ type SimulatedMine struct {
 	resourcesEgress  []int
 }
 
+// PathSubtype specifies start and end of a path
+type PathSubtype int
+
+const (
+	MineToFactory      PathSubtype = iota
+	MineToCombiner     PathSubtype = iota
+	CombinerToCombiner PathSubtype = iota
+	CombinerToFactory  PathSubtype = iota
+)
+
 type SimulatedPath struct {
-	conveyors  []SimulatedConveyor
-	combiner   *SimulatedCombiner
-	startMine  *SimulatedMine
-	endFactory *SimulatedFactory
+	conveyors     []SimulatedConveyor
+	startCombiner *SimulatedCombiner
+	endCombiner   *SimulatedCombiner
+	startMine     *SimulatedMine
+	endFactory    *SimulatedFactory
+	subtype       PathSubtype
 }
 
 type SimulatedConveyor struct {
@@ -213,23 +225,47 @@ func simulationFromScenarioAndSolution(scenario *Scenario, solution Solution) Si
 		}
 	}
 
+	for i, combiner := range solution.combiners {
+		simulation.combiners[i] = SimulatedCombiner{
+			combiner:  combiner,
+			resources: []int{0, 0, 0, 0, 0, 0, 0, 0},
+		}
+	}
+
 	for _, path := range solution.paths {
 		if len(path.conveyors) > 0 {
-			startMine, err := simulation.adjacentMineToConveyor(path.conveyors[0])
-			if err != nil {
-				//fmt.Println("No adjacent mine, skipping path")
-				continue
+			startMine, hasAdjacentMine := simulation.adjacentMineToConveyor(path.conveyors[0])
+			startCombiner, hasAdjacentStartCombiner := simulation.adjacentCombinerToConveyor(path.conveyors[0], false)
+			endFactory, hasAdjacentFactory := simulation.adjacentFactoryToConveyor(path.conveyors[len(path.conveyors)-1])
+			endCombiner, hasAdjacentEndCombiner := simulation.adjacentCombinerToConveyor(path.conveyors[0], true)
+			var simulatedPath SimulatedPath
+			if hasAdjacentMine && hasAdjacentFactory {
+				simulatedPath = SimulatedPath{
+					startMine:  startMine,
+					endFactory: endFactory,
+					subtype:    MineToFactory,
+				}
+			} else if hasAdjacentMine && hasAdjacentEndCombiner {
+				simulatedPath = SimulatedPath{
+					startMine:   startMine,
+					endCombiner: endCombiner,
+					subtype:     MineToCombiner,
+				}
+			} else if hasAdjacentStartCombiner && hasAdjacentEndCombiner {
+				simulatedPath = SimulatedPath{
+					startCombiner: startCombiner,
+					endCombiner:   endCombiner,
+					subtype:       CombinerToCombiner,
+				}
+			} else if hasAdjacentFactory && hasAdjacentStartCombiner {
+				simulatedPath = SimulatedPath{
+					startCombiner: startCombiner,
+					endFactory:    endFactory,
+					subtype:       CombinerToFactory,
+				}
 			}
-			endFactory, err := simulation.adjacentFactoryToConveyor(path.conveyors[len(path.conveyors)-1])
-			if err != nil {
-				//fmt.Println("No adjacent factory, skipping path")
-				continue
-			}
-			simulatedPath := SimulatedPath{
-				conveyors:  make([]SimulatedConveyor, len(path.conveyors)),
-				startMine:  startMine,
-				endFactory: endFactory,
-			}
+
+			simulatedPath.conveyors = make([]SimulatedConveyor, len(path.conveyors))
 			for j, conveyor := range path.conveyors {
 				simulatedPath.conveyors[j] = SimulatedConveyor{
 					conveyor:  conveyor,
@@ -249,24 +285,41 @@ func simulationFromScenarioAndSolution(scenario *Scenario, solution Solution) Si
 	return simulation
 }
 
-func (s *Simulation) adjacentMineToConveyor(conveyor Conveyor) (*SimulatedMine, error) {
-	for i := range s.mines {
-		if s.mines[i].mine.Egress().NextTo(conveyor.Ingress()) {
-			return &s.mines[i], nil
-		}
-	}
-	return nil, errors.New("conveyor has no adjacent mine")
-}
-
-func (s *Simulation) adjacentFactoryToConveyor(conveyor Conveyor) (*SimulatedFactory, error) {
-	for i := range s.factories {
-		for _, egress := range s.factories[i].factory.nextToIngressPositions() {
-			if egress == conveyor.Egress() {
-				return &s.factories[i], nil
+func (s *Simulation) adjacentCombinerToConveyor(conveyor Conveyor, checkCombinerEgress bool) (*SimulatedCombiner, bool) {
+	for i := range s.combiners {
+		if checkCombinerEgress {
+			if s.combiners[i].combiner.Egress().NextTo(conveyor.Ingress()) {
+				return &s.combiners[i], true
+			}
+		} else {
+			for _, ingress := range s.combiners[i].combiner.Ingresses() {
+				if ingress.NextTo(conveyor.Egress()) {
+					return &s.combiners[i], true
+				}
 			}
 		}
 	}
-	return nil, errors.New("conveyor has no adjacent factory")
+	return nil, false
+}
+
+func (s *Simulation) adjacentMineToConveyor(conveyor Conveyor) (*SimulatedMine, bool) {
+	for i := range s.mines {
+		if s.mines[i].mine.Egress().NextTo(conveyor.Ingress()) {
+			return &s.mines[i], true
+		}
+	}
+	return nil, false
+}
+
+func (s *Simulation) adjacentFactoryToConveyor(conveyor Conveyor) (*SimulatedFactory, bool) {
+	for i := range s.factories {
+		for _, egress := range s.factories[i].factory.nextToIngressPositions() {
+			if egress == conveyor.Egress() {
+				return &s.factories[i], true
+			}
+		}
+	}
+	return nil, true
 }
 
 func (s *Simulation) simulateOneRound() bool {
