@@ -19,6 +19,7 @@ const NumPathRetries = 10
 type Chromosome struct {
 	factories []Factory
 	mines     []Mine
+	combiners []Combiner
 	paths     []Path
 	fitness   int
 }

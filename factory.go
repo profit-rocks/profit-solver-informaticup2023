@@ -73,7 +73,7 @@ func (f Factory) ingressPositions() []Position {
 	return positions
 }
 
-func (s *Scenario) positionAvailableForFactory(factories []Factory, mines []Mine, paths []Path, position Position) bool {
+func (s *Scenario) positionAvailableForFactory(factories []Factory, mines []Mine, combiners []Combiner, paths []Path, position Position) bool {
 	factoryRectangle := Rectangle{
 		position: position,
 		width:    FactoryWidth,
@@ -133,7 +133,7 @@ func (s *Scenario) factoryPositions(chromosome Chromosome) []Position {
 	for i := 0; i < s.width; i++ {
 		for j := 0; j < s.height; j++ {
 			pos := Position{i, j}
-			if s.positionAvailableForFactory(chromosome.factories, chromosome.mines, []Path{}, pos) {
+			if s.positionAvailableForFactory(chromosome.factories, chromosome.mines, chromosome.combiners, []Path{}, pos) {
 				positions = append(positions, pos)
 			}
 		}

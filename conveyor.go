@@ -136,7 +136,7 @@ func (c Conveyor) Rectangle() Rectangle {
 	return r
 }
 
-func (s *Scenario) positionAvailableForConveyor(factories []Factory, mines []Mine, paths []Path, conveyor Conveyor) bool {
+func (s *Scenario) positionAvailableForConveyor(factories []Factory, mines []Mine, combiners []Combiner, paths []Path, conveyor Conveyor) bool {
 	boundRectangles := s.boundRectangles()
 	for _, rectangle := range boundRectangles {
 		if conveyor.Rectangle().Intersects(rectangle) {
