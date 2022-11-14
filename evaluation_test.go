@@ -81,3 +81,16 @@ func TestSolutionWithMultipleIngressesAtEgressInvalid(t *testing.T) {
 		t.Errorf("solution with two ingresses at an egress should not be valid")
 	}
 }
+
+func TestEvaluationOfSolutionWithCombiner(t *testing.T) {
+	scenario, solution, err := importFromProfitJson("fixtures/solutionWithCombiner.json")
+	if err != nil {
+		t.Errorf("import of fixture failed")
+	}
+
+	score, err := scenario.evaluateSolution(solution)
+	expectedScore := 60
+	if score != expectedScore {
+		t.Errorf("score should be %d and not %d", expectedScore, score)
+	}
+}

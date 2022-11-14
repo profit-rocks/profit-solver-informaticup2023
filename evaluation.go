@@ -15,6 +15,7 @@ type Simulation struct {
 	deposits  []SimulatedDeposit
 	mines     []SimulatedMine
 	paths     []SimulatedPath
+	combiners []SimulatedCombiner
 }
 
 type SimulatedDeposit struct {
@@ -37,12 +38,18 @@ type SimulatedMine struct {
 
 type SimulatedPath struct {
 	conveyors  []SimulatedConveyor
+	combiner   *SimulatedCombiner
 	startMine  *SimulatedMine
 	endFactory *SimulatedFactory
 }
 
 type SimulatedConveyor struct {
 	conveyor  Conveyor
+	resources []int
+}
+
+type SimulatedCombiner struct {
+	combiner  Combiner
 	resources []int
 }
 
@@ -169,6 +176,7 @@ func simulationFromScenarioAndSolution(scenario *Scenario, solution Solution) Si
 		factories: make([]SimulatedFactory, len(solution.factories)),
 		deposits:  make([]SimulatedDeposit, len(scenario.deposits)),
 		mines:     make([]SimulatedMine, len(solution.mines)),
+		combiners: make([]SimulatedCombiner, len(solution.combiners)),
 		paths:     []SimulatedPath{},
 	}
 	for i, deposit := range scenario.deposits {
