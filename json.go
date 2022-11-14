@@ -178,6 +178,16 @@ func importFromProfitJson(path string) (Scenario, Solution, error) {
 					length:    length,
 				}},
 			})
+		case "combiner":
+			if object.Subtype >= NumDirections || object.Subtype < 0 {
+				_ = fmt.Errorf("importing a combiner failed, invalid subtype")
+				return Scenario{}, Solution{}, fmt.Errorf("invalid combiner subtype: %d", object.Subtype)
+			}
+			direction := DirectionFromSubtype(object.Subtype)
+			solution.combiners = append(solution.combiners, Combiner{
+				position:  Position{object.X, object.Y},
+				direction: direction,
+			})
 		default:
 			return Scenario{}, Solution{}, fmt.Errorf("unknown ObjectType: %s", object.ObjectType)
 		}
