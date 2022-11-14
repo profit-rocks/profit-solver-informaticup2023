@@ -1,0 +1,75 @@
+{
+  "width": 20,
+  "height": 20,
+  "objects": [
+    {
+      "type": "deposit",
+      "x": 0,
+      "y": 0,
+      "subtype": 0,
+      "width": 5,
+      "height": 5
+    },
+    {
+      "type": "combiner",
+      "x": 10,
+      "y": 7,
+      "subtype": 0
+    },
+    {
+      "type": "mine",
+      "x": 6,
+      "y": 2,
+      "subtype": 0
+    },
+    {
+      "type": "mine",
+      "x": 4,
+      "y": 6,
+      "subtype": 1
+    },
+    {
+      "type": "conveyor",
+      "x": 6,
+      "y": 8,
+      "subtype": 4
+    },
+    {
+      "type": "conveyor",
+      "x": 9,
+      "y": 4,
+      "subtype": 1
+    },
+    {
+      "type": "conveyor",
+      "x": 12,
+      "y": 8,
+      "subtype": 1
+    },
+    {
+      "type": "factory",
+      "x": 10,
+      "y": 10,
+      "subtype": 0
+    }
+  ],
+  "products": [
+    {
+      "type": "product",
+      "subtype": 0,
+      "resources": [
+        10,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "points": 10
+    }
+  ],
+  "turns": 15,
+  "time": 100
+}
