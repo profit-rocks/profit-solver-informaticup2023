@@ -235,9 +235,9 @@ func simulationFromScenarioAndSolution(scenario *Scenario, solution Solution) Si
 	for _, path := range solution.paths {
 		if len(path.conveyors) > 0 {
 			startMine, hasAdjacentMine := simulation.adjacentMineToConveyor(path.conveyors[0])
-			startCombiner, hasAdjacentStartCombiner := simulation.adjacentCombinerToConveyor(path.conveyors[0], false)
+			startCombiner, hasAdjacentStartCombiner := simulation.adjacentCombinerToConveyor(path.conveyors[0], true)
 			endFactory, hasAdjacentFactory := simulation.adjacentFactoryToConveyor(path.conveyors[len(path.conveyors)-1])
-			endCombiner, hasAdjacentEndCombiner := simulation.adjacentCombinerToConveyor(path.conveyors[0], true)
+			endCombiner, hasAdjacentEndCombiner := simulation.adjacentCombinerToConveyor(path.conveyors[0], false)
 			var simulatedPath SimulatedPath
 			if hasAdjacentMine && hasAdjacentFactory {
 				simulatedPath = SimulatedPath{
@@ -321,7 +321,7 @@ func (s *Simulation) adjacentFactoryToConveyor(conveyor Conveyor) (*SimulatedFac
 			}
 		}
 	}
-	return nil, true
+	return nil, false
 }
 
 func (s *Simulation) simulateOneRound() bool {
