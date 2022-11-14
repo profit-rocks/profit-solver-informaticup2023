@@ -103,6 +103,32 @@ func TestPositionAvailableForFactory(t *testing.T) {
 	}
 }
 
+func TestPositionAvailableForCombiner(t *testing.T) {
+	scenario, solution, err := importFromProfitJson("fixtures/freePlacesForCombiners.json")
+	if err != nil {
+		t.Errorf("failed to import fixture: %e", err)
+	}
+	applicableCombiners := []Combiner{{Position{1, 1}, Right}, {Position{1, 5}, Bottom}, {Position{1, 9}, Left}, {Position{1, 13}, Top}}
+	for _, combiner := range applicableCombiners {
+		if !scenario.positionAvailableForCombiner(solution.factories, solution.mines, solution.paths, solution.combiners, combiner) {
+			t.Errorf("position %v should be available", combiner)
+		}
+	}
+}
+
+func TestPositionNotAvailableForCombiner(t *testing.T) {
+	scenario, solution, err := importFromProfitJson("fixtures/scenarioWithSingleDeposit.json")
+	if err != nil {
+		t.Errorf("failed to import fixture: %e", err)
+	}
+	nonApplicableCombiners := []Combiner{{Position{1, 4}, Right}, {Position{4, 2}, Bottom}, {Position{4, 1}, Top}}
+	for _, combiner := range nonApplicableCombiners {
+		if scenario.positionAvailableForCombiner(solution.factories, solution.mines, solution.paths, solution.combiners, combiner) {
+			t.Errorf("position %v should not be available", combiner)
+		}
+	}
+}
+
 func TestScenarioWithDeposit(t *testing.T) {
 	g := geneticAlgorithmFromScenario(scenarioWithDeposit())
 
