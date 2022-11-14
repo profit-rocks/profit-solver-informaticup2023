@@ -158,6 +158,11 @@ func (s *Scenario) positionAvailableForConveyor(factories []Factory, mines []Min
 			return false
 		}
 	}
+	for _, combiner := range combiners {
+		if combiner.Intersects(conveyor.Rectangle()) {
+			return false
+		}
+	}
 	for _, deposit := range s.deposits {
 		depositRectangle := deposit.Rectangle()
 		if conveyor.Rectangle().Intersects(depositRectangle) {

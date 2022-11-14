@@ -114,6 +114,17 @@ func (s *Scenario) positionAvailableForMine(factories []Factory, mines []Mine, c
 			return false
 		}
 	}
+	for _, combiner := range combiners {
+		foundIntersection := false
+		mine.RectanglesEach(func(r Rectangle) {
+			if combiner.Intersects(r) {
+				foundIntersection = true
+			}
+		})
+		if foundIntersection {
+			return false
+		}
+	}
 	for _, path := range paths {
 		for _, conveyor := range path.conveyors {
 			if mine.Intersects(conveyor.Rectangle()) {
