@@ -224,7 +224,7 @@ func (g *GeneticAlgorithm) populateCellInfo(chromosome Chromosome) {
 
 	// keep algorithm from using occupied squares
 	for _, deposit := range g.scenario.deposits {
-		for _, p := range deposit.mineIngressPositions() {
+		for _, p := range deposit.nextToEgressPositions() {
 			if !g.scenario.inBounds(p) {
 				continue
 			}

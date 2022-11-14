@@ -15,7 +15,7 @@ func (d Deposit) Rectangle() Rectangle {
 	}
 }
 
-func (d Deposit) mineIngressPositions() []Position {
+func (d Deposit) nextToEgressPositions() []Position {
 	positions := make([]Position, 0)
 	for i := 0; i < d.width; i++ {
 		positions = append(positions, Position{

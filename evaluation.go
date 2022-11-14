@@ -350,7 +350,7 @@ func (s *Simulation) adjacentMinesToFactory(factory SimulatedFactory) []*Simulat
 
 func (s *Simulation) adjacentMinesToDeposit(deposit SimulatedDeposit) []*SimulatedMine {
 	mines := make([]*SimulatedMine, 0)
-	for _, position := range deposit.deposit.mineIngressPositions() {
+	for _, position := range deposit.deposit.nextToEgressPositions() {
 		mine, foundMine := s.mineWithIngress(position)
 		if foundMine {
 			mines = append(mines, mine)
