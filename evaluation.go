@@ -76,6 +76,12 @@ func (s *Scenario) checkEgressesHaveSingleIngress(solution Solution) bool {
 			ingressEgressMatrix[position.x][position.y] = Egress
 		}
 	}
+	for _, combiner := range solution.combiners {
+		for _, position := range combiner.Ingresses() {
+			ingressEgressMatrix[position.x][position.y] = Ingress
+		}
+		ingressEgressMatrix[combiner.Egress().x][combiner.Egress().y] = Egress
+	}
 	for _, path := range solution.paths {
 		for _, conveyor := range path.conveyors {
 			ingressEgressMatrix[conveyor.Egress().x][conveyor.Egress().y] = Egress

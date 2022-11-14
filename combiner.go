@@ -5,7 +5,7 @@ type Combiner struct {
 	direction Direction
 }
 
-func (c *Combiner) Egresses() []Position {
+func (c *Combiner) Ingresses() []Position {
 	if c.direction == Right {
 		return []Position{{c.position.x - 1, c.position.y}, {c.position.x - 1, c.position.y - 1}, {c.position.x - 1, c.position.y + 1}}
 	} else if c.direction == Bottom {
@@ -15,6 +15,18 @@ func (c *Combiner) Egresses() []Position {
 	}
 	// Top
 	return []Position{{c.position.x, c.position.y + 1}, {c.position.x - 1, c.position.y + 1}, {c.position.x + 1, c.position.y + 1}}
+}
+
+func (c *Combiner) Egress() Position {
+	if c.direction == Right {
+		return Position{c.position.x + 1, c.position.y}
+	} else if c.direction == Bottom {
+		return Position{c.position.x, c.position.y + 1}
+	} else if c.direction == Left {
+		return Position{c.position.x - 1, c.position.y}
+	}
+	// Top
+	return Position{c.position.x, c.position.y - 1}
 }
 
 func (s *Scenario) positionAvailableForCombiner(factories []Factory, mines []Mine, paths []Path, combiners []Combiner, combiner Combiner) bool {
@@ -30,7 +42,7 @@ func (s *Scenario) positionAvailableForCombiner(factories []Factory, mines []Min
 		if combiner.Intersects(deposit.Rectangle()) {
 			return false
 		}
-		for _, egress := range combiner.Egresses() {
+		for _, egress := range combiner.Ingresses() {
 			for _, p := range deposit.nextToEgressPositions() {
 				if p == egress {
 					return false
