@@ -133,7 +133,7 @@ func (s *Scenario) factoryPositions(chromosome Chromosome) []Position {
 	for i := 0; i < s.width; i++ {
 		for j := 0; j < s.height; j++ {
 			pos := Position{i, j}
-			if s.positionAvailableForFactory(chromosome.factories, chromosome.mines, []Path{}, pos) {
+			if s.positionAvailableForFactory(chromosome.factories, chromosome.mines, chromosome.paths, pos) {
 				positions = append(positions, pos)
 			}
 		}
@@ -141,12 +141,12 @@ func (s *Scenario) factoryPositions(chromosome Chromosome) []Position {
 	return positions
 }
 
-func (g *GeneticAlgorithm) randomFactory(chromosome Chromosome) (Factory, error) {
-	availablePositions := g.scenario.factoryPositions(chromosome)
+func (s *Scenario) randomFactory(chromosome Chromosome) (Factory, error) {
+	availablePositions := s.factoryPositions(chromosome)
 	if len(availablePositions) == 0 {
 		return Factory{}, errors.New("no factory positions available")
 	}
 	position := availablePositions[rand.Intn(len(availablePositions))]
-	subtype := g.scenario.products[rand.Intn(len(g.scenario.products))].subtype
+	subtype := s.products[rand.Intn(len(s.products))].subtype
 	return Factory{position: position, product: subtype}, nil
 }

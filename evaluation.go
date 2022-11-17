@@ -134,6 +134,7 @@ func (s *Scenario) checkValidity(solution Solution) error {
 }
 
 func (s *Scenario) evaluateSolution(solution Solution) (int, error) {
+	// TODO: remove validity check
 	err := s.checkValidity(solution)
 	if err != nil {
 		return 0, err

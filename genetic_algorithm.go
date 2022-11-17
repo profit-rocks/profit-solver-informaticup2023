@@ -1,8 +1,8 @@
 package main
 
 import (
+	"errors"
 	"log"
-	"math"
 	"math/rand"
 	"sort"
 )
@@ -24,7 +24,7 @@ type Chromosome struct {
 }
 
 // MutationFunction expects a copy of the chromosome which it can modify.
-type MutationFunction func(algorithm *GeneticAlgorithm, chromosome Chromosome) Chromosome
+type MutationFunction func(algorithm *GeneticAlgorithm, chromosome Chromosome) (Chromosome, error)
 
 // Mutations contains all mutation functions, performed in multiple layers. Each layer operates on the same set of chromosomes
 var Mutations = []MutationFunction{
@@ -55,6 +55,23 @@ type GeneticAlgorithm struct {
 	numPaths               int
 	chromosomeChannel      chan<- Chromosome
 	doneChannel            chan<- bool
+}
+
+func removeRandomElement[T any](arr []T) []T {
+	removeIndex := rand.Intn(len(arr))
+	arr[removeIndex] = arr[len(arr)-1]
+	return arr[:len(arr)-1]
+}
+
+func removeUniform[T any](arr []T, probability float64) []T {
+	for i := 0; i < len(arr); i++ {
+		if rand.Float64() < probability {
+			arr[i] = arr[len(arr)-1]
+			arr = arr[:len(arr)-1]
+			i--
+		}
+	}
+	return arr
 }
 
 func (c Chromosome) Solution() Solution {
@@ -98,7 +115,8 @@ func minInt(x int, y int) int {
 	return y
 }
 
-func (g *GeneticAlgorithm) crossover(chromosome Chromosome, chromosome2 Chromosome) Chromosome {
+func (g *GeneticAlgorithm) crossover(chromosome Chromosome, chromosome2 Chromosome) (Chromosome, error) {
+	// TODO: only output valid chromosomes
 	newChromosome := Chromosome{}
 	for i := 0; i < minInt(len(chromosome.mines), len(chromosome2.mines)); i++ {
 		if rand.Float64() > g.crossoverProbability {
@@ -154,7 +172,7 @@ func (g *GeneticAlgorithm) crossover(chromosome Chromosome, chromosome2 Chromoso
 			}
 		}
 	}
-	return newChromosome
+	return newChromosome, g.scenario.checkValidity(newChromosome.Solution())
 }
 
 func (c Chromosome) copy() Chromosome {
@@ -173,162 +191,141 @@ func (c Chromosome) copy() Chromosome {
 	return newChromosome
 }
 
-func (g *GeneticAlgorithm) addFactoryMutation(chromosome Chromosome) Chromosome {
-	newFactory, err := g.randomFactory(chromosome)
-	if err == nil {
-		chromosome.factories = append(chromosome.factories, newFactory)
+func (g *GeneticAlgorithm) addFactoryMutation(chromosome Chromosome) (Chromosome, error) {
+	newFactory, err := g.scenario.randomFactory(chromosome)
+	if err != nil {
+		return Chromosome{}, err
 	}
-	return chromosome
+	chromosome.factories = append(chromosome.factories, newFactory)
+	return chromosome, nil
 }
 
-func (g *GeneticAlgorithm) removeFactoryMutation(chromosome Chromosome) Chromosome {
-	if len(chromosome.factories) > 0 {
-		removeIndex := rand.Intn(len(chromosome.factories))
-		chromosome.factories[removeIndex] = chromosome.factories[len(chromosome.factories)-1]
-		chromosome.factories = chromosome.factories[:len(chromosome.factories)-1]
+func (g *GeneticAlgorithm) removeFactoryMutation(chromosome Chromosome) (Chromosome, error) {
+	if len(chromosome.factories) == 0 {
+		return chromosome, errors.New("no factories to remove")
 	}
-	return chromosome
+	chromosome.factories = removeRandomElement(chromosome.factories)
+	return chromosome, nil
 }
 
-func (g *GeneticAlgorithm) addMineMutation(chromosome Chromosome) Chromosome {
+func (g *GeneticAlgorithm) addMineMutation(chromosome Chromosome) (Chromosome, error) {
 	newMine, err := g.randomMine(g.scenario.deposits[rand.Intn(len(g.scenario.deposits))], chromosome)
-	if err == nil {
-		chromosome.mines = append(chromosome.mines, newMine)
+	if err != nil {
+		return chromosome, err
 	}
-	return chromosome
+	chromosome.mines = append(chromosome.mines, newMine)
+	return chromosome, nil
 }
 
-func (g *GeneticAlgorithm) removeMineMutation(chromosome Chromosome) Chromosome {
-	if len(chromosome.mines) > 0 {
-		removeIndex := rand.Intn(len(chromosome.mines))
-		chromosome.mines[removeIndex] = chromosome.mines[len(chromosome.mines)-1]
-		chromosome.mines = chromosome.mines[:len(chromosome.mines)-1]
+func (g *GeneticAlgorithm) removeMineMutation(chromosome Chromosome) (Chromosome, error) {
+	if len(chromosome.mines) == 0 {
+		return chromosome, errors.New("no mines to remove")
 	}
-	return chromosome
+	chromosome.mines = removeRandomElement(chromosome.mines)
+	return chromosome, nil
 }
 
-func (g *GeneticAlgorithm) addPathMutation(chromosome Chromosome) Chromosome {
+func (g *GeneticAlgorithm) addPathMutation(chromosome Chromosome) (Chromosome, error) {
+	if len(chromosome.mines) == 0 || len(chromosome.factories) == 0 {
+		return chromosome, errors.New("no mines or factories to add path")
+	}
 	// TODO: take product subtypes into account
-	newPath := Path{}
 	for j := 0; j < NumPathRetries; j++ {
-		var err error
-		if len(chromosome.factories) > 0 && len(chromosome.mines) > 0 {
-			randomFactory := chromosome.factories[rand.Intn(len(chromosome.factories))]
-			randomMine := chromosome.mines[rand.Intn(len(chromosome.mines))]
-			newPath, err = g.pathMineToFactory(chromosome, randomMine, randomFactory)
-			if err == nil {
-				chromosome.paths = append(chromosome.paths, newPath)
-				break
-			}
+		randomFactory := chromosome.factories[rand.Intn(len(chromosome.factories))]
+		randomMine := chromosome.mines[rand.Intn(len(chromosome.mines))]
+		newPath, err := g.pathMineToFactory(chromosome, randomMine, randomFactory)
+		if err == nil {
+			chromosome.paths = append(chromosome.paths, newPath)
+			return chromosome, nil
 		}
 	}
-	return chromosome
+	return chromosome, errors.New("could not find a path")
 }
 
-func (g *GeneticAlgorithm) removePathMutation(chromosome Chromosome) Chromosome {
-	if len(chromosome.paths) > 0 {
-		removeIndex := rand.Intn(len(chromosome.paths))
-		chromosome.paths[removeIndex] = chromosome.paths[len(chromosome.paths)-1]
-		chromosome.paths = chromosome.paths[:len(chromosome.paths)-1]
+func (g *GeneticAlgorithm) removePathMutation(chromosome Chromosome) (Chromosome, error) {
+	if len(chromosome.paths) == 0 {
+		return chromosome, errors.New("no paths to remove")
 	}
-	return chromosome
+	chromosome.paths = removeRandomElement(chromosome.paths)
+	return chromosome, nil
 }
 
-func (g *GeneticAlgorithm) moveMinesMutation(chromosome Chromosome) Chromosome {
+func (g *GeneticAlgorithm) moveMinesMutation(chromosome Chromosome) (Chromosome, error) {
 	newChromosome := Chromosome{
 		factories: chromosome.factories,
 		paths:     chromosome.paths,
 	}
-	for _, mine := range chromosome.mines {
-		if rand.Float64() > g.mutationProbability {
-			newChromosome.mines = append(newChromosome.mines, mine)
-		} else {
-			// attach new mine to deposit of old mine.
-			// TODO: this does not work correctly when a mine is attached to multiple deposits
-			success := false
-			for _, deposit := range g.scenario.deposits {
-				if deposit.Rectangle().Intersects(Rectangle{Position{mine.Ingress().x - 1, mine.Ingress().y - 1}, 3, 3}) {
-					newMine, err := g.randomMine(deposit, newChromosome)
-					if err == nil {
-						newChromosome.mines = append(newChromosome.mines, newMine)
-						success = true
-						break
-					}
+	newChromosome.mines = removeUniform(chromosome.mines, g.mutationProbability)
+	for i := len(newChromosome.mines); i < len(chromosome.mines); i++ {
+		mine := chromosome.mines[i]
+		// TODO: this might move the mine to a different deposit
+		for _, deposit := range g.scenario.deposits {
+			if deposit.Rectangle().Intersects(Rectangle{Position{mine.Ingress().x - 1, mine.Ingress().y - 1}, 3, 3}) {
+				newMine, err := g.randomMine(deposit, newChromosome)
+				if err == nil {
+					newChromosome.mines = append(newChromosome.mines, newMine)
+					break
 				}
-			}
-			if !success {
-				newChromosome.mines = append(newChromosome.mines, mine)
 			}
 		}
 	}
-	return newChromosome
+	return newChromosome, nil
 }
 
-func (g *GeneticAlgorithm) moveFactoriesMutation(chromosome Chromosome) Chromosome {
+func (g *GeneticAlgorithm) moveFactoriesMutation(chromosome Chromosome) (Chromosome, error) {
 	newChromosome := Chromosome{
 		mines: chromosome.mines,
 		paths: chromosome.paths,
 	}
-	for _, factory := range chromosome.factories {
-		if rand.Float64() > g.mutationProbability {
+	newChromosome.factories = removeUniform(chromosome.factories, g.mutationProbability)
+	for i := len(newChromosome.factories); i < len(chromosome.factories); i++ {
+		factory, err := g.scenario.randomFactory(newChromosome)
+		if err != nil {
+			factory.product = chromosome.factories[i].product
 			newChromosome.factories = append(newChromosome.factories, factory)
-		} else {
-			newFactory, err := g.randomFactory(newChromosome)
-			if err != nil {
-				newChromosome.factories = append(newChromosome.factories, factory)
-			} else {
-				newChromosome.factories = append(newChromosome.factories, newFactory)
-			}
 		}
+
 	}
-	return newChromosome
+	return newChromosome, nil
 }
 
-func (g *GeneticAlgorithm) movePathMutation(chromosome Chromosome) Chromosome {
+func (g *GeneticAlgorithm) movePathMutation(chromosome Chromosome) (Chromosome, error) {
 	newChromosome := Chromosome{
 		mines:     chromosome.mines,
 		factories: chromosome.factories,
 	}
-	// If no factories or mines exist, it does not make sense to have any paths
 	if len(chromosome.factories) == 0 || len(chromosome.mines) == 0 {
-		return newChromosome
+		return newChromosome, errors.New("no factories or mines")
 	}
 
-	for _, path := range chromosome.paths {
-		if rand.Float64() > g.mutationProbability {
-			newChromosome.paths = append(newChromosome.paths, path)
-		} else {
-			randomFactory := newChromosome.factories[rand.Intn(len(newChromosome.factories))]
-			randomMine := newChromosome.mines[rand.Intn(len(newChromosome.mines))]
+	newChromosome.paths = removeUniform(chromosome.paths, g.mutationProbability)
+	for i := len(newChromosome.paths); i < len(chromosome.paths); i++ {
+		// TODO: maybe create path from previous factory to previous mine?
+		for j := 0; j < NumPathRetries; j++ {
+			randomFactory := chromosome.factories[rand.Intn(len(chromosome.factories))]
+			randomMine := chromosome.mines[rand.Intn(len(chromosome.mines))]
 			newPath, err := g.pathMineToFactory(newChromosome, randomMine, randomFactory)
-			if err != nil {
-				newChromosome.paths = append(newChromosome.paths, path)
-			} else {
+			if err == nil {
 				newChromosome.paths = append(newChromosome.paths, newPath)
+				break
 			}
 		}
-
 	}
-	return newChromosome
+	return newChromosome, nil
 }
 
 func (g *GeneticAlgorithm) evaluateFitness(chromosome Chromosome) int {
 	fitness, err := g.scenario.evaluateSolution(chromosome.Solution())
 	if err != nil {
-		return math.MinInt
+		panic("invalid solution")
 	}
 	return fitness
-}
-
-func (g *GeneticAlgorithm) generateChromosome() Chromosome {
-	return Chromosome{mines: make([]Mine, 0), factories: make([]Factory, 0), paths: make([]Path, 0)}
 }
 
 func (g *GeneticAlgorithm) generateChromosomes() []Chromosome {
 	chromosomes := make([]Chromosome, g.populationSize)
 	for i := 0; i < g.populationSize; i++ {
-		chromosome := g.generateChromosome()
-		chromosomes[i] = chromosome
+		chromosomes[i] = Chromosome{mines: make([]Mine, 0), factories: make([]Factory, 0), paths: make([]Path, 0)}
 	}
 	return chromosomes
 }
@@ -347,28 +344,29 @@ func (g *GeneticAlgorithm) Run() {
 			log.Println("starting iteration", i+1, "/", g.iterations, "fitness", g.optimum, "(optimal)")
 			break
 		}
-		numBadChromosomes := 0
-		for _, c := range chromosomes {
-			if c.fitness < 10 {
-				numBadChromosomes += 1
-			}
-		}
 		chromosomes = chromosomes[:g.populationSize]
-		log.Println("starting iteration", i+1, "/", g.iterations, "max fitness", chromosomes[0].fitness, "min fitness", chromosomes[len(chromosomes)-1].fitness, "bad chromosomes", numBadChromosomes, "/", len(chromosomes)+NumMutationsPerRound*NumRoundsPerIteration)
+		log.Println("starting iteration", i+1, "/", g.iterations, "max fitness", chromosomes[0].fitness, "min fitness", chromosomes[len(chromosomes)-1].fitness)
 
 		for j := 0; j < g.populationSize; j++ {
-			newChromosome := g.crossover(chromosomes[rand.Intn(g.populationSize)], chromosomes[rand.Intn(g.populationSize)])
+			newChromosome, err := g.crossover(chromosomes[rand.Intn(g.populationSize)], chromosomes[rand.Intn(g.populationSize)])
+			if err != nil {
+				continue
+			}
 			newChromosome.fitness = g.evaluateFitness(newChromosome)
 			chromosomes = append(chromosomes, newChromosome)
 		}
 
+		numChromosomesBeforeMutation := len(chromosomes)
 		for j := 0; j < NumRoundsPerIteration; j++ {
-			chromosome := chromosomes[rand.Intn(len(chromosomes))]
+			chromosome := chromosomes[rand.Intn(numChromosomesBeforeMutation)]
 			for k := 0; k < NumMutationsPerRound; k++ {
 				mutation := Mutations[rand.Intn(len(Mutations))]
-				chromosome = mutation(g, chromosome.copy())
-				chromosome.fitness = g.evaluateFitness(chromosome)
-				chromosomes = append(chromosomes, chromosome)
+				newChromosome, err := mutation(g, chromosome.copy())
+				if err == nil {
+					chromosome = newChromosome
+					chromosome.fitness = g.evaluateFitness(chromosome)
+					chromosomes = append(chromosomes, chromosome)
+				}
 			}
 		}
 	}
