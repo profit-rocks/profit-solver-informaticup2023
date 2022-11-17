@@ -353,11 +353,11 @@ func (g *GeneticAlgorithm) Run() Solution {
 			chromosomes = append(chromosomes, newChromosome)
 		}
 
+		numChromosomesBeforeMutation := len(chromosomes)
 		for j := 0; j < NumRoundsPerIteration; j++ {
-			chromosome := chromosomes[rand.Intn(len(chromosomes))]
+			chromosome := chromosomes[rand.Intn(numChromosomesBeforeMutation)]
 			for k := 0; k < NumMutationsPerRound; k++ {
-				i := rand.Intn(len(Mutations))
-				mutation := Mutations[i]
+				mutation := Mutations[rand.Intn(len(Mutations))]
 				newChromosome, err := mutation(g, chromosome.copy())
 				if err == nil {
 					chromosome = newChromosome
