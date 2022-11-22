@@ -167,7 +167,12 @@ func (s *Scenario) positionAvailableForConveyor(factories []Factory, mines []Min
 	for _, path := range paths {
 		for _, pathConveyor := range path.conveyors {
 			if conveyor.Rectangle().Intersects(pathConveyor.Rectangle()) {
-				return false
+				if conveyor.Egress() == pathConveyor.Egress() || conveyor.Ingress() == pathConveyor.Egress() {
+					return false
+				}
+				if conveyor.Egress() == pathConveyor.Ingress() || conveyor.Ingress() == pathConveyor.Ingress() {
+					return false
+				}
 			}
 		}
 	}
@@ -317,13 +322,8 @@ func (g *GeneticAlgorithm) pathMineToFactory(chromosome Chromosome, mine Mine, f
 					continue
 				}
 				if current.priority+1 < cellInfo[nextEgress.y][nextEgress.x].distance {
-					isBlocked := false
-					nextConveyor.Rectangle().ForEach(func(p Position) {
-						if cellInfo[p.y][p.x].blocked {
-							isBlocked = true
-						}
-					})
-					if isBlocked {
+					isAvailable := g.scenario.positionAvailableForConveyor(chromosome.factories, chromosome.mines, chromosome.paths, nextConveyor)
+					if !isAvailable {
 						continue
 					}
 					next := Item{
