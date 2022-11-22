@@ -167,10 +167,13 @@ func (s *Scenario) positionAvailableForConveyor(factories []Factory, mines []Min
 	for _, path := range paths {
 		for _, pathConveyor := range path.conveyors {
 			if conveyor.Rectangle().Intersects(pathConveyor.Rectangle()) {
-				if conveyor.Egress() == pathConveyor.Egress() || conveyor.Ingress() == pathConveyor.Egress() {
-					return false
-				}
-				if conveyor.Egress() == pathConveyor.Ingress() || conveyor.Ingress() == pathConveyor.Ingress() {
+				isBlocked := false
+				pathConveyor.Rectangle().ForEach(func(p Position) {
+					if p == conveyor.Egress() || p == conveyor.Ingress() {
+						isBlocked = true
+					}
+				})
+				if isBlocked {
 					return false
 				}
 			}
