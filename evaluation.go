@@ -287,6 +287,23 @@ func simulationFromScenarioAndSolution(scenario *Scenario, solution Solution) Si
 		}
 	}
 	// TODO: add empty paths
+	// Check for paths without conveyors
+	// combiner combiner
+	for i := range solution.combiners {
+		endCombiner, hasEndCombiner := simulation.adjacentCombinerToCombiner(simulation.combiners[i])
+		if hasEndCombiner {
+			simulation.paths = append(simulation.paths, SimulatedPath{
+				startCombiner: &simulation.combiners[i],
+				endCombiner:   endCombiner,
+				subtype:       CombinerToCombiner,
+			})
+		}
+	}
+	// combiner factory
+
+	// mine combiner
+
+	// mine factory
 
 	for i := range scenario.deposits {
 		simulation.deposits[i].mines = simulation.adjacentMinesToDeposit(simulation.deposits[i])
@@ -308,6 +325,17 @@ func (s *Simulation) adjacentCombinerToConveyor(conveyor Conveyor, checkCombiner
 				if ingress.NextTo(conveyor.Egress()) {
 					return &s.combiners[i], true
 				}
+			}
+		}
+	}
+	return nil, false
+}
+
+func (s *Simulation) adjacentCombinerToCombiner(combiner SimulatedCombiner) (*SimulatedCombiner, bool) {
+	for i := range s.combiners {
+		for _, ingress := range s.combiners[i].combiner.Ingresses() {
+			if ingress.NextTo(combiner.combiner.Egress()) {
+				return &s.combiners[i], true
 			}
 		}
 	}
