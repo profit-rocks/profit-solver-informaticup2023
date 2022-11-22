@@ -311,8 +311,27 @@ func simulationFromScenarioAndSolution(scenario *Scenario, solution Solution) Si
 		}
 	}
 	// mine combiner
-
+	for i := range solution.mines {
+		endCombiner, hasEndCombiner := simulation.adjacentCombinerToMine(simulation.mines[i])
+		if hasEndCombiner {
+			simulation.paths = append(simulation.paths, SimulatedPath{
+				startMine:   &simulation.mines[i],
+				endCombiner: endCombiner,
+				subtype:     MineToCombiner,
+			})
+		}
+	}
 	// mine factory
+	for i := range solution.mines {
+		endFactory, hasEndFactory := simulation.adjacentFactoryToMine(simulation.mines[i])
+		if hasEndFactory {
+			simulation.paths = append(simulation.paths, SimulatedPath{
+				startMine:  &simulation.mines[i],
+				endFactory: endFactory,
+				subtype:    MineToFactory,
+			})
+		}
+	}
 
 	for i := range scenario.deposits {
 		simulation.deposits[i].mines = simulation.adjacentMinesToDeposit(simulation.deposits[i])
@@ -356,6 +375,28 @@ func (s *Simulation) adjacentFactoryToCombiner(combiner SimulatedCombiner) (*Sim
 		for _, ingress := range s.factories[i].factory.ingressPositions() {
 			if ingress.NextTo(combiner.combiner.Egress()) {
 				return &s.factories[i], true
+			}
+		}
+	}
+	return nil, false
+}
+
+func (s *Simulation) adjacentFactoryToMine(mine SimulatedMine) (*SimulatedFactory, bool) {
+	for i := range s.factories {
+		for _, ingress := range s.factories[i].factory.ingressPositions() {
+			if ingress.NextTo(mine.mine.Egress()) {
+				return &s.factories[i], true
+			}
+		}
+	}
+	return nil, false
+}
+
+func (s *Simulation) adjacentCombinerToMine(mine SimulatedMine) (*SimulatedCombiner, bool) {
+	for i := range s.combiners {
+		for _, ingress := range s.combiners[i].combiner.Ingresses() {
+			if ingress.NextTo(mine.mine.Egress()) {
+				return &s.combiners[i], true
 			}
 		}
 	}
