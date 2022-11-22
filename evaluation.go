@@ -286,7 +286,6 @@ func simulationFromScenarioAndSolution(scenario *Scenario, solution Solution) Si
 			simulation.paths = append(simulation.paths, simulatedPath)
 		}
 	}
-	// TODO: add empty paths
 	// Check for paths without conveyors
 	// combiner combiner
 	for i := range solution.combiners {
