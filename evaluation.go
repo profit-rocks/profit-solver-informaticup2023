@@ -300,7 +300,16 @@ func simulationFromScenarioAndSolution(scenario *Scenario, solution Solution) Si
 		}
 	}
 	// combiner factory
-
+	for i := range solution.combiners {
+		endFactory, hasEndFactory := simulation.adjacentFactoryToCombiner(simulation.combiners[i])
+		if hasEndFactory {
+			simulation.paths = append(simulation.paths, SimulatedPath{
+				startCombiner: &simulation.combiners[i],
+				endFactory:    endFactory,
+				subtype:       CombinerToFactory,
+			})
+		}
+	}
 	// mine combiner
 
 	// mine factory
@@ -336,6 +345,17 @@ func (s *Simulation) adjacentCombinerToCombiner(combiner SimulatedCombiner) (*Si
 		for _, ingress := range s.combiners[i].combiner.Ingresses() {
 			if ingress.NextTo(combiner.combiner.Egress()) {
 				return &s.combiners[i], true
+			}
+		}
+	}
+	return nil, false
+}
+
+func (s *Simulation) adjacentFactoryToCombiner(combiner SimulatedCombiner) (*SimulatedFactory, bool) {
+	for i := range s.factories {
+		for _, ingress := range s.factories[i].factory.ingressPositions() {
+			if ingress.NextTo(combiner.combiner.Egress()) {
+				return &s.factories[i], true
 			}
 		}
 	}
