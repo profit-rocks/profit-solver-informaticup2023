@@ -148,3 +148,25 @@ func TestEvaluationOfSolutionWithCombinerNextToFactory(t *testing.T) {
 		t.Errorf("score should be %d and not %d", expectedScore, score)
 	}
 }
+
+func TestSolutionWithOverlappingConveyorsIsValid(t *testing.T) {
+	scenario, solution, err := importFromProfitJson("fixtures/solutionWithOverlappingConveyors.json")
+	if err != nil {
+		t.Errorf("solution should be importable")
+	}
+	err = scenario.checkValidity(solution)
+	if err != nil {
+		t.Errorf("solution with overlapping conveyorrs should be valid")
+	}
+}
+
+func TestSolutionWithOverlappingConveyorsIsInvalid(t *testing.T) {
+	scenario, solution, err := importFromProfitJson("fixtures/invalidSolutionWithOverlappingConveyors.json")
+	if err != nil {
+		t.Errorf("solution should be importable")
+	}
+	err = scenario.checkValidity(solution)
+	if err == nil {
+		t.Errorf("invalid solution with overlapping conveyorrs should be invalid")
+	}
+}

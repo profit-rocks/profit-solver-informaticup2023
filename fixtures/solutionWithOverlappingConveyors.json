@@ -1,0 +1,73 @@
+{
+  "width": 20,
+  "height": 20,
+  "objects": [
+    {
+      "type": "conveyor",
+      "x": 8,
+      "y": 5,
+      "subtype": 4
+    },
+    {
+      "type": "conveyor",
+      "x": 8,
+      "y": 5,
+      "subtype": 1
+    },
+    {
+      "type": "conveyor",
+      "x": 9,
+      "y": 14,
+      "subtype": 1
+    },
+    {
+      "type": "conveyor",
+      "x": 9,
+      "y": 14,
+      "subtype": 0
+    },
+    {
+      "type": "conveyor",
+      "x": 14,
+      "y": 8,
+      "subtype": 6
+    },
+    {
+      "type": "conveyor",
+      "x": 14,
+      "y": 8,
+      "subtype": 7
+    },
+    {
+      "type": "conveyor",
+      "x": 15,
+      "y": 8,
+      "subtype": 7
+    },
+    {
+      "type": "conveyor",
+      "x": 14,
+      "y": 9,
+      "subtype": 6
+    }
+  ],
+  "products": [
+    {
+      "type": "product",
+      "subtype": 0,
+      "resources": [
+        10,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "points": 10
+    }
+  ],
+  "turns": 100,
+  "time": 300
+}
