@@ -71,6 +71,8 @@ func TestSolutionWithOverlappingFactoriesInvalid(t *testing.T) {
 	}
 }
 
+// TODO: Check out subtests to remove code duplication in the following tests (https://go.dev/blog/subtests)
+
 func TestSolutionWithMultipleIngressesAtEgressInvalid(t *testing.T) {
 	scenario, solution, err := importFromProfitJson("fixtures/solutionMultipleIngressesAtEgress.json")
 	if err != nil {
