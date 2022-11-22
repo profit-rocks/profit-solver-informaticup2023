@@ -135,3 +135,16 @@ func TestEvaluationOfSolutionWithAdjacentCombiners(t *testing.T) {
 		t.Errorf("score should be %d and not %d", expectedScore, score)
 	}
 }
+
+func TestEvaluationOfSolutionWithCombinerNextToFactory(t *testing.T) {
+	scenario, solution, err := importFromProfitJson("fixtures/solutionWithCombinerNextToFactory.json")
+	if err != nil {
+		t.Errorf("import of fixture failed")
+	}
+
+	score, err := scenario.evaluateSolution(solution)
+	expectedScore := 80
+	if score != expectedScore {
+		t.Errorf("score should be %d and not %d", expectedScore, score)
+	}
+}
