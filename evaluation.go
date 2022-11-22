@@ -443,7 +443,7 @@ func (s *Simulation) simulateOneRound() bool {
 			} else if path.subtype == MineToCombiner {
 				for j := 0; j < NumResourceTypes; j++ {
 					finished = finished && path.startMine.resourcesEgress[j] == 0
-					path.startCombiner.resources[j] += path.startMine.resourcesEgress[j]
+					path.endCombiner.resources[j] += path.startMine.resourcesEgress[j]
 					path.startMine.resourcesEgressUpdate[j] -= path.startMine.resourcesEgress[j]
 				}
 			} else if path.subtype == CombinerToFactory {
