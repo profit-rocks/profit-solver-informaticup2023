@@ -166,26 +166,37 @@ func (s *Scenario) positionAvailableForConveyor(factories []Factory, mines []Min
 	}
 	for _, path := range paths {
 		for _, pathConveyor := range path.conveyors {
-			if conveyor.Rectangle().Intersects(pathConveyor.Rectangle()) {
-				isBlocked := false
-				pathConveyor.Rectangle().ForEach(func(p Position) {
-					if p == conveyor.Egress() || p == conveyor.Ingress() {
-						isBlocked = true
-					}
-				})
-				if isBlocked {
-					return false
-				}
+			isValidOverlap := checkOverlapIsValid(conveyor, pathConveyor)
+			if !isValidOverlap {
+				return false
 			}
 		}
 	}
 	return true
 }
 
+func checkOverlapIsValid(conveyor1 Conveyor, conveyor2 Conveyor) bool {
+	isValidOverlap := true
+	if conveyor1.Rectangle().Intersects(conveyor2.Rectangle()) {
+		conveyor2.Rectangle().ForEach(func(p Position) {
+			if p == conveyor1.Egress() || p == conveyor1.Ingress() {
+				isValidOverlap = false
+			}
+		})
+		conveyor1.Rectangle().ForEach(func(p Position) {
+			if p == conveyor2.Egress() || p == conveyor2.Ingress() {
+				isValidOverlap = false
+			}
+		})
+	}
+	return isValidOverlap
+}
+
 // CellInfo contains information on each cell that is used while pathfinding.
 type CellInfo struct {
 	distance            int
 	blocked             bool
+	isConveyor          bool
 	numEgressNeighbors  int8
 	numIngressNeighbors int8
 	previousConveyor    Conveyor
@@ -215,6 +226,12 @@ func (g *GeneticAlgorithm) populateCellInfoWithEgress(egress Position) {
 func (g *GeneticAlgorithm) blockCellInfoWithRectangle(rectangle Rectangle) {
 	rectangle.ForEach(func(p Position) {
 		cellInfo[p.y][p.x].blocked = true
+	})
+}
+
+func (g *GeneticAlgorithm) populateCellInfoWithConveyor(rectangle Rectangle) {
+	rectangle.ForEach(func(p Position) {
+		cellInfo[p.y][p.x].isConveyor = true
 	})
 }
 
@@ -264,6 +281,7 @@ func (g *GeneticAlgorithm) populateCellInfo(chromosome Chromosome) {
 		for _, conveyor := range otherPath.conveyors {
 			g.populateCellInfoWithIngress(conveyor.Ingress())
 			g.populateCellInfoWithEgress(conveyor.Egress())
+			g.populateCellInfoWithConveyor(conveyor.Rectangle())
 			g.blockCellInfoWithRectangle(conveyor.Rectangle())
 		}
 	}
@@ -325,8 +343,28 @@ func (g *GeneticAlgorithm) pathMineToFactory(chromosome Chromosome, mine Mine, f
 					continue
 				}
 				if current.priority+1 < cellInfo[nextEgress.y][nextEgress.x].distance {
-					isAvailable := g.scenario.positionAvailableForConveyor(chromosome.factories, chromosome.mines, chromosome.paths, nextConveyor)
-					if !isAvailable {
+					isBlocked := false
+					isOnlyConveyor := true
+					nextConveyor.Rectangle().ForEach(func(p Position) {
+						if cellInfo[p.y][p.x].blocked {
+							isBlocked = true
+							if !cellInfo[p.y][p.x].isConveyor {
+								isOnlyConveyor = false
+							}
+						}
+					})
+					if isBlocked && !isOnlyConveyor {
+						continue
+					}
+					isValidOverlap := true
+					for _, p := range chromosome.paths {
+						for _, pathConveyor := range p.conveyors {
+							if !checkOverlapIsValid(nextConveyor, pathConveyor) {
+								isValidOverlap = false
+							}
+						}
+					}
+					if !isValidOverlap {
 						continue
 					}
 					next := Item{
