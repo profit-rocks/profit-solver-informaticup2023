@@ -1,9 +1,16 @@
 package main
 
+import (
+	"errors"
+	"math/rand"
+)
+
 type Combiner struct {
 	position  Position
 	direction Direction
 }
+
+const NumCombinerSubtypes = 4
 
 func (c *Combiner) Ingresses() []Position {
 	if c.direction == Right {
@@ -124,4 +131,34 @@ func (c *Combiner) RectanglesEach(f func(Rectangle)) {
 		f(Rectangle{Position{c.position.x - 1, c.position.y}, 3, 2})
 		f(Rectangle{Position{c.position.x, c.position.y - 1}, 1, 1})
 	}
+}
+
+func (s *Scenario) randomCombiner(chromosome Chromosome) (Combiner, error) {
+	direction := DirectionFromSubtype(rand.Intn(NumCombinerSubtypes))
+	availablePositions := s.combinerPositions(chromosome, direction)
+	if len(availablePositions) == 0 {
+		return Combiner{}, errors.New("no combiner positions available")
+	}
+	position := availablePositions[rand.Intn(len(availablePositions))]
+	return Combiner{
+		position:  position,
+		direction: direction,
+	}, nil
+}
+
+func (s *Scenario) combinerPositions(chromosome Chromosome, direction Direction) []Position {
+	positions := make([]Position, 0)
+	for i := 0; i < s.width; i++ {
+		for j := 0; j < s.height; j++ {
+			pos := Position{i, j}
+			combiner := Combiner{
+				position:  pos,
+				direction: direction,
+			}
+			if s.positionAvailableForCombiner(chromosome.factories, chromosome.mines, chromosome.paths, chromosome.combiners, combiner) {
+				positions = append(positions, pos)
+			}
+		}
+	}
+	return positions
 }
