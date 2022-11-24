@@ -166,7 +166,8 @@ func (s *Scenario) positionAvailableForConveyor(factories []Factory, mines []Min
 	}
 	for _, path := range paths {
 		for _, pathConveyor := range path.conveyors {
-			if conveyor.Rectangle().Intersects(pathConveyor.Rectangle()) {
+			isValidOverlap := checkOverlapIsValid(conveyor, pathConveyor)
+			if !isValidOverlap {
 				return false
 			}
 		}
@@ -174,10 +175,28 @@ func (s *Scenario) positionAvailableForConveyor(factories []Factory, mines []Min
 	return true
 }
 
+func checkOverlapIsValid(conveyor1 Conveyor, conveyor2 Conveyor) bool {
+	isValidOverlap := true
+	if conveyor1.Rectangle().Intersects(conveyor2.Rectangle()) {
+		conveyor2.Rectangle().ForEach(func(p Position) {
+			if p == conveyor1.Egress() || p == conveyor1.Ingress() {
+				isValidOverlap = false
+			}
+		})
+		conveyor1.Rectangle().ForEach(func(p Position) {
+			if p == conveyor2.Egress() || p == conveyor2.Ingress() {
+				isValidOverlap = false
+			}
+		})
+	}
+	return isValidOverlap
+}
+
 // CellInfo contains information on each cell that is used while pathfinding.
 type CellInfo struct {
 	distance            int
 	blocked             bool
+	isConveyorMiddle    bool
 	numEgressNeighbors  int8
 	numIngressNeighbors int8
 	previousConveyor    Conveyor
@@ -207,6 +226,14 @@ func (g *GeneticAlgorithm) populateCellInfoWithEgress(egress Position) {
 func (g *GeneticAlgorithm) blockCellInfoWithRectangle(rectangle Rectangle) {
 	rectangle.ForEach(func(p Position) {
 		cellInfo[p.y][p.x].blocked = true
+	})
+}
+
+func (g *GeneticAlgorithm) populateCellInfoWithConveyor(conveyor Conveyor) {
+	conveyor.Rectangle().ForEach(func(p Position) {
+		if p != conveyor.Egress() && p != conveyor.Ingress() {
+			cellInfo[p.y][p.x].isConveyorMiddle = true
+		}
 	})
 }
 
@@ -256,6 +283,7 @@ func (g *GeneticAlgorithm) populateCellInfo(chromosome Chromosome) {
 		for _, conveyor := range otherPath.conveyors {
 			g.populateCellInfoWithIngress(conveyor.Ingress())
 			g.populateCellInfoWithEgress(conveyor.Egress())
+			g.populateCellInfoWithConveyor(conveyor)
 			g.blockCellInfoWithRectangle(conveyor.Rectangle())
 		}
 	}
@@ -320,7 +348,9 @@ func (g *GeneticAlgorithm) pathMineToFactory(chromosome Chromosome, mine Mine, f
 					isBlocked := false
 					nextConveyor.Rectangle().ForEach(func(p Position) {
 						if cellInfo[p.y][p.x].blocked {
-							isBlocked = true
+							if !(cellInfo[p.y][p.x].isConveyorMiddle && p != nextConveyor.Egress() && p != nextConveyor.Ingress()) {
+								isBlocked = true
+							}
 						}
 					})
 					if isBlocked {

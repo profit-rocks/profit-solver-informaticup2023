@@ -317,7 +317,7 @@ func (g *GeneticAlgorithm) movePathMutation(chromosome Chromosome) (Chromosome, 
 func (g *GeneticAlgorithm) evaluateFitness(chromosome Chromosome) int {
 	fitness, err := g.scenario.evaluateSolution(chromosome.Solution())
 	if err != nil {
-		panic("invalid solution")
+		return -1
 	}
 	return fitness
 }
