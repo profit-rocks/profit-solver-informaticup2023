@@ -201,7 +201,7 @@ func checkOverlapIsValid(conveyor1 Conveyor, conveyor2 Conveyor) bool {
 type CellInfo struct {
 	distance            int
 	blocked             bool
-	isConveyor          bool
+	isConveyorMiddle    bool
 	numEgressNeighbors  int8
 	numIngressNeighbors int8
 	previousConveyor    Conveyor
@@ -234,9 +234,11 @@ func (g *GeneticAlgorithm) blockCellInfoWithRectangle(rectangle Rectangle) {
 	})
 }
 
-func (g *GeneticAlgorithm) populateCellInfoWithConveyor(rectangle Rectangle) {
-	rectangle.ForEach(func(p Position) {
-		cellInfo[p.y][p.x].isConveyor = true
+func (g *GeneticAlgorithm) populateCellInfoWithConveyor(conveyor Conveyor) {
+	conveyor.Rectangle().ForEach(func(p Position) {
+		if p != conveyor.Egress() && p != conveyor.Ingress() {
+			cellInfo[p.y][p.x].isConveyorMiddle = true
+		}
 	})
 }
 
@@ -286,7 +288,7 @@ func (g *GeneticAlgorithm) populateCellInfo(chromosome Chromosome) {
 		for _, conveyor := range otherPath.conveyors {
 			g.populateCellInfoWithIngress(conveyor.Ingress())
 			g.populateCellInfoWithEgress(conveyor.Egress())
-			g.populateCellInfoWithConveyor(conveyor.Rectangle())
+			g.populateCellInfoWithConveyor(conveyor)
 			g.blockCellInfoWithRectangle(conveyor.Rectangle())
 		}
 	}
@@ -349,27 +351,14 @@ func (g *GeneticAlgorithm) pathMineToFactory(chromosome Chromosome, mine Mine, f
 				}
 				if current.priority+1 < cellInfo[nextEgress.y][nextEgress.x].distance {
 					isBlocked := false
-					isOnlyConveyor := true
 					nextConveyor.Rectangle().ForEach(func(p Position) {
 						if cellInfo[p.y][p.x].blocked {
-							isBlocked = true
-							if !cellInfo[p.y][p.x].isConveyor {
-								isOnlyConveyor = false
+							if !(cellInfo[p.y][p.x].isConveyorMiddle && p != nextConveyor.Egress() && p != nextConveyor.Ingress()) {
+								isBlocked = true
 							}
 						}
 					})
-					if isBlocked && !isOnlyConveyor {
-						continue
-					}
-					isValidOverlap := true
-					for _, p := range chromosome.paths {
-						for _, pathConveyor := range p.conveyors {
-							if !checkOverlapIsValid(nextConveyor, pathConveyor) {
-								isValidOverlap = false
-							}
-						}
-					}
-					if !isValidOverlap {
+					if isBlocked {
 						continue
 					}
 					next := Item{
