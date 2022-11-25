@@ -96,35 +96,26 @@ func (s *Scenario) checkEgressesHaveSingleIngress(solution Solution) bool {
 }
 
 func (s *Scenario) checkValidity(solution Solution) error {
-	mines := make([]Mine, len(solution.mines))
 	for i, mine := range solution.mines {
-		mines[i] = mine
-	}
-	factories := make([]Factory, len(solution.factories))
-	for i, factory := range solution.factories {
-		factories[i] = factory
-	}
-	paths := make([]Path, len(solution.paths))
-	for i, path := range solution.paths {
-		paths[i] = path
-	}
-	for i, mine := range solution.mines {
-		if !s.positionAvailableForMine(factories, mines[:i], paths, mine) {
+		if !s.positionAvailableForMine(solution.factories, solution.mines[:i], solution.paths, mine) {
 			return errors.New("solution includes a mine which position is invalid, can't evaluate this solution")
 		}
 	}
 
 	for i, factory := range solution.factories {
-		if !s.positionAvailableForFactory(factories[:i], mines, paths, factory.position) {
+		if !s.positionAvailableForFactory(solution.factories[:i], solution.mines, solution.paths, factory.position) {
 			return errors.New("solution includes a factory which position is invalid, can't evaluate this solution")
 		}
 	}
 
+	paths := make([]Path, len(solution.paths))
 	for i, path := range solution.paths {
+		paths = append(paths, Path{})
 		for _, conveyor := range path.conveyors {
-			if !s.positionAvailableForConveyor(factories, mines, paths[:i], conveyor) {
+			if !s.positionAvailableForConveyor(solution.factories, solution.mines, paths, conveyor) {
 				return errors.New("solution includes a factory which position is invalid, can't evaluate this solution")
 			}
+			paths[i].conveyors = append(paths[i].conveyors, conveyor)
 		}
 	}
 	if !s.checkEgressesHaveSingleIngress(solution) {

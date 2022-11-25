@@ -103,3 +103,14 @@ func TestSolutionWithOverlappingConveyorsIsInvalid(t *testing.T) {
 		t.Errorf("invalid solution with overlapping conveyorrs should be invalid")
 	}
 }
+
+func TestSolutionWithOverlappingConveyorsInSamePathIsInvalid(t *testing.T) {
+	scenario := largeEmptyScenario()
+	solution := Solution{paths: []Path{{
+		conveyors: []Conveyor{{position: Position{x: 3, y: 3}, direction: Right, length: Long}, {position: Position{x: 3, y: 3}, direction: Left, length: Long}},
+	}}}
+	err := scenario.checkValidity(solution)
+	if err == nil {
+		t.Errorf("invalid solution with overlapping conveyorrs should be invalid")
+	}
+}
