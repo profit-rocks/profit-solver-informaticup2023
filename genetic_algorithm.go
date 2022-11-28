@@ -35,7 +35,9 @@ var Mutations = []MutationFunction{
 	(*GeneticAlgorithm).addFactoryMutation,
 	(*GeneticAlgorithm).removeFactoryMutation,
 	(*GeneticAlgorithm).moveFactoriesMutation,
-	(*GeneticAlgorithm).addPathMutation,
+	(*GeneticAlgorithm).addPathMineToFactoryMutation,
+	(*GeneticAlgorithm).addPathMineToCombinerMutation,
+	(*GeneticAlgorithm).addPathCombinerToFactory,
 	(*GeneticAlgorithm).removePathMutation,
 	(*GeneticAlgorithm).movePathMutation,
 	(*GeneticAlgorithm).addCombinerMutation,
@@ -245,21 +247,55 @@ func (g *GeneticAlgorithm) removeMineMutation(chromosome Chromosome) (Chromosome
 	return chromosome, nil
 }
 
-func (g *GeneticAlgorithm) addPathMutation(chromosome Chromosome) (Chromosome, error) {
-	if len(chromosome.mines) == 0 || len(chromosome.factories) == 0 {
+func (g *GeneticAlgorithm) addPathMutation(chromosome Chromosome, subtype PathSubtype) (Chromosome, error) {
+	if subtype == MineToFactory && (len(chromosome.mines) == 0 || len(chromosome.factories) == 0) {
+		return chromosome, errors.New("no mines or factories to add path")
+	} else if subtype == CombinerToFactory && (len(chromosome.combiners) == 0 || len(chromosome.factories) == 0) {
+		return chromosome, errors.New("no mines or factories to add path")
+	} else if subtype == MineToCombiner && (len(chromosome.mines) == 0 || len(chromosome.combiners) == 0) {
 		return chromosome, errors.New("no mines or factories to add path")
 	}
 	// TODO: take product subtypes into account
 	for j := 0; j < NumPathRetries; j++ {
-		randomFactory := chromosome.factories[rand.Intn(len(chromosome.factories))]
-		randomMine := chromosome.mines[rand.Intn(len(chromosome.mines))]
-		newPath, err := g.path(chromosome, randomMine.Egress(), randomFactory.nextToIngressPositions())
+		var startPosition Position
+		var endPositions []Position
+		if subtype == MineToFactory {
+			randomFactory := chromosome.factories[rand.Intn(len(chromosome.factories))]
+			randomMine := chromosome.mines[rand.Intn(len(chromosome.mines))]
+			startPosition = randomMine.Egress()
+			endPositions = randomFactory.nextToIngressPositions()
+		} else if subtype == MineToCombiner {
+			randomCombiner := chromosome.combiners[rand.Intn(len(chromosome.combiners))]
+			randomMine := chromosome.mines[rand.Intn(len(chromosome.mines))]
+			startPosition = randomMine.Egress()
+			endPositions = randomCombiner.NextToIngressPositions()
+		} else if subtype == CombinerToFactory {
+			randomCombiner := chromosome.combiners[rand.Intn(len(chromosome.combiners))]
+			randomFactory := chromosome.factories[rand.Intn(len(chromosome.factories))]
+			startPosition = randomCombiner.Egress()
+			endPositions = randomFactory.nextToIngressPositions()
+		} else {
+			return chromosome, errors.New("no such path subtype")
+		}
+		newPath, err := g.path(chromosome, startPosition, endPositions)
 		if err == nil {
 			chromosome.paths = append(chromosome.paths, newPath)
 			return chromosome, nil
 		}
 	}
 	return chromosome, errors.New("could not find a path")
+}
+
+func (g *GeneticAlgorithm) addPathMineToFactoryMutation(chromosome Chromosome) (Chromosome, error) {
+	return g.addPathMutation(chromosome, MineToFactory)
+}
+
+func (g *GeneticAlgorithm) addPathMineToCombinerMutation(chromosome Chromosome) (Chromosome, error) {
+	return g.addPathMutation(chromosome, MineToCombiner)
+}
+
+func (g *GeneticAlgorithm) addPathCombinerToFactory(chromosome Chromosome) (Chromosome, error) {
+	return g.addPathMutation(chromosome, CombinerToFactory)
 }
 
 func (g *GeneticAlgorithm) removePathMutation(chromosome Chromosome) (Chromosome, error) {
