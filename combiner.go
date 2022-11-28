@@ -24,6 +24,18 @@ func (c *Combiner) Ingresses() []Position {
 	return []Position{{c.position.x, c.position.y + 1}, {c.position.x - 1, c.position.y + 1}, {c.position.x + 1, c.position.y + 1}}
 }
 
+func (c *Combiner) NextToIngressPositions() []Position {
+	if c.direction == Right {
+		return []Position{{c.position.x - 2, c.position.y}, {c.position.x - 2, c.position.y - 1}, {c.position.x - 2, c.position.y + 1}, {c.position.x, c.position.y - 2}, {c.position.x, c.position.y + 2}}
+	} else if c.direction == Bottom {
+		return []Position{{c.position.x, c.position.y - 2}, {c.position.x - 1, c.position.y - 2}, {c.position.x + 1, c.position.y - 2}, {c.position.x - 2, c.position.y}, {c.position.x + 2, c.position.y}}
+	} else if c.direction == Left {
+		return []Position{{c.position.x + 2, c.position.y}, {c.position.x + 2, c.position.y - 1}, {c.position.x + 2, c.position.y + 1}, {c.position.x, c.position.y - 2}, {c.position.x, c.position.y + 2}}
+	}
+	// Top
+	return []Position{{c.position.x, c.position.y + 2}, {c.position.x - 1, c.position.y + 2}, {c.position.x + 1, c.position.y + 2}, {c.position.x - 2, c.position.y}, {c.position.x + 2, c.position.y}}
+}
+
 func (c *Combiner) Egress() Position {
 	if c.direction == Right {
 		return Position{c.position.x + 1, c.position.y}
