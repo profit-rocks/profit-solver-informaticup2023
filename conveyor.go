@@ -294,19 +294,17 @@ func (g *GeneticAlgorithm) populateCellInfo(chromosome Chromosome) {
 	}
 }
 
-func (g *GeneticAlgorithm) pathMineToFactory(chromosome Chromosome, mine Mine, factory Factory) (Path, error) {
+func (g *GeneticAlgorithm) path(chromosome Chromosome, startPosition Position, endPositions []Position) (Path, error) {
 	var path Path
 
 	g.populateCellInfo(chromosome)
 
-	startPosition := mine.Egress()
 	// Dummy conveyor used for backtracking
 	startConveyor := Conveyor{
 		position:  Position{startPosition.x - 1, startPosition.y},
 		direction: Right,
 		length:    Short,
 	}
-	endPositions := factory.nextToIngressPositions()
 	queue := PriorityQueue{}
 	startItem := Item{
 		value:    startConveyor,

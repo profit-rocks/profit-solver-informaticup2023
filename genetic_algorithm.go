@@ -253,7 +253,7 @@ func (g *GeneticAlgorithm) addPathMutation(chromosome Chromosome) (Chromosome, e
 	for j := 0; j < NumPathRetries; j++ {
 		randomFactory := chromosome.factories[rand.Intn(len(chromosome.factories))]
 		randomMine := chromosome.mines[rand.Intn(len(chromosome.mines))]
-		newPath, err := g.pathMineToFactory(chromosome, randomMine, randomFactory)
+		newPath, err := g.path(chromosome, randomMine.Egress(), randomFactory.nextToIngressPositions())
 		if err == nil {
 			chromosome.paths = append(chromosome.paths, newPath)
 			return chromosome, nil
@@ -324,7 +324,7 @@ func (g *GeneticAlgorithm) movePathMutation(chromosome Chromosome) (Chromosome, 
 		for j := 0; j < NumPathRetries; j++ {
 			randomFactory := chromosome.factories[rand.Intn(len(chromosome.factories))]
 			randomMine := chromosome.mines[rand.Intn(len(chromosome.mines))]
-			newPath, err := g.pathMineToFactory(newChromosome, randomMine, randomFactory)
+			newPath, err := g.path(newChromosome, randomMine.Egress(), randomFactory.nextToIngressPositions())
 			if err == nil {
 				newChromosome.paths = append(newChromosome.paths, newPath)
 				break
