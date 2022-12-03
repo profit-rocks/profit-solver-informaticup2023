@@ -425,6 +425,7 @@ func (g *GeneticAlgorithm) Run() {
 				}
 			}
 		}
+		g.visualizeChromosomes(chromosomes, i)
 	}
 	sort.Slice(chromosomes, func(i, j int) bool {
 		return chromosomes[i].fitness > chromosomes[j].fitness
