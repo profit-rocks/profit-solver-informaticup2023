@@ -33,25 +33,65 @@ func (g GeneticAlgorithm) visualizeChromosomes(chromosomes []Chromosome, iterati
 	for i := range factoryFrequencies {
 		factoryFrequencies[i] = make([]int, g.scenario.height)
 	}
-
+	combinerFrequencies := make([][]int, g.scenario.width)
+	for i := range combinerFrequencies {
+		combinerFrequencies[i] = make([]int, g.scenario.height)
+	}
+	conveyorFrequencies := make([][]int, g.scenario.width)
+	for i := range conveyorFrequencies {
+		conveyorFrequencies[i] = make([]int, g.scenario.height)
+	}
+	mineFrequencies := make([][]int, g.scenario.width)
+	for i := range mineFrequencies {
+		mineFrequencies[i] = make([]int, g.scenario.height)
+	}
 	for _, c := range chromosomes {
 		for _, f := range c.factories {
 			f.Rectangle().ForEach(func(p Position) {
-				factoryFrequencies[p.x][p.y] += 1
+				factoryFrequencies[p.x][g.scenario.height-1-p.y] += 1
+			})
+		}
+		for _, combiner := range c.combiners {
+			combiner.RectanglesEach(func(r Rectangle) {
+				r.ForEach(func(p Position) {
+					combinerFrequencies[p.x][g.scenario.height-1-p.y] += 1
+				})
+			})
+		}
+		for _, path := range c.paths {
+			for _, conveyor := range path.conveyors {
+				conveyor.Rectangle().ForEach(func(p Position) {
+					conveyorFrequencies[p.x][g.scenario.height-1-p.y] += 1
+				})
+			}
+		}
+		for _, mine := range c.mines {
+			mine.RectanglesEach(func(r Rectangle) {
+				r.ForEach(func(p Position) {
+					mineFrequencies[p.x][g.scenario.height-1-p.y] += 1
+				})
 			})
 		}
 	}
+	saveGrid(factoryFrequencies, fmt.Sprintf("visuals/f_iteration_%d.png", iteration))
+	saveGrid(combinerFrequencies, fmt.Sprintf("visuals/com_iteration_%d.png", iteration))
+	saveGrid(conveyorFrequencies, fmt.Sprintf("visuals/con_iteration_%d.png", iteration))
+	saveGrid(mineFrequencies, fmt.Sprintf("visuals/m_iteration_%d.png", iteration))
+}
 
+func saveGrid(grid [][]int, path string) {
+	width := len(grid)
+	height := len(grid[0])
 	plotData := plottable{
-		grid:   factoryFrequencies,
-		width:  g.scenario.width,
-		height: g.scenario.height,
+		grid:   grid,
+		width:  width,
+		height: height,
 	}
 	p := plot.New()
 	pal := moreland.SmoothBlueRed().Palette(255)
 	hm := plotter.NewHeatMap(plotData, pal)
 	p.Add(hm)
-	err := p.Save(10*vg.Inch, 10*vg.Inch, fmt.Sprintf("visuals/iteration_%d_f.png", iteration))
+	err := p.Save(vg.Length(width)*vg.Inch, vg.Length(height)*vg.Inch, path)
 	if err != nil {
 		return
 	}
