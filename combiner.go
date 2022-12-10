@@ -48,6 +48,34 @@ func (c *Combiner) Egress() Position {
 	return Position{c.position.x, c.position.y - 1}
 }
 
+func (c *Combiner) NextToIngressRectangles() []Rectangle {
+	if c.direction == Right {
+		return []Rectangle{
+			Rectangle{Position{c.position.x - 2, c.position.y - 1}, 1, 3},
+			Rectangle{Position{c.position.x - 1, c.position.y - 2}, 1, 1},
+			Rectangle{Position{c.position.x - 1, c.position.y + 2}, 1, 1},
+		}
+	} else if c.direction == Bottom {
+		return []Rectangle{
+			Rectangle{Position{c.position.x - 1, c.position.y - 2}, 3, 1},
+			Rectangle{Position{c.position.x - 2, c.position.y}, 1, 1},
+			Rectangle{Position{c.position.x + 2, c.position.y}, 1, 1},
+		}
+	} else if c.direction == Left {
+		return []Rectangle{
+			Rectangle{Position{c.position.x + 2, c.position.y - 1}, 1, 3},
+			Rectangle{Position{c.position.x + 1, c.position.y + 2}, 1, 1},
+			Rectangle{Position{c.position.x + 1, c.position.y - 2}, 1, 1},
+		}
+	}
+	// Top
+	return []Rectangle{
+		Rectangle{Position{c.position.x - 1, c.position.y + 2}, 3, 1},
+		Rectangle{Position{c.position.x - 2, c.position.y + 1}, 1, 1},
+		Rectangle{Position{c.position.x + 2, c.position.y + 1}, 1, 1},
+	}
+}
+
 func (s *Scenario) positionAvailableForCombiner(factories []Factory, mines []Mine, paths []Path, combiners []Combiner, combiner Combiner) bool {
 	// combiner is out of bounds
 	boundRectangles := s.boundRectangles()
@@ -61,11 +89,9 @@ func (s *Scenario) positionAvailableForCombiner(factories []Factory, mines []Min
 		if combiner.Intersects(deposit.Rectangle()) {
 			return false
 		}
-		for _, egress := range combiner.Ingresses() {
-			for _, p := range deposit.nextToEgressPositions() {
-				if p == egress {
-					return false
-				}
+		for _, rectangle := range combiner.NextToIngressRectangles() {
+			if deposit.Rectangle().Intersects(rectangle) {
+				return false
 			}
 		}
 	}
