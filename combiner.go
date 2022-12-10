@@ -10,8 +10,6 @@ type Combiner struct {
 	direction Direction
 }
 
-const NumCombinerSubtypes = 4
-
 func (c *Combiner) Ingresses() []Position {
 	if c.direction == Right {
 		return []Position{{c.position.x - 1, c.position.y}, {c.position.x - 1, c.position.y - 1}, {c.position.x - 1, c.position.y + 1}}
@@ -48,6 +46,34 @@ func (c *Combiner) Egress() Position {
 	return Position{c.position.x, c.position.y - 1}
 }
 
+func (c *Combiner) NextToIngressRectangles() []Rectangle {
+	if c.direction == Right {
+		return []Rectangle{
+			{Position{c.position.x - 2, c.position.y - 1}, 1, 3},
+			{Position{c.position.x - 1, c.position.y - 2}, 1, 1},
+			{Position{c.position.x - 1, c.position.y + 2}, 1, 1},
+		}
+	} else if c.direction == Bottom {
+		return []Rectangle{
+			{Position{c.position.x - 1, c.position.y - 2}, 3, 1},
+			{Position{c.position.x - 2, c.position.y}, 1, 1},
+			{Position{c.position.x + 2, c.position.y}, 1, 1},
+		}
+	} else if c.direction == Left {
+		return []Rectangle{
+			{Position{c.position.x + 2, c.position.y - 1}, 1, 3},
+			{Position{c.position.x + 1, c.position.y + 2}, 1, 1},
+			{Position{c.position.x + 1, c.position.y - 2}, 1, 1},
+		}
+	}
+	// Top
+	return []Rectangle{
+		{Position{c.position.x - 1, c.position.y + 2}, 3, 1},
+		{Position{c.position.x - 2, c.position.y + 1}, 1, 1},
+		{Position{c.position.x + 2, c.position.y + 1}, 1, 1},
+	}
+}
+
 func (s *Scenario) positionAvailableForCombiner(factories []Factory, mines []Mine, paths []Path, combiners []Combiner, combiner Combiner) bool {
 	// combiner is out of bounds
 	boundRectangles := s.boundRectangles()
@@ -61,11 +87,9 @@ func (s *Scenario) positionAvailableForCombiner(factories []Factory, mines []Min
 		if combiner.Intersects(deposit.Rectangle()) {
 			return false
 		}
-		for _, egress := range combiner.Ingresses() {
-			for _, p := range deposit.nextToEgressPositions() {
-				if p == egress {
-					return false
-				}
+		for _, rectangle := range combiner.NextToIngressRectangles() {
+			if deposit.Rectangle().Intersects(rectangle) {
+				return false
 			}
 		}
 	}
@@ -146,31 +170,28 @@ func (c *Combiner) RectanglesEach(f func(Rectangle)) {
 }
 
 func (s *Scenario) randomCombiner(chromosome Chromosome) (Combiner, error) {
-	direction := DirectionFromSubtype(rand.Intn(NumCombinerSubtypes))
-	availablePositions := s.combinerPositions(chromosome, direction)
-	if len(availablePositions) == 0 {
+	availableCombiners := s.combinerPositions(chromosome)
+	if len(availableCombiners) == 0 {
 		return Combiner{}, errors.New("no combiner positions available")
 	}
-	position := availablePositions[rand.Intn(len(availablePositions))]
-	return Combiner{
-		position:  position,
-		direction: direction,
-	}, nil
+	return availableCombiners[rand.Intn(len(availableCombiners))], nil
 }
 
-func (s *Scenario) combinerPositions(chromosome Chromosome, direction Direction) []Position {
-	positions := make([]Position, 0)
+func (s *Scenario) combinerPositions(chromosome Chromosome) []Combiner {
+	combiners := make([]Combiner, 0)
 	for i := 0; i < s.width; i++ {
 		for j := 0; j < s.height; j++ {
 			pos := Position{i, j}
-			combiner := Combiner{
-				position:  pos,
-				direction: direction,
-			}
-			if s.positionAvailableForCombiner(chromosome.factories, chromosome.mines, chromosome.paths, chromosome.combiners, combiner) {
-				positions = append(positions, pos)
+			for _, direction := range []Direction{Right, Bottom, Left, Top} {
+				combiner := Combiner{
+					position:  pos,
+					direction: direction,
+				}
+				if s.positionAvailableForCombiner(chromosome.factories, chromosome.mines, chromosome.paths, chromosome.combiners, combiner) {
+					combiners = append(combiners, combiner)
+				}
 			}
 		}
 	}
-	return positions
+	return combiners
 }
