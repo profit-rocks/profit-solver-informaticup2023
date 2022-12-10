@@ -82,6 +82,13 @@ func (c Chromosome) Solution() Solution {
 		factories: make([]Factory, len(c.factories)),
 		mines:     make([]Mine, len(c.mines)),
 		paths:     []Path{},
+		combiners: make([]Combiner, len(c.combiners)),
+	}
+	for i, combiner := range c.combiners {
+		solution.combiners[i] = Combiner{
+			position:  combiner.position,
+			direction: combiner.direction,
+		}
 	}
 	for i, factory := range c.factories {
 		solution.factories[i] = Factory{
