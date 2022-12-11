@@ -44,8 +44,8 @@ func (c *Combiner) NextToIngressRectangles() []Rectangle {
 	} else if c.direction == Bottom {
 		return []Rectangle{
 			{Position{c.position.x - 1, c.position.y - 2}, 3, 1},
-			{Position{c.position.x - 2, c.position.y}, 1, 1},
-			{Position{c.position.x + 2, c.position.y}, 1, 1},
+			{Position{c.position.x - 2, c.position.y - 1}, 1, 1},
+			{Position{c.position.x + 2, c.position.y - 1}, 1, 1},
 		}
 	} else if c.direction == Left {
 		return []Rectangle{
