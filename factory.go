@@ -73,7 +73,7 @@ func (f Factory) ingressPositions() []Position {
 	return positions
 }
 
-func (s *Scenario) positionAvailableForFactory(factories []Factory, mines []Mine, paths []Path, position Position) bool {
+func (s *Scenario) positionAvailableForFactory(factories []Factory, mines []Mine, combiners []Combiner, paths []Path, position Position) bool {
 	factoryRectangle := Rectangle{
 		position: position,
 		width:    FactoryWidth,
@@ -118,6 +118,11 @@ func (s *Scenario) positionAvailableForFactory(factories []Factory, mines []Mine
 			}
 		}
 	}
+	for _, combiner := range combiners {
+		if combiner.Intersects(factoryRectangle) {
+			return false
+		}
+	}
 	for _, path := range paths {
 		for _, conveyor := range path.conveyors {
 			if factoryRectangle.Intersects(conveyor.Rectangle()) {
@@ -133,7 +138,7 @@ func (s *Scenario) factoryPositions(chromosome Chromosome) []Position {
 	for i := 0; i < s.width; i++ {
 		for j := 0; j < s.height; j++ {
 			pos := Position{i, j}
-			if s.positionAvailableForFactory(chromosome.factories, chromosome.mines, chromosome.paths, pos) {
+			if s.positionAvailableForFactory(chromosome.factories, chromosome.mines, chromosome.combiners, chromosome.paths, pos) {
 				positions = append(positions, pos)
 			}
 		}

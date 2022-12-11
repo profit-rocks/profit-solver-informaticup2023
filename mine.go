@@ -83,7 +83,7 @@ func (m *Mine) IntersectsMine(m2 Mine) bool {
 	return res
 }
 
-func (s *Scenario) positionAvailableForMine(factories []Factory, mines []Mine, paths []Path, mine Mine) bool {
+func (s *Scenario) positionAvailableForMine(factories []Factory, mines []Mine, combiners []Combiner, paths []Path, mine Mine) bool {
 	// mine is out of bounds
 	boundRectangles := s.boundRectangles()
 	if mine.IntersectsAny(boundRectangles) {
@@ -111,6 +111,17 @@ func (s *Scenario) positionAvailableForMine(factories []Factory, mines []Mine, p
 			return false
 		}
 		if mine.IntersectsMine(otherMine) {
+			return false
+		}
+	}
+	for _, combiner := range combiners {
+		foundIntersection := false
+		mine.RectanglesEach(func(r Rectangle) {
+			if combiner.Intersects(r) {
+				foundIntersection = true
+			}
+		})
+		if foundIntersection {
 			return false
 		}
 	}
@@ -169,7 +180,7 @@ func (s *Scenario) minePositions(deposit Deposit, chromosome Chromosome) []Mine 
 
 	validPositions := make([]Mine, 0)
 	for i := range positions {
-		if s.positionAvailableForMine(chromosome.factories, chromosome.mines, chromosome.paths, positions[i]) {
+		if s.positionAvailableForMine(chromosome.factories, chromosome.mines, chromosome.combiners, chromosome.paths, positions[i]) {
 			validPositions = append(validPositions, positions[i])
 		}
 	}

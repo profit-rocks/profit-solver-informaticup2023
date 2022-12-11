@@ -136,7 +136,7 @@ func (c Conveyor) Rectangle() Rectangle {
 	return r
 }
 
-func (s *Scenario) positionAvailableForConveyor(factories []Factory, mines []Mine, paths []Path, conveyor Conveyor) bool {
+func (s *Scenario) positionAvailableForConveyor(factories []Factory, mines []Mine, combiners []Combiner, paths []Path, conveyor Conveyor) bool {
 	boundRectangles := s.boundRectangles()
 	for _, rectangle := range boundRectangles {
 		if conveyor.Rectangle().Intersects(rectangle) {
@@ -155,6 +155,11 @@ func (s *Scenario) positionAvailableForConveyor(factories []Factory, mines []Min
 	}
 	for _, mine := range mines {
 		if mine.Intersects(conveyor.Rectangle()) {
+			return false
+		}
+	}
+	for _, combiner := range combiners {
+		if combiner.Intersects(conveyor.Rectangle()) {
 			return false
 		}
 	}
@@ -251,7 +256,7 @@ func (g *GeneticAlgorithm) populateCellInfo(chromosome Chromosome) {
 
 	// keep algorithm from using occupied squares
 	for _, deposit := range g.scenario.deposits {
-		for _, p := range deposit.mineIngressPositions() {
+		for _, p := range deposit.nextToEgressPositions() {
 			if !g.scenario.inBounds(p) {
 				continue
 			}

@@ -1,0 +1,15 @@
+{
+  "width": 20,
+  "height": 20,
+  "objects": [
+    {
+      "type": "combiner",
+      "x": 8,
+      "y": 7,
+      "subtype": 0
+    }
+  ],
+  "products": [],
+  "turns": 100,
+  "time": 300
+}

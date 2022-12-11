@@ -71,6 +71,8 @@ func TestSolutionWithOverlappingFactoriesInvalid(t *testing.T) {
 	}
 }
 
+// TODO: Check out subtests to remove code duplication in the following tests (https://go.dev/blog/subtests)
+
 func TestSolutionWithMultipleIngressesAtEgressInvalid(t *testing.T) {
 	scenario, solution, err := importFromProfitJson("fixtures/solutionMultipleIngressesAtEgress.json")
 	if err != nil {
@@ -79,6 +81,71 @@ func TestSolutionWithMultipleIngressesAtEgressInvalid(t *testing.T) {
 	err = scenario.checkValidity(solution)
 	if err == nil {
 		t.Errorf("solution with two ingresses at an egress should not be valid")
+	}
+}
+
+func TestEvaluationOfSolutionWithCombiner(t *testing.T) {
+	scenario, solution, err := importFromProfitJson("fixtures/solutionWithCombiner.json")
+	if err != nil {
+		t.Errorf("import of fixture failed")
+	}
+
+	score, err := scenario.evaluateSolution(solution)
+	expectedScore := 60
+	if score != expectedScore {
+		t.Errorf("score should be %d and not %d", expectedScore, score)
+	}
+}
+
+func TestEvaluationOfSolutionWithMineCombinerPath(t *testing.T) {
+	scenario, solution, err := importFromProfitJson("fixtures/solutionWithMineCombinerPath.json")
+	if err != nil {
+		t.Errorf("import of fixture failed")
+	}
+
+	score, err := scenario.evaluateSolution(solution)
+	expectedScore := 20
+	if score != expectedScore {
+		t.Errorf("score should be %d and not %d", expectedScore, score)
+	}
+}
+
+func TestEvaluationOfSolutionWithMultipleCombinersPath(t *testing.T) {
+	scenario, solution, err := importFromProfitJson("fixtures/solutionWithMultipleCombinersPath.json")
+	if err != nil {
+		t.Errorf("import of fixture failed")
+	}
+
+	score, err := scenario.evaluateSolution(solution)
+	expectedScore := 80
+	if score != expectedScore {
+		t.Errorf("score should be %d and not %d", expectedScore, score)
+	}
+}
+
+func TestEvaluationOfSolutionWithAdjacentCombiners(t *testing.T) {
+	scenario, solution, err := importFromProfitJson("fixtures/solutionWithAdjacentCombiners.json")
+	if err != nil {
+		t.Errorf("import of fixture failed")
+	}
+
+	score, err := scenario.evaluateSolution(solution)
+	expectedScore := 70
+	if score != expectedScore {
+		t.Errorf("score should be %d and not %d", expectedScore, score)
+	}
+}
+
+func TestEvaluationOfSolutionWithCombinerNextToFactory(t *testing.T) {
+	scenario, solution, err := importFromProfitJson("fixtures/solutionWithCombinerNextToFactory.json")
+	if err != nil {
+		t.Errorf("import of fixture failed")
+	}
+
+	score, err := scenario.evaluateSolution(solution)
+	expectedScore := 80
+	if score != expectedScore {
+		t.Errorf("score should be %d and not %d", expectedScore, score)
 	}
 }
 
