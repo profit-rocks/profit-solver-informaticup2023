@@ -13,8 +13,8 @@ import (
 const PercentTimeUsed = 90
 
 func main() {
-	inputPtr := flag.String("input", "", "Path to input scenario json")
-	outputPtr := flag.String("output", "", "Path to output scenario json")
+	inputPtr := flag.String("input", "-", "Path to input scenario json")
+	outputPtr := flag.String("output", "-", "Path to output scenario json")
 	seedPtr := flag.Int64("seed", 0, "Seed for random number generator")
 	cpuProfilePtr := flag.String("cpuprofile", "", "Path to output cpu profile")
 	itersPtr := flag.Int("iters", 120, "Number of iterations to run. Use 0 for unlimited")
