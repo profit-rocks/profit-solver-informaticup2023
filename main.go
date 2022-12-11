@@ -17,7 +17,7 @@ func main() {
 	outputPtr := flag.String("output", "-", "Path to output scenario json")
 	seedPtr := flag.Int64("seed", 0, "Seed for random number generator")
 	cpuProfilePtr := flag.String("cpuprofile", "", "Path to output cpu profile")
-	itersPtr := flag.Int("iters", 120, "Number of iterations to run. Use 0 for unlimited")
+	itersPtr := flag.Int("iters", 50, "Number of iterations to run. Use 0 for unlimited")
 	flag.Parse()
 	if *inputPtr == "" || *outputPtr == "" {
 		flag.Usage()
