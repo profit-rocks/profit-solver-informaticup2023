@@ -33,6 +33,10 @@ func exportSolution(scenario Scenario, solution Solution, filePath string) error
 	if err != nil {
 		return err
 	}
+	if filePath == "-" {
+		_, err = os.Stdout.Write(b)
+		return err
+	}
 	return os.WriteFile(filePath, b, 0644)
 }
 
@@ -107,9 +111,16 @@ func solutionToProfit(scenario Scenario, solution Solution) Profit {
 }
 
 func importFromProfitJson(path string) (Scenario, Solution, error) {
-	jsonFile, err := os.Open(path)
-	if err != nil {
-		return Scenario{}, Solution{}, err
+	var jsonFile *os.File
+	var err error
+	if path == "-" {
+		jsonFile = os.Stdin
+	} else {
+		jsonFile, err = os.Open(path)
+		if err != nil {
+			return Scenario{}, Solution{}, err
+		}
+		defer jsonFile.Close()
 	}
 	byteValue, err := io.ReadAll(jsonFile)
 	if err != nil {
