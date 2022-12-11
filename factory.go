@@ -132,17 +132,17 @@ func (s *Scenario) randomFactory(chromosome Chromosome) (Factory, error) {
 	if s.width < FactoryWidth || s.height < FactoryHeight {
 		return Factory{}, errors.New("scenario too small")
 	}
-	startX := rand.Intn(s.width)
-	startY := rand.Intn(s.height)
-	endX := ((startX - 1) + s.width) % s.width
-	endY := ((startY - 1) + s.height) % s.height
-	for i := startX; i != endX; i = (i + 1) % s.width {
-		for j := startY; j != endY; j = (j + 1) % s.height {
-			pos := Position{i, j}
-			if s.positionAvailableForFactory(chromosome.factories, chromosome.mines, chromosome.paths, pos) {
-				subtype := s.products[rand.Intn(len(s.products))].subtype
-				return Factory{position: pos, product: subtype}, nil
-			}
+	rng := NewLehmerRNG(s.width * s.height)
+	var n int
+	done := false
+	for !done {
+		n, done = rng.Next()
+		x := n % s.width
+		y := n / s.width
+		pos := Position{x, y}
+		if s.positionAvailableForFactory(chromosome.factories, chromosome.mines, chromosome.paths, pos) {
+			subtype := s.products[rand.Intn(len(s.products))].subtype
+			return Factory{position: pos, product: subtype}, nil
 		}
 	}
 	return Factory{}, errors.New("no position available for factory")
