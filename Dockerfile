@@ -13,4 +13,4 @@ COPY *.go go.mod go.sum ./
 
 RUN go build -o profit
 
-CMD ["./profit", "-input", "-", "-output", "-"]
+CMD ["./profit", "-input", "-", "-output", "-", "-iters", "0"]

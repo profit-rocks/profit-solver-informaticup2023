@@ -335,7 +335,7 @@ func (g *GeneticAlgorithm) Run() {
 	for i, chromosome := range chromosomes {
 		chromosomes[i].fitness = g.evaluateFitness(chromosome)
 	}
-	for i := 0; i < g.iterations; i++ {
+	for i := 0; g.iterations == 0 || i < g.iterations; i++ {
 		sort.Slice(chromosomes, func(i, j int) bool {
 			return chromosomes[i].fitness > chromosomes[j].fitness
 		})
