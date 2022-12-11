@@ -9,7 +9,11 @@ ENV CGO_CFLAGS="-I/usr/include/lpsolve" \
 
 WORKDIR /app
 
-COPY *.go go.mod go.sum ./
+COPY go.mod go.sum ./
+
+RUN go mod download
+
+COPY *.go ./
 
 RUN go build -o profit
 
