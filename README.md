@@ -2,7 +2,7 @@
 
 ## Run using docker
 
-Build the docker image using `docker build -t profit.rocks`. Run with task input by doing `cat task.json | docker run -i profit.rocks > output.json`
+Build the docker image using `docker build . -t profit.rocks`. Run with task input by doing `cat task.json | docker run -i profit.rocks > output.json`
 
 ## Setup
 
