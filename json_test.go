@@ -22,3 +22,13 @@ func TestImportConveyerWithInvalidSubtype(t *testing.T) {
 		}
 	}
 }
+
+func TestImportCombiner(t *testing.T) {
+	_, solution, err := importFromProfitJson("fixtures/singleCombiner.json")
+	if err != nil {
+		t.Errorf("importing combiner should not throw an error")
+	}
+	if len(solution.combiners) == 0 {
+		t.Errorf("a combiner should be added to the solution")
+	}
+}

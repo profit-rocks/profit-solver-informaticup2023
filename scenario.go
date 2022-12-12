@@ -36,6 +36,7 @@ type Solution struct {
 	factories []Factory
 	mines     []Mine
 	paths     []Path
+	combiners []Combiner
 }
 
 func (s *Scenario) boundRectangles() []Rectangle {

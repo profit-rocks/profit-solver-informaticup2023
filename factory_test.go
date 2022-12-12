@@ -5,7 +5,7 @@ import "testing"
 func TestIsPositionAvailableForFactory(t *testing.T) {
 	deposit := Deposit{position: Position{2, 2}, subtype: 0, height: 4, width: 8}
 	scenario := Scenario{width: 20, height: 20, deposits: []Deposit{deposit}}
-	if scenario.positionAvailableForFactory([]Factory{}, []Mine{}, []Path{}, Position{0, 0}) {
+	if scenario.positionAvailableForFactory([]Factory{}, []Mine{}, []Combiner{}, []Path{}, Position{0, 0}) {
 		t.Error("Factory position should not be available")
 	}
 }

@@ -12,7 +12,7 @@ func TestLargeEmptyScenarioIsAvailable(t *testing.T) {
 	g := geneticAlgorithmFromScenario(largeEmptyScenario())
 	for x := 0; x <= g.scenario.width-FactoryWidth; x++ {
 		for y := 0; y <= g.scenario.height-FactoryHeight; y++ {
-			if !g.scenario.positionAvailableForFactory([]Factory{}, []Mine{}, []Path{}, Position{x, y}) {
+			if !g.scenario.positionAvailableForFactory([]Factory{}, []Mine{}, []Combiner{}, []Path{}, Position{x, y}) {
 				t.Errorf("position %v should be available", Position{x, y})
 			}
 		}
@@ -23,14 +23,14 @@ func TestLargeEmptyScenarioBorders(t *testing.T) {
 	g := geneticAlgorithmFromScenario(largeEmptyScenario())
 	for x := 0; x <= g.scenario.width-FactoryWidth; x++ {
 		for y := g.scenario.height - FactoryHeight + 1; y < g.scenario.width; y++ {
-			if g.scenario.positionAvailableForFactory([]Factory{}, []Mine{}, []Path{}, Position{x, y}) {
+			if g.scenario.positionAvailableForFactory([]Factory{}, []Mine{}, []Combiner{}, []Path{}, Position{x, y}) {
 				t.Errorf("position %v should not be available", Position{x, y})
 			}
 		}
 	}
 	for x := g.scenario.width - FactoryWidth + 1; x < g.scenario.width; x++ {
 		for y := 0; y <= g.scenario.height-FactoryHeight; y++ {
-			if g.scenario.positionAvailableForFactory([]Factory{}, []Mine{}, []Path{}, Position{x, y}) {
+			if g.scenario.positionAvailableForFactory([]Factory{}, []Mine{}, []Combiner{}, []Path{}, Position{x, y}) {
 				t.Errorf("position %v should not be available", Position{x, y})
 			}
 		}
@@ -42,7 +42,7 @@ func TestSmallEmptyScenario(t *testing.T) {
 	for x := 0; x < g.scenario.width; x++ {
 		for y := 0; y < g.scenario.height; y++ {
 			pos := Position{x, y}
-			if g.scenario.positionAvailableForFactory([]Factory{}, []Mine{}, []Path{}, pos) {
+			if g.scenario.positionAvailableForFactory([]Factory{}, []Mine{}, []Combiner{}, []Path{}, pos) {
 				t.Errorf("position %v should not be available", pos)
 			}
 		}
@@ -55,7 +55,7 @@ func TestScenarioWithObstacles(t *testing.T) {
 	for x := 0; x < g.scenario.width; x++ {
 		for y := 0; y < g.scenario.height; y++ {
 			pos := Position{x, y}
-			if g.scenario.positionAvailableForFactory([]Factory{}, []Mine{}, []Path{}, pos) {
+			if g.scenario.positionAvailableForFactory([]Factory{}, []Mine{}, []Combiner{}, []Path{}, pos) {
 				t.Errorf("position %v should not be available", pos)
 			}
 		}
@@ -77,11 +77,11 @@ func TestScenarioWithFactory(t *testing.T) {
 		for y := 0; y <= g.scenario.height-FactoryHeight; y++ {
 			pos := Position{x, y}
 			if x > 5-FactoryWidth && x < 5+FactoryWidth && y > 5-FactoryHeight && y < 5+FactoryWidth {
-				if g.scenario.positionAvailableForFactory(chromosome.factories, chromosome.mines, chromosome.paths, pos) {
+				if g.scenario.positionAvailableForFactory(chromosome.factories, chromosome.mines, []Combiner{}, chromosome.paths, pos) {
 					t.Errorf("position %v should not be available", pos)
 				}
 			} else {
-				if !g.scenario.positionAvailableForFactory(chromosome.factories, chromosome.mines, chromosome.paths, pos) {
+				if !g.scenario.positionAvailableForFactory(chromosome.factories, chromosome.mines, []Combiner{}, chromosome.paths, pos) {
 					t.Errorf("position %v should be available", pos)
 				}
 			}
@@ -97,8 +97,34 @@ func TestPositionAvailableForFactory(t *testing.T) {
 		mines[i] = mine
 	}
 	for _, mine := range solution.mines {
-		if scenario.positionAvailableForFactory([]Factory{}, mines, []Path{}, mine.position) {
+		if scenario.positionAvailableForFactory([]Factory{}, mines, []Combiner{}, []Path{}, mine.position) {
 			t.Errorf("position %v should not be available", mine.position)
+		}
+	}
+}
+
+func TestPositionAvailableForCombiner(t *testing.T) {
+	scenario, solution, err := importFromProfitJson("fixtures/freePlacesForCombiners.json")
+	if err != nil {
+		t.Errorf("failed to import fixture: %e", err)
+	}
+	applicableCombiners := []Combiner{{Position{1, 1}, Right}, {Position{1, 5}, Bottom}, {Position{1, 9}, Left}, {Position{1, 13}, Top}}
+	for _, combiner := range applicableCombiners {
+		if !scenario.positionAvailableForCombiner(solution.factories, solution.mines, solution.paths, solution.combiners, combiner) {
+			t.Errorf("position %v should be available", combiner)
+		}
+	}
+}
+
+func TestPositionNotAvailableForCombiner(t *testing.T) {
+	scenario, solution, err := importFromProfitJson("fixtures/scenarioWithSingleDeposit.json")
+	if err != nil {
+		t.Errorf("failed to import fixture: %e", err)
+	}
+	nonApplicableCombiners := []Combiner{{Position{1, 4}, Right}, {Position{4, 2}, Bottom}, {Position{4, 1}, Top}}
+	for _, combiner := range nonApplicableCombiners {
+		if scenario.positionAvailableForCombiner(solution.factories, solution.mines, solution.paths, solution.combiners, combiner) {
+			t.Errorf("position %v should not be available", combiner)
 		}
 	}
 }
@@ -110,11 +136,11 @@ func TestScenarioWithDeposit(t *testing.T) {
 		for y := 0; y <= g.scenario.height-FactoryHeight; y++ {
 			pos := Position{x, y}
 			if x == 0 && y == 0 || x == 0 && y == 10 || x == 10 && y == 0 || x == 10 && y == 10 {
-				if !g.scenario.positionAvailableForFactory([]Factory{}, []Mine{}, []Path{}, pos) {
+				if !g.scenario.positionAvailableForFactory([]Factory{}, []Mine{}, []Combiner{}, []Path{}, pos) {
 					t.Errorf("position %v should be available", pos)
 				}
 			} else {
-				if g.scenario.positionAvailableForFactory([]Factory{}, []Mine{}, []Path{}, pos) {
+				if g.scenario.positionAvailableForFactory([]Factory{}, []Mine{}, []Combiner{}, []Path{}, pos) {
 					t.Errorf("position %v should not be available", pos)
 				}
 			}
