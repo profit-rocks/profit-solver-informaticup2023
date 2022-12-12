@@ -134,9 +134,6 @@ func (s *Scenario) positionAvailableForFactory(factories []Factory, mines []Mine
 }
 
 func (s *Scenario) randomFactory(chromosome Chromosome) (Factory, error) {
-	if s.width < FactoryWidth || s.height < FactoryHeight {
-		return Factory{}, errors.New("scenario too small")
-	}
 	rng := NewLehmerRNG(s.width * s.height)
 	var n int
 	done := false

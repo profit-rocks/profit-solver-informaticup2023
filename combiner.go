@@ -157,12 +157,35 @@ func (c *Combiner) RectanglesEach(f func(Rectangle)) {
 	}
 }
 
-func (s *Scenario) randomCombiner(chromosome Chromosome) (Combiner, error) {
-	availableCombiners := s.combinerPositions(chromosome)
-	if len(availableCombiners) == 0 {
-		return Combiner{}, errors.New("no combiner positions available")
+func randomIndices(n int) []int {
+	arr := make([]int, n)
+	for i := range arr {
+		arr[i] = i
 	}
-	return availableCombiners[rand.Intn(len(availableCombiners))], nil
+	rand.Shuffle(n, func(i int, j int) {
+		arr[i], arr[j] = arr[j], arr[i]
+	})
+	return arr
+}
+
+func (s *Scenario) randomCombiner(chromosome Chromosome) (Combiner, error) {
+	directions := randomIndices(4)
+	rng := NewLehmerRNG(s.width * s.height)
+	var n int
+	done := false
+	for !done {
+		n, done = rng.Next()
+		x := n % s.width
+		y := n / s.width
+		pos := Position{x, y}
+		for _, direction := range directions {
+			combiner := Combiner{pos, Direction(direction)}
+			if s.positionAvailableForCombiner(chromosome.factories, chromosome.mines, chromosome.paths, chromosome.combiners, combiner) {
+				return combiner, nil
+			}
+		}
+	}
+	return Combiner{}, errors.New("no position available for factory")
 }
 
 func (s *Scenario) combinerPositions(chromosome Chromosome) []Combiner {
