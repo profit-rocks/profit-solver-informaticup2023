@@ -401,6 +401,9 @@ func (g *GeneticAlgorithm) Run() {
 						break
 					}
 				}
+				if done {
+					log.Println("all mutations failed, trying different chromosome")
+				}
 			}
 		}
 	}
