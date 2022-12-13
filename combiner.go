@@ -157,7 +157,6 @@ func (c *Combiner) RectanglesEach(f func(Rectangle)) {
 }
 
 func (s *Scenario) randomCombiner(chromosome Chromosome) (Combiner, error) {
-	directionRng := NewUniqueRNG(4)
 	rng := NewUniqueRNG(s.width * s.height)
 	var n int
 	done := false
@@ -166,6 +165,7 @@ func (s *Scenario) randomCombiner(chromosome Chromosome) (Combiner, error) {
 		x := n % s.width
 		y := n / s.width
 		pos := Position{x, y}
+		directionRng := NewUniqueRNG(4)
 		for i := 0; i < 4; i++ {
 			direction, _ := directionRng.Next()
 			combiner := Combiner{pos, Direction(direction)}
