@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"math/rand"
 )
 
 type Combiner struct {
@@ -157,19 +156,8 @@ func (c *Combiner) RectanglesEach(f func(Rectangle)) {
 	}
 }
 
-func randomIndices(n int) []int {
-	arr := make([]int, n)
-	for i := range arr {
-		arr[i] = i
-	}
-	rand.Shuffle(n, func(i int, j int) {
-		arr[i], arr[j] = arr[j], arr[i]
-	})
-	return arr
-}
-
 func (s *Scenario) randomCombiner(chromosome Chromosome) (Combiner, error) {
-	directions := randomIndices(4)
+	directionRng := NewUniqueRNG(4)
 	rng := NewUniqueRNG(s.width * s.height)
 	var n int
 	done := false
@@ -178,7 +166,8 @@ func (s *Scenario) randomCombiner(chromosome Chromosome) (Combiner, error) {
 		x := n % s.width
 		y := n / s.width
 		pos := Position{x, y}
-		for _, direction := range directions {
+		for i := 0; i < 4; i++ {
+			direction, _ := directionRng.Next()
 			combiner := Combiner{pos, Direction(direction)}
 			if s.positionAvailableForCombiner(chromosome.factories, chromosome.mines, chromosome.paths, chromosome.combiners, combiner) {
 				return combiner, nil
