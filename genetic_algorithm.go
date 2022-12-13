@@ -387,12 +387,19 @@ func (g *GeneticAlgorithm) Run() {
 		for j := 0; j < NumRoundsPerIteration; j++ {
 			chromosome := chromosomes[rand.Intn(numChromosomesBeforeMutation)]
 			for k := 0; k < NumMutationsPerRound; k++ {
-				mutation := Mutations[rand.Intn(len(Mutations))]
-				newChromosome, err := mutation(g, chromosome.copy())
-				if err == nil {
-					chromosome = newChromosome
-					chromosome.fitness = g.evaluateFitness(chromosome)
-					chromosomes = append(chromosomes, chromosome)
+				rng := NewUniqueRNG(len(Mutations))
+				done := false
+				var mutationIndex int
+				for !done {
+					mutationIndex, done = rng.Next()
+					mutation := Mutations[mutationIndex]
+					newChromosome, err := mutation(g, chromosome.copy())
+					if err == nil {
+						chromosome = newChromosome
+						chromosome.fitness = g.evaluateFitness(chromosome)
+						chromosomes = append(chromosomes, chromosome)
+						break
+					}
 				}
 			}
 		}

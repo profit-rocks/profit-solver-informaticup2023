@@ -170,7 +170,7 @@ func randomIndices(n int) []int {
 
 func (s *Scenario) randomCombiner(chromosome Chromosome) (Combiner, error) {
 	directions := randomIndices(4)
-	rng := NewLehmerRNG(s.width * s.height)
+	rng := NewUniqueRNG(s.width * s.height)
 	var n int
 	done := false
 	for !done {

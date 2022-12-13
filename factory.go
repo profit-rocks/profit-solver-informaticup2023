@@ -134,7 +134,7 @@ func (s *Scenario) positionAvailableForFactory(factories []Factory, mines []Mine
 }
 
 func (s *Scenario) randomFactory(chromosome Chromosome) (Factory, error) {
-	rng := NewLehmerRNG(s.width * s.height)
+	rng := NewUniqueRNG(s.width * s.height)
 	var n int
 	done := false
 	for !done {
