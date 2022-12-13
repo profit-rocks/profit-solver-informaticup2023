@@ -99,6 +99,15 @@ func solutionToProfit(scenario Scenario, solution Solution) Profit {
 		}
 	}
 
+	for _, combiner := range solution.combiners {
+		profit.Objects = append(profit.Objects, Object{
+			ObjectType: "combiner",
+			X:          combiner.position.x,
+			Y:          combiner.position.y,
+			Subtype:    int(combiner.direction),
+		})
+	}
+
 	for _, product := range scenario.products {
 		profit.Products = append(profit.Products, Object{
 			ObjectType: "product",
