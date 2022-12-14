@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1670961570000,
+  "lastUpdate": 1671011899388,
   "repoUrl": "https://github.com/jacob271/profit-solver-icup23",
   "entries": {
     "Benchmark": [
@@ -9303,6 +9303,170 @@ window.BENCHMARK_DATA = {
           {
             "name": "two_deposits.json - time",
             "value": 0.22980332374572754,
+            "unit": "seconds"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "richard@rgwohlbold.de",
+            "name": "Richard Wohlbold",
+            "username": "rgwohlbold"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "874a762e96397bc7cce395576a9abb48f7092985",
+          "message": "Implement RNG for unique numbers and use for randomFactory, randomCombiner and mutation selection (#38)\n\n* Improve randomFactory performance\r\n\r\n* Use custom RNG with fixed period for getting random factory positions\r\n\r\n* Add big_empty.json to prove performance benefits\r\n\r\n* Reformat big_empty.json\r\n\r\n* Improve randomCombiner performance\r\n\r\n* Use a different approach since I didn't fully understand the Lehmer math. Also use RNG for random mutations\r\n\r\n* Remove duplicate code\r\n\r\n* Fix crash in randomCombiner\r\n\r\n* Log when all mutations fail\r\n\r\n* reduce allowed time of maximum empty\r\n\r\nCo-authored-by: Jacob Schäfer <js.jacobschaefer@gmail.com>",
+          "timestamp": "2022-12-14T10:46:16+01:00",
+          "tree_id": "91e18c9540a85bedbb261e32f9188b830928683c",
+          "url": "https://github.com/jacob271/profit-solver-icup23/commit/874a762e96397bc7cce395576a9abb48f7092985"
+        },
+        "date": 1671011898179,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "exampleScenario.json - fitness",
+            "value": 440,
+            "unit": "points"
+          },
+          {
+            "name": "exampleScenario.json - time",
+            "value": 156.17209267616272,
+            "unit": "seconds"
+          },
+          {
+            "name": "001.task.json - fitness",
+            "value": 410,
+            "unit": "points"
+          },
+          {
+            "name": "001.task.json - time",
+            "value": 8.302942752838135,
+            "unit": "seconds"
+          },
+          {
+            "name": "richard2.json - fitness",
+            "value": 0,
+            "unit": "points"
+          },
+          {
+            "name": "richard2.json - time",
+            "value": 14.685580730438232,
+            "unit": "seconds"
+          },
+          {
+            "name": "002.task.json - fitness",
+            "value": 90,
+            "unit": "points"
+          },
+          {
+            "name": "002.task.json - time",
+            "value": 11.032870054244995,
+            "unit": "seconds"
+          },
+          {
+            "name": "004.task.json - fitness",
+            "value": 0,
+            "unit": "points"
+          },
+          {
+            "name": "004.task.json - time",
+            "value": 13.994948625564575,
+            "unit": "seconds"
+          },
+          {
+            "name": "big_empty.json - fitness",
+            "value": 400,
+            "unit": "points"
+          },
+          {
+            "name": "big_empty.json - time",
+            "value": 2.0542755126953125,
+            "unit": "seconds"
+          },
+          {
+            "name": "richard.json - fitness",
+            "value": 0,
+            "unit": "points"
+          },
+          {
+            "name": "richard.json - time",
+            "value": 14.721191167831421,
+            "unit": "seconds"
+          },
+          {
+            "name": "multiple_paths_required.json - fitness",
+            "value": 380,
+            "unit": "points"
+          },
+          {
+            "name": "multiple_paths_required.json - time",
+            "value": 4.3648364543914795,
+            "unit": "seconds"
+          },
+          {
+            "name": "jacob_few_turns.json - fitness",
+            "value": 480,
+            "unit": "points"
+          },
+          {
+            "name": "jacob_few_turns.json - time",
+            "value": 125.46345901489258,
+            "unit": "seconds"
+          },
+          {
+            "name": "nils.json - fitness",
+            "value": 1068,
+            "unit": "points"
+          },
+          {
+            "name": "nils.json - time",
+            "value": 63.24843502044678,
+            "unit": "seconds"
+          },
+          {
+            "name": "003.task.json - fitness",
+            "value": 30,
+            "unit": "points"
+          },
+          {
+            "name": "003.task.json - time",
+            "value": 89.89027786254883,
+            "unit": "seconds"
+          },
+          {
+            "name": "alex.json - fitness",
+            "value": 440,
+            "unit": "points"
+          },
+          {
+            "name": "alex.json - time",
+            "value": 98.58435320854187,
+            "unit": "seconds"
+          },
+          {
+            "name": "jacob.json - fitness",
+            "value": 750,
+            "unit": "points"
+          },
+          {
+            "name": "jacob.json - time",
+            "value": 91.87050795555115,
+            "unit": "seconds"
+          },
+          {
+            "name": "two_deposits.json - fitness",
+            "value": 90,
+            "unit": "points"
+          },
+          {
+            "name": "two_deposits.json - time",
+            "value": 0.2264556884765625,
             "unit": "seconds"
           }
         ]
