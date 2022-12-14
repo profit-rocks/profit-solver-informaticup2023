@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"math/rand"
 )
 
 type Combiner struct {
@@ -158,11 +157,24 @@ func (c *Combiner) RectanglesEach(f func(Rectangle)) {
 }
 
 func (s *Scenario) randomCombiner(chromosome Chromosome) (Combiner, error) {
-	availableCombiners := s.combinerPositions(chromosome)
-	if len(availableCombiners) == 0 {
-		return Combiner{}, errors.New("no combiner positions available")
+	rng := NewUniqueRNG(s.width * s.height)
+	var n int
+	done := false
+	for !done {
+		n, done = rng.Next()
+		x := n % s.width
+		y := n / s.width
+		pos := Position{x, y}
+		directionRng := NewUniqueRNG(4)
+		for i := 0; i < 4; i++ {
+			direction, _ := directionRng.Next()
+			combiner := Combiner{pos, Direction(direction)}
+			if s.positionAvailableForCombiner(chromosome.factories, chromosome.mines, chromosome.paths, chromosome.combiners, combiner) {
+				return combiner, nil
+			}
+		}
 	}
-	return availableCombiners[rand.Intn(len(availableCombiners))], nil
+	return Combiner{}, errors.New("no position available for factory")
 }
 
 func (s *Scenario) combinerPositions(chromosome Chromosome) []Combiner {

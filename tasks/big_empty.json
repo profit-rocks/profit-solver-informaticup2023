@@ -1,0 +1,33 @@
+{
+  "width": 100,
+  "height": 100,
+  "objects": [
+    {
+      "type": "deposit",
+      "x": 40,
+      "y": 19,
+      "subtype": 0,
+      "width": 9,
+      "height": 9
+    }
+  ],
+  "products": [
+    {
+      "type": "product",
+      "subtype": 0,
+      "resources": [
+        10,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "points": 10
+    }
+  ],
+  "turns": 100,
+  "time": 60
+}
