@@ -127,66 +127,6 @@ func minInt(x int, y int) int {
 	return y
 }
 
-func (g *GeneticAlgorithm) crossover(chromosome Chromosome, chromosome2 Chromosome) (Chromosome, error) {
-	// TODO: only output valid chromosomes
-	newChromosome := Chromosome{}
-	for i := 0; i < minInt(len(chromosome.mines), len(chromosome2.mines)); i++ {
-		if rand.Float64() > g.crossoverProbability {
-			newChromosome.mines = append(newChromosome.mines, chromosome.mines[i])
-		} else {
-			newChromosome.mines = append(newChromosome.mines, chromosome2.mines[i])
-		}
-	}
-	if rand.Float64() > 0.5 {
-		if len(chromosome.mines) > len(chromosome2.mines) {
-			for i := len(chromosome2.mines); i < len(chromosome.mines); i++ {
-				newChromosome.mines = append(newChromosome.mines, chromosome.mines[i])
-			}
-		} else {
-			for i := len(chromosome.mines); i < len(chromosome2.mines); i++ {
-				newChromosome.mines = append(newChromosome.mines, chromosome2.mines[i])
-			}
-		}
-	}
-	for i := 0; i < minInt(len(chromosome.factories), len(chromosome2.factories)); i++ {
-		if rand.Float64() > g.crossoverProbability {
-			newChromosome.factories = append(newChromosome.factories, chromosome.factories[i])
-		} else {
-			newChromosome.factories = append(newChromosome.factories, chromosome2.factories[i])
-		}
-	}
-	if rand.Float64() > 0.5 {
-		if len(chromosome.factories) > len(chromosome2.factories) {
-			for i := len(chromosome2.factories); i < len(chromosome.factories); i++ {
-				newChromosome.factories = append(newChromosome.factories, chromosome.factories[i])
-			}
-		} else {
-			for i := len(chromosome.factories); i < len(chromosome2.factories); i++ {
-				newChromosome.factories = append(newChromosome.factories, chromosome2.factories[i])
-			}
-		}
-	}
-	for i := 0; i < minInt(len(chromosome.paths), len(chromosome2.paths)); i++ {
-		if rand.Float64() > g.crossoverProbability {
-			newChromosome.paths = append(newChromosome.paths, chromosome.paths[i].copy())
-		} else {
-			newChromosome.paths = append(newChromosome.paths, chromosome2.paths[i].copy())
-		}
-	}
-	if rand.Float64() > 0.5 {
-		if len(chromosome.paths) > len(chromosome2.paths) {
-			for i := len(chromosome2.paths); i < len(chromosome.paths); i++ {
-				newChromosome.paths = append(newChromosome.paths, chromosome.paths[i].copy())
-			}
-		} else {
-			for i := len(chromosome.paths); i < len(chromosome2.paths); i++ {
-				newChromosome.paths = append(newChromosome.paths, chromosome2.paths[i].copy())
-			}
-		}
-	}
-	return newChromosome, g.scenario.checkValidity(newChromosome.Solution())
-}
-
 func (c Chromosome) copy() Chromosome {
 	newChromosome := Chromosome{
 		fitness: 0,
@@ -398,7 +338,7 @@ func (g *GeneticAlgorithm) Run() {
 	for i, chromosome := range chromosomes {
 		chromosomes[i].fitness = g.evaluateFitness(chromosome)
 	}
-	for i := 0; i < g.iterations; i++ {
+	for i := 0; g.iterations == 0 || i < g.iterations; i++ {
 		sort.Slice(chromosomes, func(i, j int) bool {
 			return chromosomes[i].fitness > chromosomes[j].fitness
 		})
@@ -410,25 +350,25 @@ func (g *GeneticAlgorithm) Run() {
 		chromosomes = chromosomes[:g.populationSize]
 		log.Println("starting iteration", i+1, "/", g.iterations, "max fitness", chromosomes[0].fitness, "min fitness", chromosomes[len(chromosomes)-1].fitness)
 
-		for j := 0; j < g.populationSize; j++ {
-			newChromosome, err := g.crossover(chromosomes[rand.Intn(g.populationSize)], chromosomes[rand.Intn(g.populationSize)])
-			if err != nil {
-				continue
-			}
-			newChromosome.fitness = g.evaluateFitness(newChromosome)
-			chromosomes = append(chromosomes, newChromosome)
-		}
-
-		numChromosomesBeforeMutation := len(chromosomes)
 		for j := 0; j < NumRoundsPerIteration; j++ {
-			chromosome := chromosomes[rand.Intn(numChromosomesBeforeMutation)]
+			chromosome := chromosomes[rand.Intn(g.populationSize)]
 			for k := 0; k < NumMutationsPerRound; k++ {
-				mutation := Mutations[rand.Intn(len(Mutations))]
-				newChromosome, err := mutation(g, chromosome.copy())
-				if err == nil {
-					chromosome = newChromosome
-					chromosome.fitness = g.evaluateFitness(chromosome)
-					chromosomes = append(chromosomes, chromosome)
+				rng := NewUniqueRNG(len(Mutations))
+				done := false
+				var mutationIndex int
+				for !done {
+					mutationIndex, done = rng.Next()
+					mutation := Mutations[mutationIndex]
+					newChromosome, err := mutation(g, chromosome.copy())
+					if err == nil {
+						chromosome = newChromosome
+						chromosome.fitness = g.evaluateFitness(chromosome)
+						chromosomes = append(chromosomes, chromosome)
+						break
+					}
+				}
+				if done {
+					log.Println("all mutations failed, trying different chromosome")
 				}
 			}
 		}

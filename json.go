@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -31,6 +32,10 @@ func exportSolution(scenario Scenario, solution Solution, filePath string) error
 	exportableScenario := solutionToProfit(scenario, solution)
 	b, err := json.MarshalIndent(exportableScenario, "", " ")
 	if err != nil {
+		return err
+	}
+	if filePath == "-" {
+		_, err = os.Stdout.Write(b)
 		return err
 	}
 	return os.WriteFile(filePath, b, 0644)
@@ -95,6 +100,15 @@ func solutionToProfit(scenario Scenario, solution Solution) Profit {
 		}
 	}
 
+	for _, combiner := range solution.combiners {
+		profit.Objects = append(profit.Objects, Object{
+			ObjectType: "combiner",
+			X:          combiner.position.x,
+			Y:          combiner.position.y,
+			Subtype:    int(combiner.direction),
+		})
+	}
+
 	for _, product := range scenario.products {
 		profit.Products = append(profit.Products, Object{
 			ObjectType: "product",
@@ -107,9 +121,16 @@ func solutionToProfit(scenario Scenario, solution Solution) Profit {
 }
 
 func importFromProfitJson(path string) (Scenario, Solution, error) {
-	jsonFile, err := os.Open(path)
-	if err != nil {
-		return Scenario{}, Solution{}, err
+	var jsonFile *os.File
+	var err error
+	if path == "-" {
+		jsonFile = os.Stdin
+	} else {
+		jsonFile, err = os.Open(path)
+		if err != nil {
+			return Scenario{}, Solution{}, err
+		}
+		defer jsonFile.Close()
 	}
 	byteValue, err := io.ReadAll(jsonFile)
 	if err != nil {
@@ -126,6 +147,9 @@ func importFromProfitJson(path string) (Scenario, Solution, error) {
 		height: profit.Height,
 		turns:  profit.Turns,
 		time:   profit.Time,
+	}
+	if scenario.time <= 0 {
+		return Scenario{}, Solution{}, errors.New("time imported from json has to be greater than 0")
 	}
 	solution := Solution{}
 	for _, object := range profit.Objects {
