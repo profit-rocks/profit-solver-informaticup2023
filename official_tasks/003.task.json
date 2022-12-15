@@ -1,20 +1,20 @@
 {
   "width": 40,
-  "height": 20,
+  "height": 40,
   "objects": [
     {
       "type": "deposit",
-      "x": 7,
-      "y": 4,
+      "x": 1,
+      "y": 1,
       "subtype": 0,
-      "width": 3,
-      "height": 3
+      "width": 7,
+      "height": 7
     },
     {
       "type": "deposit",
-      "x": 21,
-      "y": 12,
-      "subtype": 0,
+      "x": 36,
+      "y": 36,
+      "subtype": 1,
       "width": 3,
       "height": 3
     }
@@ -24,8 +24,8 @@
       "type": "product",
       "subtype": 0,
       "resources": [
-        1,
-        0,
+        36,
+        3,
         0,
         0,
         0,
@@ -33,9 +33,9 @@
         0,
         0
       ],
-      "points": 1
+      "points": 10
     }
   ],
-  "turns": 100,
-  "time": 40
+  "turns": 14,
+  "time": 300
 }

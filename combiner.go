@@ -2,15 +2,12 @@ package main
 
 import (
 	"errors"
-	"math/rand"
 )
 
 type Combiner struct {
 	position  Position
 	direction Direction
 }
-
-const NumCombinerSubtypes = 4
 
 func (c *Combiner) Ingresses() []Position {
 	if c.direction == Right {
@@ -51,28 +48,28 @@ func (c *Combiner) Egress() Position {
 func (c *Combiner) NextToIngressRectangles() []Rectangle {
 	if c.direction == Right {
 		return []Rectangle{
-			Rectangle{Position{c.position.x - 2, c.position.y - 1}, 1, 3},
-			Rectangle{Position{c.position.x - 1, c.position.y - 2}, 1, 1},
-			Rectangle{Position{c.position.x - 1, c.position.y + 2}, 1, 1},
+			{Position{c.position.x - 2, c.position.y - 1}, 1, 3},
+			{Position{c.position.x - 1, c.position.y - 2}, 1, 1},
+			{Position{c.position.x - 1, c.position.y + 2}, 1, 1},
 		}
 	} else if c.direction == Bottom {
 		return []Rectangle{
-			Rectangle{Position{c.position.x - 1, c.position.y - 2}, 3, 1},
-			Rectangle{Position{c.position.x - 2, c.position.y}, 1, 1},
-			Rectangle{Position{c.position.x + 2, c.position.y}, 1, 1},
+			{Position{c.position.x - 1, c.position.y - 2}, 3, 1},
+			{Position{c.position.x - 2, c.position.y - 1}, 1, 1},
+			{Position{c.position.x + 2, c.position.y - 1}, 1, 1},
 		}
 	} else if c.direction == Left {
 		return []Rectangle{
-			Rectangle{Position{c.position.x + 2, c.position.y - 1}, 1, 3},
-			Rectangle{Position{c.position.x + 1, c.position.y + 2}, 1, 1},
-			Rectangle{Position{c.position.x + 1, c.position.y - 2}, 1, 1},
+			{Position{c.position.x + 2, c.position.y - 1}, 1, 3},
+			{Position{c.position.x + 1, c.position.y + 2}, 1, 1},
+			{Position{c.position.x + 1, c.position.y - 2}, 1, 1},
 		}
 	}
 	// Top
 	return []Rectangle{
-		Rectangle{Position{c.position.x - 1, c.position.y + 2}, 3, 1},
-		Rectangle{Position{c.position.x - 2, c.position.y + 1}, 1, 1},
-		Rectangle{Position{c.position.x + 2, c.position.y + 1}, 1, 1},
+		{Position{c.position.x - 1, c.position.y + 2}, 3, 1},
+		{Position{c.position.x - 2, c.position.y + 1}, 1, 1},
+		{Position{c.position.x + 2, c.position.y + 1}, 1, 1},
 	}
 }
 
@@ -172,31 +169,41 @@ func (c *Combiner) RectanglesEach(f func(Rectangle)) {
 }
 
 func (s *Scenario) randomCombiner(chromosome Chromosome) (Combiner, error) {
-	direction := DirectionFromSubtype(rand.Intn(NumCombinerSubtypes))
-	availablePositions := s.combinerPositions(chromosome, direction)
-	if len(availablePositions) == 0 {
-		return Combiner{}, errors.New("no combiner positions available")
-	}
-	position := availablePositions[rand.Intn(len(availablePositions))]
-	return Combiner{
-		position:  position,
-		direction: direction,
-	}, nil
-}
-
-func (s *Scenario) combinerPositions(chromosome Chromosome, direction Direction) []Position {
-	positions := make([]Position, 0)
-	for i := 0; i < s.width; i++ {
-		for j := 0; j < s.height; j++ {
-			pos := Position{i, j}
-			combiner := Combiner{
-				position:  pos,
-				direction: direction,
-			}
+	rng := NewUniqueRNG(s.width * s.height)
+	var n int
+	done := false
+	for !done {
+		n, done = rng.Next()
+		x := n % s.width
+		y := n / s.width
+		pos := Position{x, y}
+		directionRng := NewUniqueRNG(4)
+		for i := 0; i < 4; i++ {
+			direction, _ := directionRng.Next()
+			combiner := Combiner{pos, Direction(direction)}
 			if s.positionAvailableForCombiner(chromosome.factories, chromosome.mines, chromosome.paths, chromosome.combiners, combiner) {
-				positions = append(positions, pos)
+				return combiner, nil
 			}
 		}
 	}
-	return positions
+	return Combiner{}, errors.New("no position available for factory")
+}
+
+func (s *Scenario) combinerPositions(chromosome Chromosome) []Combiner {
+	combiners := make([]Combiner, 0)
+	for i := 0; i < s.width; i++ {
+		for j := 0; j < s.height; j++ {
+			pos := Position{i, j}
+			for _, direction := range []Direction{Right, Bottom, Left, Top} {
+				combiner := Combiner{
+					position:  pos,
+					direction: direction,
+				}
+				if s.positionAvailableForCombiner(chromosome.factories, chromosome.mines, chromosome.paths, chromosome.combiners, combiner) {
+					combiners = append(combiners, combiner)
+				}
+			}
+		}
+	}
+	return combiners
 }

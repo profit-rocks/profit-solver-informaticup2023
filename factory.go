@@ -133,25 +133,19 @@ func (s *Scenario) positionAvailableForFactory(factories []Factory, mines []Mine
 	return true
 }
 
-func (s *Scenario) factoryPositions(chromosome Chromosome) []Position {
-	positions := make([]Position, 0)
-	for i := 0; i < s.width; i++ {
-		for j := 0; j < s.height; j++ {
-			pos := Position{i, j}
-			if s.positionAvailableForFactory(chromosome.factories, chromosome.mines, chromosome.combiners, chromosome.paths, pos) {
-				positions = append(positions, pos)
-			}
+func (s *Scenario) randomFactory(chromosome Chromosome) (Factory, error) {
+	rng := NewUniqueRNG(s.width * s.height)
+	var n int
+	done := false
+	for !done {
+		n, done = rng.Next()
+		x := n % s.width
+		y := n / s.width
+		pos := Position{x, y}
+		if s.positionAvailableForFactory(chromosome.factories, chromosome.mines, chromosome.combiners, chromosome.paths, pos) {
+			subtype := s.products[rand.Intn(len(s.products))].subtype
+			return Factory{position: pos, product: subtype}, nil
 		}
 	}
-	return positions
-}
-
-func (s *Scenario) randomFactory(chromosome Chromosome) (Factory, error) {
-	availablePositions := s.factoryPositions(chromosome)
-	if len(availablePositions) == 0 {
-		return Factory{}, errors.New("no factory positions available")
-	}
-	position := availablePositions[rand.Intn(len(availablePositions))]
-	subtype := s.products[rand.Intn(len(s.products))].subtype
-	return Factory{position: position, product: subtype}, nil
+	return Factory{}, errors.New("no position available for factory")
 }

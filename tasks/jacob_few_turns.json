@@ -120,5 +120,6 @@
       "points": 10
     }
   ],
-  "turns": 20
+  "turns": 20,
+  "time": 60
 }
