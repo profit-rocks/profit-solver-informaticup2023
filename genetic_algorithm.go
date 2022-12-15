@@ -42,6 +42,7 @@ var Mutations = []MutationFunction{
 	(*GeneticAlgorithm).movePathMutation,
 	(*GeneticAlgorithm).addCombinerMutation,
 	(*GeneticAlgorithm).removeCombinerMutation,
+	(*GeneticAlgorithm).moveCombinersMutation,
 }
 
 // GeneticAlgorithm contains input data as well as configuration information used by the genetic algorithm.
@@ -178,6 +179,22 @@ func (g *GeneticAlgorithm) removeCombinerMutation(chromosome Chromosome) (Chromo
 	}
 	chromosome.combiners = removeRandomElement(chromosome.combiners)
 	return chromosome, nil
+}
+
+func (g *GeneticAlgorithm) moveCombinersMutation(chromosome Chromosome) (Chromosome, error) {
+	newChromosome := Chromosome{
+		factories: chromosome.factories,
+		paths:     chromosome.paths,
+		mines:     chromosome.mines,
+	}
+	newChromosome.combiners = removeUniform(chromosome.combiners, g.mutationProbability)
+	for i := len(newChromosome.combiners); i < len(chromosome.combiners); i++ {
+		combiner, err := g.scenario.randomCombiner(newChromosome)
+		if err != nil {
+			newChromosome.combiners = append(newChromosome.combiners, combiner)
+		}
+	}
+	return newChromosome, nil
 }
 
 func (g *GeneticAlgorithm) addMineMutation(chromosome Chromosome) (Chromosome, error) {
