@@ -1,0 +1,63 @@
+{
+  "width": 30,
+  "height": 20,
+  "objects": [
+    {
+      "type": "deposit",
+      "x": 1,
+      "y": 1,
+      "subtype": 0,
+      "width": 5,
+      "height": 5
+    },
+    {
+      "type": "deposit",
+      "x": 1,
+      "y": 14,
+      "subtype": 1,
+      "width": 5,
+      "height": 5
+    },
+    {
+      "type": "deposit",
+      "x": 22,
+      "y": 1,
+      "subtype": 2,
+      "width": 7,
+      "height": 7
+    },
+    {
+      "type": "obstacle",
+      "x": 11,
+      "y": 9,
+      "width": 19,
+      "height": 2
+    },
+    {
+      "type": "obstacle",
+      "x": 11,
+      "y": 1,
+      "width": 2,
+      "height": 8
+    }
+  ],
+  "products": [
+    {
+      "type": "product",
+      "subtype": 0,
+      "resources": [
+        3,
+        3,
+        3,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "points": 10
+    }
+  ],
+  "turns": 50,
+  "time": 300
+}
