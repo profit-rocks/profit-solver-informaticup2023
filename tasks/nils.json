@@ -274,5 +274,6 @@
       "points": 4
     }
   ],
-  "turns": 100
+  "turns": 100,
+  "time": 30
 }

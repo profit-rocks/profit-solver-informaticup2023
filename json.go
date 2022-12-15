@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -146,6 +147,9 @@ func importFromProfitJson(path string) (Scenario, Solution, error) {
 		height: profit.Height,
 		turns:  profit.Turns,
 		time:   profit.Time,
+	}
+	if scenario.time <= 0 {
+		return Scenario{}, Solution{}, errors.New("time imported from json has to be greater than 0")
 	}
 	solution := Solution{}
 	for _, object := range profit.Objects {
