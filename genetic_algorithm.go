@@ -42,6 +42,7 @@ var Mutations = []MutationFunction{
 	(*GeneticAlgorithm).movePathMutation,
 	(*GeneticAlgorithm).addCombinerMutation,
 	(*GeneticAlgorithm).removeCombinerMutation,
+	(*GeneticAlgorithm).moveCombinersMutation,
 }
 
 // GeneticAlgorithm contains input data as well as configuration information used by the genetic algorithm.
@@ -140,6 +141,9 @@ func (c Chromosome) copy() Chromosome {
 	for _, path := range c.paths {
 		newChromosome.paths = append(newChromosome.paths, path.copy())
 	}
+	for _, combiner := range c.combiners {
+		newChromosome.combiners = append(newChromosome.combiners, combiner)
+	}
 	return newChromosome
 }
 
@@ -175,6 +179,22 @@ func (g *GeneticAlgorithm) removeCombinerMutation(chromosome Chromosome) (Chromo
 	}
 	chromosome.combiners = removeRandomElement(chromosome.combiners)
 	return chromosome, nil
+}
+
+func (g *GeneticAlgorithm) moveCombinersMutation(chromosome Chromosome) (Chromosome, error) {
+	newChromosome := Chromosome{
+		factories: chromosome.factories,
+		paths:     chromosome.paths,
+		mines:     chromosome.mines,
+	}
+	newChromosome.combiners = removeUniform(chromosome.combiners, g.mutationProbability)
+	for i := len(newChromosome.combiners); i < len(chromosome.combiners); i++ {
+		combiner, err := g.scenario.randomCombiner(newChromosome)
+		if err != nil {
+			newChromosome.combiners = append(newChromosome.combiners, combiner)
+		}
+	}
+	return newChromosome, nil
 }
 
 func (g *GeneticAlgorithm) addMineMutation(chromosome Chromosome) (Chromosome, error) {
@@ -257,6 +277,7 @@ func (g *GeneticAlgorithm) moveMinesMutation(chromosome Chromosome) (Chromosome,
 	newChromosome := Chromosome{
 		factories: chromosome.factories,
 		paths:     chromosome.paths,
+		combiners: chromosome.combiners,
 	}
 	newChromosome.mines = removeUniform(chromosome.mines, g.mutationProbability)
 	for i := len(newChromosome.mines); i < len(chromosome.mines); i++ {
@@ -277,8 +298,9 @@ func (g *GeneticAlgorithm) moveMinesMutation(chromosome Chromosome) (Chromosome,
 
 func (g *GeneticAlgorithm) moveFactoriesMutation(chromosome Chromosome) (Chromosome, error) {
 	newChromosome := Chromosome{
-		mines: chromosome.mines,
-		paths: chromosome.paths,
+		mines:     chromosome.mines,
+		paths:     chromosome.paths,
+		combiners: chromosome.combiners,
 	}
 	newChromosome.factories = removeUniform(chromosome.factories, g.mutationProbability)
 	for i := len(newChromosome.factories); i < len(chromosome.factories); i++ {
@@ -296,6 +318,7 @@ func (g *GeneticAlgorithm) movePathMutation(chromosome Chromosome) (Chromosome, 
 	newChromosome := Chromosome{
 		mines:     chromosome.mines,
 		factories: chromosome.factories,
+		combiners: chromosome.combiners,
 	}
 	if len(chromosome.factories) == 0 || len(chromosome.mines) == 0 {
 		return newChromosome, errors.New("no factories or mines")
@@ -328,7 +351,7 @@ func (g *GeneticAlgorithm) evaluateFitness(chromosome Chromosome) int {
 func (g *GeneticAlgorithm) generateChromosomes() []Chromosome {
 	chromosomes := make([]Chromosome, g.populationSize)
 	for i := 0; i < g.populationSize; i++ {
-		chromosomes[i] = Chromosome{mines: make([]Mine, 0), factories: make([]Factory, 0), paths: make([]Path, 0)}
+		chromosomes[i] = Chromosome{mines: make([]Mine, 0), factories: make([]Factory, 0), paths: make([]Path, 0), combiners: make([]Combiner, 0)}
 	}
 	return chromosomes
 }
