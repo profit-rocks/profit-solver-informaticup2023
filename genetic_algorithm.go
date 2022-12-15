@@ -140,6 +140,9 @@ func (c Chromosome) copy() Chromosome {
 	for _, path := range c.paths {
 		newChromosome.paths = append(newChromosome.paths, path.copy())
 	}
+	for _, combiner := range c.combiners {
+		newChromosome.combiners = append(newChromosome.combiners, combiner)
+	}
 	return newChromosome
 }
 
@@ -257,6 +260,7 @@ func (g *GeneticAlgorithm) moveMinesMutation(chromosome Chromosome) (Chromosome,
 	newChromosome := Chromosome{
 		factories: chromosome.factories,
 		paths:     chromosome.paths,
+		combiners: chromosome.combiners,
 	}
 	newChromosome.mines = removeUniform(chromosome.mines, g.mutationProbability)
 	for i := len(newChromosome.mines); i < len(chromosome.mines); i++ {
@@ -277,8 +281,9 @@ func (g *GeneticAlgorithm) moveMinesMutation(chromosome Chromosome) (Chromosome,
 
 func (g *GeneticAlgorithm) moveFactoriesMutation(chromosome Chromosome) (Chromosome, error) {
 	newChromosome := Chromosome{
-		mines: chromosome.mines,
-		paths: chromosome.paths,
+		mines:     chromosome.mines,
+		paths:     chromosome.paths,
+		combiners: chromosome.combiners,
 	}
 	newChromosome.factories = removeUniform(chromosome.factories, g.mutationProbability)
 	for i := len(newChromosome.factories); i < len(chromosome.factories); i++ {
@@ -296,6 +301,7 @@ func (g *GeneticAlgorithm) movePathMutation(chromosome Chromosome) (Chromosome, 
 	newChromosome := Chromosome{
 		mines:     chromosome.mines,
 		factories: chromosome.factories,
+		combiners: chromosome.combiners,
 	}
 	if len(chromosome.factories) == 0 || len(chromosome.mines) == 0 {
 		return newChromosome, errors.New("no factories or mines")
