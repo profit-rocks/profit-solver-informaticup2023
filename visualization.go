@@ -28,7 +28,7 @@ func (p plottable) Z(c, r int) float64 {
 	return float64(p.grid[c][r])
 }
 
-func (g GeneticAlgorithm) visualizeChromosomes(chromosomes []Chromosome, iteration int) {
+func (g *GeneticAlgorithm) visualizeChromosomes(chromosomes []Chromosome, iteration int) {
 	factoryFrequencies := make([][]int, g.scenario.width)
 	for i := range factoryFrequencies {
 		factoryFrequencies[i] = make([]int, g.scenario.height)
