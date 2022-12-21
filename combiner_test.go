@@ -73,3 +73,28 @@ func TestTopCombinerRectangles(t *testing.T) {
 		}
 	}
 }
+
+func TestCombinerNextToIngressPositions(t *testing.T) {
+	combiner := Combiner{
+		position:  Position{2, 2},
+		direction: Right,
+	}
+	validPositionsRight := []Position{{0, 2}, {0, 1}, {0, 3}, {1, 0}, {1, 4}}
+	validPositionsBottom := []Position{{2, 0}, {1, 0}, {3, 0}, {0, 1}, {4, 1}}
+	validPositionsLeft := []Position{{4, 2}, {4, 1}, {4, 3}, {3, 0}, {3, 4}}
+	validPositionsTop := []Position{{2, 4}, {1, 4}, {3, 4}, {0, 3}, {4, 3}}
+
+	validPositions := [][]Position{validPositionsRight, validPositionsBottom, validPositionsLeft, validPositionsTop}
+	for i, direction := range []Direction{Right, Bottom, Left, Top} {
+		combiner.direction = direction
+		result := combiner.NextToIngressPositions()
+		if len(result) != len(validPositions[i]) {
+			t.Errorf("number of positions should be 5")
+		}
+		for j, p := range result {
+			if p != validPositions[i][j] {
+				t.Errorf("position %v of combiner with subtype %d does not match %v", p, combiner.direction, validPositions[i][j])
+			}
+		}
+	}
+}

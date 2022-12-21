@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"math/rand"
 	"sort"
@@ -11,8 +12,9 @@ type Path struct {
 	conveyors []Conveyor
 }
 
-const NumRoundsPerIteration = 1000
-const NumMutationsPerRound = 10
+const NumRoundsPerIteration = 500
+const NumMutationsPerRound = 20
+const NumLoggedChromosomesPerIteration = 5
 
 const NumPathRetries = 10
 
@@ -61,6 +63,7 @@ type GeneticAlgorithm struct {
 	numPaths               int
 	chromosomeChannel      chan<- Chromosome
 	doneChannel            chan<- bool
+	logChromosomes         bool
 }
 
 func removeRandomElement[T any](arr []T) []T {
@@ -363,8 +366,22 @@ func (g *GeneticAlgorithm) Run() {
 	}
 	for i := 0; g.iterations == 0 || i < g.iterations; i++ {
 		sort.Slice(chromosomes, func(i, j int) bool {
+			if chromosomes[i].fitness == chromosomes[j].fitness {
+				return len(chromosomes[i].paths) > len(chromosomes[j].paths)
+			}
 			return chromosomes[i].fitness > chromosomes[j].fitness
 		})
+		if g.logChromosomes {
+			for j := 0; j < NumLoggedChromosomesPerIteration; j++ {
+				if j < len(chromosomes) {
+					err := exportSolution(g.scenario, chromosomes[j].Solution(), fmt.Sprintf("intermediateSolutions/iteration_%d_ch_%d.json", i, j))
+					if err != nil {
+						log.Fatal(err)
+						return
+					}
+				}
+			}
+		}
 		g.chromosomeChannel <- chromosomes[0]
 		if g.optimum != NoOptimum && chromosomes[0].fitness == g.optimum {
 			log.Println("starting iteration", i+1, "/", g.iterations, "fitness", g.optimum, "(optimal)")
