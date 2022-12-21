@@ -242,3 +242,24 @@ func TestTwoMinesSameEgress(t *testing.T) {
 		}
 	}
 }
+
+func TestPathExistsMineToCombiner(t *testing.T) {
+	scenario, solution, err := importFromProfitJson("fixtures/pathExistsMineToCombiner.json")
+	if err != nil {
+		t.Errorf("failed to import fixture: %e", err)
+	}
+
+	g := geneticAlgorithmFromScenario(scenario)
+
+	if len(solution.mines) != 1 {
+		t.Errorf("Expected number of mines of imported solution to be 1")
+	}
+	if len(solution.combiners) != 1 {
+		t.Errorf("Expected number of combiners of imported solution to be 1")
+	}
+	chromosome := Chromosome{mines: solution.mines, combiners: solution.combiners}
+	_, err = g.path(chromosome, chromosome.mines[0].Egress(), chromosome.combiners[0].NextToIngressPositions())
+	if err != nil {
+		t.Errorf("Searching for a path between mine and combiner should not return err %e", err)
+	}
+}
