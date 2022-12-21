@@ -190,7 +190,7 @@ func (g *GeneticAlgorithm) moveCombinersMutation(chromosome Chromosome) (Chromos
 	newChromosome.combiners = removeUniform(chromosome.combiners, g.mutationProbability)
 	for i := len(newChromosome.combiners); i < len(chromosome.combiners); i++ {
 		combiner, err := g.scenario.randomCombiner(newChromosome)
-		if err != nil {
+		if err == nil {
 			newChromosome.combiners = append(newChromosome.combiners, combiner)
 		}
 	}
