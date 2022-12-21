@@ -1,0 +1,181 @@
+{
+  "width": 23,
+  "height": 17,
+  "objects": [
+    {
+      "type": "deposit",
+      "x": 3,
+      "y": 5,
+      "subtype": 0,
+      "width": 4,
+      "height": 8
+    },
+    {
+      "type": "deposit",
+      "x": 11,
+      "y": 0,
+      "subtype": 1,
+      "width": 3,
+      "height": 7
+    },
+    {
+      "type": "obstacle",
+      "x": 7,
+      "y": 10,
+      "width": 10,
+      "height": 2
+    },
+    {
+      "type": "obstacle",
+      "x": 7,
+      "y": 5,
+      "width": 4,
+      "height": 3
+    },
+    {
+      "type": "obstacle",
+      "x": 17,
+      "y": 9,
+      "width": 1,
+      "height": 1
+    },
+    {
+      "type": "obstacle",
+      "x": 17,
+      "y": 7,
+      "width": 1,
+      "height": 1
+    },
+    {
+      "type": "obstacle",
+      "x": 7,
+      "y": 8,
+      "width": 1,
+      "height": 1
+    },
+    {
+      "type": "obstacle",
+      "x": 10,
+      "y": 8,
+      "width": 1,
+      "height": 1
+    },
+    {
+      "type": "obstacle",
+      "x": 0,
+      "y": 2,
+      "width": 11,
+      "height": 3
+    },
+    {
+      "type": "obstacle",
+      "x": 0,
+      "y": 5,
+      "width": 3,
+      "height": 12
+    },
+    {
+      "type": "obstacle",
+      "x": 0,
+      "y": 0,
+      "width": 11,
+      "height": 2
+    },
+    {
+      "type": "obstacle",
+      "x": 11,
+      "y": 7,
+      "width": 4,
+      "height": 2
+    },
+    {
+      "type": "obstacle",
+      "x": 3,
+      "y": 13,
+      "width": 14,
+      "height": 4
+    },
+    {
+      "type": "obstacle",
+      "x": 19,
+      "y": 8,
+      "width": 4,
+      "height": 3
+    },
+    {
+      "type": "obstacle",
+      "x": 18,
+      "y": 0,
+      "width": 5,
+      "height": 8
+    },
+    {
+      "type": "obstacle",
+      "x": 16,
+      "y": 0,
+      "width": 2,
+      "height": 7
+    },
+    {
+      "type": "mine",
+      "x": 8,
+      "y": 8,
+      "subtype": 0
+    },
+    {
+      "type": "mine",
+      "x": 14,
+      "y": 1,
+      "subtype": 1
+    },
+    {
+      "type": "combiner",
+      "x": 16,
+      "y": 8,
+      "subtype": 0
+    },
+    {
+      "type": "conveyor",
+      "x": 12,
+      "y": 9,
+      "subtype": 4
+    },
+    {
+      "type": "conveyor",
+      "x": 15,
+      "y": 4,
+      "subtype": 5
+    },
+    {
+      "type": "conveyor",
+      "x": 18,
+      "y": 9,
+      "subtype": 5
+    },
+    {
+      "type": "factory",
+      "x": 17,
+      "y": 12,
+      "subtype": 0
+    }
+  ],
+  "products": [
+    {
+      "type": "product",
+      "subtype": 0,
+      "resources": [
+        10,
+        10,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "points": 10
+    }
+  ],
+  "turns": 100,
+  "time": 100
+}
