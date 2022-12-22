@@ -64,6 +64,7 @@ type GeneticAlgorithm struct {
 	chromosomeChannel      chan<- Chromosome
 	doneChannel            chan<- bool
 	logChromosomes         bool
+	visualizeIterations    bool
 }
 
 func removeRandomElement[T any](arr []T) []T {
@@ -412,7 +413,9 @@ func (g *GeneticAlgorithm) Run() {
 				}
 			}
 		}
-		g.visualizeChromosomes(chromosomes, i)
+		if g.visualizeIterations {
+			g.visualizeChromosomes(chromosomes, i)
+		}
 	}
 	sort.Slice(chromosomes, func(i, j int) bool {
 		return chromosomes[i].fitness > chromosomes[j].fitness
