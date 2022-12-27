@@ -81,10 +81,10 @@ func (g *GeneticAlgorithm) visualizeChromosomes(chromosomes []Chromosome, iterat
 			})
 		}
 	}
-	saveGrid(factoryFrequencies, fmt.Sprintf("visuals/f_iteration_%d.png", iteration))
-	saveGrid(combinerFrequencies, fmt.Sprintf("visuals/com_iteration_%d.png", iteration))
-	saveGrid(conveyorFrequencies, fmt.Sprintf("visuals/con_iteration_%d.png", iteration))
-	saveGrid(mineFrequencies, fmt.Sprintf("visuals/m_iteration_%d.png", iteration))
+	saveGrid(factoryFrequencies, fmt.Sprintf("%s/f_iteration_%d.png", dir, iteration))
+	saveGrid(combinerFrequencies, fmt.Sprintf("%s/com_iteration_%d.png", dir, iteration))
+	saveGrid(conveyorFrequencies, fmt.Sprintf("%s/con_iteration_%d.png", dir, iteration))
+	saveGrid(mineFrequencies, fmt.Sprintf("%s/m_iteration_%d.png", dir, iteration))
 }
 
 func saveGrid(grid [][]int, path string) {
