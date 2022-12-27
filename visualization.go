@@ -6,6 +6,8 @@ import (
 	"gonum.org/v1/plot/palette/moreland"
 	"gonum.org/v1/plot/plotter"
 	"gonum.org/v1/plot/vg"
+	"log"
+	"os"
 )
 
 // Adapted from: https://medium.com/@balazs.dianiska/generating-heatmaps-with-go-83988b22c000
@@ -29,6 +31,12 @@ func (p plottable) Z(c, r int) float64 {
 }
 
 func (g *GeneticAlgorithm) visualizeChromosomes(chromosomes []Chromosome, iteration int) {
+	dir := "visuals"
+	err := os.MkdirAll(dir, 0o755)
+	if err != nil {
+		log.Println("Warning: Could not create directory for visuals:", err)
+		return
+	}
 	factoryFrequencies := make([][]int, g.scenario.width)
 	for i := range factoryFrequencies {
 		factoryFrequencies[i] = make([]int, g.scenario.height)
