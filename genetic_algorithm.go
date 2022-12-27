@@ -367,9 +367,6 @@ func (g *GeneticAlgorithm) Run() {
 	}
 	for i := 0; g.iterations == 0 || i < g.iterations; i++ {
 		sort.Slice(chromosomes, func(i, j int) bool {
-			if chromosomes[i].fitness == chromosomes[j].fitness {
-				return len(chromosomes[i].paths) > len(chromosomes[j].paths)
-			}
 			return chromosomes[i].fitness > chromosomes[j].fitness
 		})
 		if g.logChromosomes {
