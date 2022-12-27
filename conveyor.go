@@ -275,6 +275,16 @@ func (g *GeneticAlgorithm) populateCellInfo(chromosome Chromosome) {
 			g.blockCellInfoWithRectangle(r)
 		})
 	}
+	for _, c := range chromosome.combiners {
+		for _, p := range c.Ingresses() {
+			g.populateCellInfoWithIngress(p)
+		}
+		g.populateCellInfoWithEgress(c.Egress())
+
+		c.RectanglesEach(func(r Rectangle) {
+			g.blockCellInfoWithRectangle(r)
+		})
+	}
 	for _, f := range chromosome.factories {
 		for _, p := range f.nextToIngressPositions() {
 			if !g.scenario.inBounds(p) {
