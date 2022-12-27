@@ -275,6 +275,16 @@ func (g *GeneticAlgorithm) populateCellInfo(chromosome Chromosome) {
 			g.blockCellInfoWithRectangle(r)
 		})
 	}
+	for _, c := range chromosome.combiners {
+		for _, p := range c.Ingresses() {
+			g.populateCellInfoWithIngress(p)
+		}
+		g.populateCellInfoWithEgress(c.Egress())
+
+		c.RectanglesEach(func(r Rectangle) {
+			g.blockCellInfoWithRectangle(r)
+		})
+	}
 	for _, f := range chromosome.factories {
 		for _, p := range f.nextToIngressPositions() {
 			if !g.scenario.inBounds(p) {
@@ -294,19 +304,17 @@ func (g *GeneticAlgorithm) populateCellInfo(chromosome Chromosome) {
 	}
 }
 
-func (g *GeneticAlgorithm) pathMineToFactory(chromosome Chromosome, mine Mine, factory Factory) (Path, error) {
+func (g *GeneticAlgorithm) path(chromosome Chromosome, startPosition Position, endPositions []Position) (Path, error) {
 	var path Path
 
 	g.populateCellInfo(chromosome)
 
-	startPosition := mine.Egress()
 	// Dummy conveyor used for backtracking
 	startConveyor := Conveyor{
 		position:  Position{startPosition.x - 1, startPosition.y},
 		direction: Right,
 		length:    Short,
 	}
-	endPositions := factory.nextToIngressPositions()
 	queue := PriorityQueue{}
 	startItem := Item{
 		value:    startConveyor,

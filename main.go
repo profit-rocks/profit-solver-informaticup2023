@@ -66,6 +66,8 @@ func main() {
 		optimum:              optimum,
 		chromosomeChannel:    chromosomeChannel,
 		doneChannel:          doneChannel,
+		logChromosomes:       false,
+		visualizeIterations:  false,
 	}
 	go geneticAlgorithm.Run()
 

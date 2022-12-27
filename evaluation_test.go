@@ -149,6 +149,19 @@ func TestEvaluationOfSolutionWithCombinerNextToFactory(t *testing.T) {
 	}
 }
 
+func TestEvaluationOfSolutionWithCombiningCombiner(t *testing.T) {
+	scenario, solution, err := importFromProfitJson("fixtures/solutionWithCombiningCombiner.json")
+	if err != nil {
+		t.Errorf("import of fixture failed")
+	}
+
+	score, err := scenario.evaluateSolution(solution)
+	expectedScore := 100
+	if score != expectedScore {
+		t.Errorf("score should be %d and not %d", expectedScore, score)
+	}
+}
+
 func TestSolutionWithOverlappingConveyorsIsValid(t *testing.T) {
 	scenario, solution, err := importFromProfitJson("fixtures/solutionWithOverlappingConveyors.json")
 	if err != nil {
