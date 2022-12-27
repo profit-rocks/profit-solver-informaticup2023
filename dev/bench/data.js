@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1672163749207,
+  "lastUpdate": 1672169437205,
   "repoUrl": "https://github.com/profit-rocks/profit-solver-icup23",
   "entries": {
     "Benchmark": [
@@ -11097,6 +11097,170 @@ window.BENCHMARK_DATA = {
           {
             "name": "big_empty.json - time",
             "value": 54.00985765457153,
+            "unit": "seconds"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "46268468+jacob271@users.noreply.github.com",
+            "name": "Jacob Schäfer",
+            "username": "jacob271"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "b7d3337af91e545a172daef279dc48d1a71a18e6",
+          "message": "Paths with combiners (#44)\n\n* use start and end positions to build paths\r\n\r\n* provide nextToIngressPositions for combiners\r\n\r\n* mutations for different types of paths (except combiner to combiner)\r\n\r\n* first basic heatmap visualization\r\n\r\n* plot heatmap for factories\r\n\r\n* extract method saveGrid and add heatmaps for mines, combiners and conveyors\r\n\r\n* copy combiners when copying chromosome\r\n\r\n* create chromosome with empty list of combiners when generating chromosomes\r\n\r\n* new mutation move combiners\r\n\r\n* fix invalid combiners added if error occurred in randomCombiner\r\n\r\n* avoid copying genetic algorithm for each visualization\r\n\r\n* add test that path exists between mine and combiner\r\n\r\n* fix combiner next to ingress positions\r\n\r\n* another test for evaluation with combiners\r\n\r\n* option to log some intermediate solutions for each iteration\r\n\r\n* sort chromosomes by number of paths if fitness is equal\r\n\r\n* test combiner next to ingress positions\r\n\r\n* add bool to disable visualization of chromosomes\r\n\r\n* add combiners to populatecellinfo\r\n\r\n* fix ordering of priority queue\r\n\r\n* don't sort with number of paths\r\n\r\n* create directory for intermediate solutions\r\n\r\n* create directory for visualizations\r\n\r\n* use variable for directory when saving grids\r\n\r\n* Add os import\r\n\r\nCo-authored-by: Alexander Sohn <github@asohn.de>\r\nCo-authored-by: Richard Wohlbold <richard@rgwohlbold.de>",
+          "timestamp": "2022-12-27T20:19:06+01:00",
+          "tree_id": "b619c5b1d8a24f81c1c91d3aced516db4540f4a6",
+          "url": "https://github.com/profit-rocks/profit-solver-icup23/commit/b7d3337af91e545a172daef279dc48d1a71a18e6"
+        },
+        "date": 1672169436268,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "003.task.json - fitness",
+            "value": 0,
+            "unit": "points"
+          },
+          {
+            "name": "003.task.json - time",
+            "value": 90.00843620300293,
+            "unit": "seconds"
+          },
+          {
+            "name": "002.task.json - fitness",
+            "value": 80,
+            "unit": "points"
+          },
+          {
+            "name": "002.task.json - time",
+            "value": 10.202194452285767,
+            "unit": "seconds"
+          },
+          {
+            "name": "multiple_paths_required.json - fitness",
+            "value": 200,
+            "unit": "points"
+          },
+          {
+            "name": "multiple_paths_required.json - time",
+            "value": 54.00955581665039,
+            "unit": "seconds"
+          },
+          {
+            "name": "exampleScenario.json - fitness",
+            "value": 0,
+            "unit": "points"
+          },
+          {
+            "name": "exampleScenario.json - time",
+            "value": 90.00968027114868,
+            "unit": "seconds"
+          },
+          {
+            "name": "alex.json - fitness",
+            "value": 0,
+            "unit": "points"
+          },
+          {
+            "name": "alex.json - time",
+            "value": 90.00718688964844,
+            "unit": "seconds"
+          },
+          {
+            "name": "004.task.json - fitness",
+            "value": 0,
+            "unit": "points"
+          },
+          {
+            "name": "004.task.json - time",
+            "value": 20.657620668411255,
+            "unit": "seconds"
+          },
+          {
+            "name": "nils.json - fitness",
+            "value": 0,
+            "unit": "points"
+          },
+          {
+            "name": "nils.json - time",
+            "value": 27.006975173950195,
+            "unit": "seconds"
+          },
+          {
+            "name": "two_deposits.json - fitness",
+            "value": 90,
+            "unit": "points"
+          },
+          {
+            "name": "two_deposits.json - time",
+            "value": 1.37595534324646,
+            "unit": "seconds"
+          },
+          {
+            "name": "001.task.json - fitness",
+            "value": 0,
+            "unit": "points"
+          },
+          {
+            "name": "001.task.json - time",
+            "value": 37.19414448738098,
+            "unit": "seconds"
+          },
+          {
+            "name": "richard2.json - fitness",
+            "value": 0,
+            "unit": "points"
+          },
+          {
+            "name": "richard2.json - time",
+            "value": 25.399315357208252,
+            "unit": "seconds"
+          },
+          {
+            "name": "richard.json - fitness",
+            "value": 0,
+            "unit": "points"
+          },
+          {
+            "name": "richard.json - time",
+            "value": 28.32767939567566,
+            "unit": "seconds"
+          },
+          {
+            "name": "jacob_few_turns.json - fitness",
+            "value": 0,
+            "unit": "points"
+          },
+          {
+            "name": "jacob_few_turns.json - time",
+            "value": 54.00901746749878,
+            "unit": "seconds"
+          },
+          {
+            "name": "jacob.json - fitness",
+            "value": 500,
+            "unit": "points"
+          },
+          {
+            "name": "jacob.json - time",
+            "value": 54.009605169296265,
+            "unit": "seconds"
+          },
+          {
+            "name": "big_empty.json - fitness",
+            "value": 0,
+            "unit": "points"
+          },
+          {
+            "name": "big_empty.json - time",
+            "value": 54.00918459892273,
             "unit": "seconds"
           }
         ]
