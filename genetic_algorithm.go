@@ -370,12 +370,18 @@ func (g *GeneticAlgorithm) Run() {
 			return chromosomes[i].fitness > chromosomes[j].fitness
 		})
 		if g.logChromosomes {
-			for j := 0; j < NumLoggedChromosomesPerIteration; j++ {
-				if j < len(chromosomes) {
-					err := exportSolution(g.scenario, chromosomes[j].Solution(), fmt.Sprintf("intermediateSolutions/iteration_%d_ch_%d.json", i, j))
-					if err != nil {
-						log.Fatal(err)
-						return
+			dir := "intermediateSolutions"
+			err := os.MkdirAll(dir, 0o755)
+			if err != nil {
+				log.Println("Warning: Could not create directory for intermediate solutions:", err)
+			} else {
+				for j := 0; j < NumLoggedChromosomesPerIteration; j++ {
+					if j < len(chromosomes) {
+						err = exportSolution(g.scenario, chromosomes[j].Solution(), fmt.Sprintf("%s/iteration_%d_ch_%d.json", dir, i, j))
+						if err != nil {
+							log.Fatal(err)
+							return
+						}
 					}
 				}
 			}
