@@ -188,22 +188,3 @@ func (s *Scenario) randomCombiner(chromosome Chromosome) (Combiner, error) {
 	}
 	return Combiner{}, errors.New("no position available for factory")
 }
-
-func (s *Scenario) combinerPositions(chromosome Chromosome) []Combiner {
-	combiners := make([]Combiner, 0)
-	for i := 0; i < s.width; i++ {
-		for j := 0; j < s.height; j++ {
-			pos := Position{i, j}
-			for _, direction := range []Direction{Right, Bottom, Left, Top} {
-				combiner := Combiner{
-					position:  pos,
-					direction: direction,
-				}
-				if s.positionAvailableForCombiner(chromosome.factories, chromosome.mines, chromosome.paths, chromosome.combiners, combiner) {
-					combiners = append(combiners, combiner)
-				}
-			}
-		}
-	}
-	return combiners
-}

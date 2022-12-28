@@ -31,10 +31,6 @@ func (p Position) NextTo(other Position) bool {
 	return xClose && p.y == other.y || yClose && p.x == other.x
 }
 
-func (p Position) ManhattanDist(other Position) int {
-	return abs(p.x-other.x) + abs(p.y-other.y)
-}
-
 func (r Rectangle) Contains(p Position) bool {
 	return p.x >= r.position.x && p.x < r.position.x+r.width && p.y >= r.position.y && p.y < r.position.y+r.height
 }
