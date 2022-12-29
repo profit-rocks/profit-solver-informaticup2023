@@ -14,7 +14,7 @@ type Path struct {
 	connectedFactoryType int
 }
 
-const NumRoundsPerIteration = 500
+const NumRoundsPerIteration = 50
 const NumMutationsPerRound = 20
 const NumPathMutationsPerRound = 20
 const NumLoggedChromosomesPerIteration = 5
@@ -44,11 +44,11 @@ var MutationsWithoutPaths = []MutationFunction{
 
 var MutationsWithPaths = []MutationFunction{
 	(*GeneticAlgorithm).addCombinerMutation,
-	(*GeneticAlgorithm).removeCombinerMutation,
-	(*GeneticAlgorithm).moveCombinersMutation,
+	//(*GeneticAlgorithm).removeCombinerMutation,
+	//(*GeneticAlgorithm).moveCombinersMutation,
 	(*GeneticAlgorithm).addPathMineToFactoryMutation,
-	(*GeneticAlgorithm).removePathMutation,
-	(*GeneticAlgorithm).movePathMutation,
+	//(*GeneticAlgorithm).removePathMutation,
+	//(*GeneticAlgorithm).movePathMutation,
 }
 
 // GeneticAlgorithm contains input data as well as configuration information used by the genetic algorithm.
@@ -219,6 +219,7 @@ func (g *GeneticAlgorithm) addMineMutation(chromosome Chromosome) (Chromosome, e
 	if err != nil {
 		return chromosome, err
 	}
+	newMine.connectedFactoryType = -1
 	chromosome.mines = append(chromosome.mines, newMine)
 	return chromosome, nil
 }
@@ -261,32 +262,45 @@ func (g *GeneticAlgorithm) addPathMineToFactoryMutation(chromosome Chromosome) (
 	if len(chromosome.mines) == 0 || len(chromosome.factories) == 0 {
 		return chromosome, errors.New("no mines or factories to add path")
 	}
-	randomMine := chromosome.mines[rand.Intn(len(chromosome.mines))]
-	viableProducts := make([]Product, 0)
-	for _, product := range g.scenario.products {
-		if product.resources[randomMine.connectedDeposit.subtype] > 0 {
-			for _, factory := range chromosome.factories {
-				if factory.product == product.subtype {
-					viableProducts = append(viableProducts, product)
-					break
+	mineRNG := NewUniqueRNG(len(chromosome.mines))
+	mineDone := false
+	var mineIndex int
+	for !mineDone {
+		mineIndex, mineDone = mineRNG.Next()
+		randomMine := chromosome.mines[mineIndex]
+		if randomMine.connectedFactoryType != -1 {
+			continue
+		}
+		viableProducts := make([]Product, 0)
+		for _, product := range g.scenario.products {
+			if product.resources[randomMine.connectedDeposit.subtype] > 0 {
+				for _, factory := range chromosome.factories {
+					if factory.product == product.subtype {
+						viableProducts = append(viableProducts, product)
+						break
+					}
 				}
 			}
 		}
-	}
-	rng := NewUniqueRNG(len(viableProducts))
-	index, done := rng.Next()
-	for !done {
-		startPosition := randomMine.Egress()
-		randomProduct := viableProducts[index].subtype
-		endPositions := chromosome.getPositionsForSubtype(randomProduct)
-		newPath, err := g.path(chromosome, startPosition, endPositions)
-		if err == nil {
-			randomMine.connectedFactoryType = randomProduct
-			newPath.connectedFactoryType = randomProduct
-			chromosome.paths = append(chromosome.paths, newPath)
-			return chromosome, nil
+		if len(viableProducts) == 0 {
+			continue
 		}
-		index, done = rng.Next()
+		rng := NewUniqueRNG(len(viableProducts))
+		done := false
+		var index int
+		for !done {
+			index, done = rng.Next()
+			startPosition := randomMine.Egress()
+			randomProduct := viableProducts[index].subtype
+			endPositions := chromosome.getPositionsForSubtype(randomProduct)
+			newPath, err := g.path(chromosome, startPosition, endPositions)
+			if err == nil {
+				randomMine.connectedFactoryType = randomProduct
+				newPath.connectedFactoryType = randomProduct
+				chromosome.paths = append(chromosome.paths, newPath)
+				return chromosome, nil
+			}
+		}
 	}
 	return chromosome, errors.New("could not find a path")
 }
@@ -296,8 +310,10 @@ func (g *GeneticAlgorithm) addPathCombinerToFactory(chromosome Chromosome, combi
 		return chromosome, errors.New("no factories to add path")
 	}
 	rng := NewUniqueRNG(len(g.scenario.products))
-	index, done := rng.Next()
+	done := false
+	var index int
 	for !done {
+		index, done = rng.Next()
 		randomProduct := g.scenario.products[index].subtype
 		endPositions := chromosome.getPositionsForSubtype(randomProduct)
 		startPosition := combiner.Egress()
@@ -308,7 +324,6 @@ func (g *GeneticAlgorithm) addPathCombinerToFactory(chromosome Chromosome, combi
 			chromosome.paths = append(chromosome.paths, newPath)
 			return chromosome, nil
 		}
-		index, done = rng.Next()
 	}
 	return chromosome, errors.New("could not find a path")
 }
@@ -460,7 +475,7 @@ func (g *GeneticAlgorithm) Run() {
 					}
 				}
 				if done {
-					log.Println("all mutations failed, trying different chromosome")
+					//log.Println("all mutations failed, trying different chromosome")
 				}
 			}
 			// second round path building
@@ -475,6 +490,9 @@ func (g *GeneticAlgorithm) Run() {
 						mutation := MutationsWithPaths[mutationIndex]
 						newChromosome, err := mutation(g, chromosomeWithPaths.copy())
 						if err == nil {
+							for _, mine := range newChromosome.mines {
+								mine.connectedFactoryType = -1
+							}
 							chromosomeWithPaths = newChromosome
 							chromosomeWithPaths.fitness = g.evaluateFitness(chromosomeWithPaths)
 							chromosomes = append(chromosomes, chromosomeWithPaths)
