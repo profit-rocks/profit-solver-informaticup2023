@@ -136,6 +136,10 @@ func (c Conveyor) Rectangle() Rectangle {
 	return r
 }
 
+func (c Conveyor) NextToIngressPositions() []Position {
+	return c.Ingress().NeighborPositions()
+}
+
 func (s *Scenario) positionAvailableForConveyor(factories []Factory, mines []Mine, combiners []Combiner, paths []Path, conveyor Conveyor) bool {
 	boundRectangles := s.boundRectangles()
 	for _, rectangle := range boundRectangles {

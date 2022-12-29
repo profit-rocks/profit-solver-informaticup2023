@@ -5,8 +5,9 @@ import (
 )
 
 type Combiner struct {
-	position  Position
-	direction Direction
+	position             Position
+	direction            Direction
+	connectedFactoryType int
 }
 
 func (c *Combiner) Ingresses() []Position {
@@ -180,7 +181,7 @@ func (s *Scenario) randomCombiner(chromosome Chromosome) (Combiner, error) {
 		directionRng := NewUniqueRNG(4)
 		for i := 0; i < 4; i++ {
 			direction, _ := directionRng.Next()
-			combiner := Combiner{pos, Direction(direction)}
+			combiner := Combiner{position: pos, direction: Direction(direction)}
 			if s.positionAvailableForCombiner(chromosome.factories, chromosome.mines, chromosome.paths, chromosome.combiners, combiner) {
 				return combiner, nil
 			}

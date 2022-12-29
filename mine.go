@@ -6,8 +6,10 @@ import (
 )
 
 type Mine struct {
-	position  Position
-	direction Direction
+	position             Position
+	direction            Direction
+	connectedDeposit     Deposit
+	connectedFactoryType int
 }
 
 func (m *Mine) Egress() Position {
@@ -83,6 +85,10 @@ func (m *Mine) IntersectsMine(m2 Mine) bool {
 	return res
 }
 
+func (m *Mine) NextToIngressPositions() []Position {
+	return m.Ingress().NeighborPositions()
+}
+
 func (s *Scenario) positionAvailableForMine(factories []Factory, mines []Mine, combiners []Combiner, paths []Path, mine Mine) bool {
 	// mine is out of bounds
 	boundRectangles := s.boundRectangles()
@@ -143,39 +149,39 @@ func (s *Scenario) minePositions(deposit Deposit, chromosome Chromosome) []Mine 
 	positions := make([]Mine, 0)
 
 	// Right
-	positions = append(positions, Mine{position: Position{deposit.position.x + deposit.width, deposit.position.y + deposit.height - 1}, direction: Right})
+	positions = append(positions, Mine{connectedDeposit: deposit, position: Position{deposit.position.x + deposit.width, deposit.position.y + deposit.height - 1}, direction: Right})
 	for i := deposit.position.y + deposit.height - 1; i >= deposit.position.y; i-- {
-		positions = append(positions, Mine{position: Position{deposit.position.x + deposit.width + 1, i - 1}, direction: Right})
+		positions = append(positions, Mine{connectedDeposit: deposit, position: Position{deposit.position.x + deposit.width + 1, i - 1}, direction: Right})
 	}
 	for i := deposit.position.x + deposit.width - 1; i >= deposit.position.x; i-- {
-		positions = append(positions, Mine{position: Position{i + 1, deposit.position.y - 2}, direction: Right})
+		positions = append(positions, Mine{connectedDeposit: deposit, position: Position{i + 1, deposit.position.y - 2}, direction: Right})
 	}
 
 	// Bottom
-	positions = append(positions, Mine{position: Position{deposit.position.x - 1, deposit.position.y + deposit.height}, direction: Bottom})
+	positions = append(positions, Mine{connectedDeposit: deposit, position: Position{deposit.position.x - 1, deposit.position.y + deposit.height}, direction: Bottom})
 	for i := deposit.position.x; i <= deposit.position.x+deposit.width-1; i++ {
-		positions = append(positions, Mine{position: Position{i, deposit.position.y + deposit.height + 1}, direction: Bottom})
+		positions = append(positions, Mine{connectedDeposit: deposit, position: Position{i, deposit.position.y + deposit.height + 1}, direction: Bottom})
 	}
 	for i := deposit.position.y + deposit.height - 1; i >= deposit.position.y; i-- {
-		positions = append(positions, Mine{position: Position{deposit.position.x + deposit.width, i + 1}, direction: Bottom})
+		positions = append(positions, Mine{connectedDeposit: deposit, position: Position{deposit.position.x + deposit.width, i + 1}, direction: Bottom})
 	}
 
 	// Left
-	positions = append(positions, Mine{position: Position{deposit.position.x - 2, deposit.position.y - 1}, direction: Left})
+	positions = append(positions, Mine{connectedDeposit: deposit, position: Position{deposit.position.x - 2, deposit.position.y - 1}, direction: Left})
 	for i := deposit.position.y; i <= deposit.position.y+deposit.height-1; i++ {
-		positions = append(positions, Mine{position: Position{deposit.position.x - 3, i}, direction: Left})
+		positions = append(positions, Mine{connectedDeposit: deposit, position: Position{deposit.position.x - 3, i}, direction: Left})
 	}
 	for i := deposit.position.x; i <= deposit.position.x+deposit.width-1; i++ {
-		positions = append(positions, Mine{position: Position{i - 2, deposit.position.y + deposit.height}, direction: Left})
+		positions = append(positions, Mine{connectedDeposit: deposit, position: Position{i - 2, deposit.position.y + deposit.height}, direction: Left})
 	}
 
 	// Top
-	positions = append(positions, Mine{position: Position{deposit.position.x + deposit.width - 1, deposit.position.y - 2}, direction: Top})
+	positions = append(positions, Mine{connectedDeposit: deposit, position: Position{deposit.position.x + deposit.width - 1, deposit.position.y - 2}, direction: Top})
 	for i := deposit.position.x + deposit.width - 1; i >= deposit.position.x; i-- {
 		positions = append(positions, Mine{position: Position{i - 1, deposit.position.y - 3}, direction: Top})
 	}
 	for i := deposit.position.y; i <= deposit.position.y+deposit.height-1; i++ {
-		positions = append(positions, Mine{position: Position{deposit.position.x - 2, i - 2}, direction: Top})
+		positions = append(positions, Mine{connectedDeposit: deposit, position: Position{deposit.position.x - 2, i - 2}, direction: Top})
 	}
 
 	validPositions := make([]Mine, 0)
