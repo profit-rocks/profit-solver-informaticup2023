@@ -39,10 +39,6 @@ var MutationsWithoutPaths = []MutationFunction{
 	(*GeneticAlgorithm).moveCombinersMutation,
 }
 
-var MutationsWithPaths = []MutationFunction{
-	(*GeneticAlgorithm).addPathMineToFactoryMutation,
-}
-
 // GeneticAlgorithm contains input data as well as configuration information used by the genetic algorithm.
 // Data in this struct is passed around, but never changed. If there is context information that needs to be
 // changed, it should probably be stored in a chromosome.
@@ -417,14 +413,14 @@ func (g *GeneticAlgorithm) Run() {
 		log.Println("starting iteration", i+1, "/", g.iterations, "max fitness", chromosomes[0].fitness, "min fitness", chromosomes[len(chromosomes)-1].fitness)
 
 		for j := 0; j < NumRoundsPerIteration; j++ {
-			// first round no path building
 			chromosome := chromosomes[rand.Intn(g.populationSize)]
-			chromosomesWithoutPaths := make([]Chromosome, NumMutationsPerRound)
 			chromosomeWithoutPath := chromosome.copy()
+			// reset paths and mines
 			chromosomeWithoutPath.paths = make([]Path, 0)
 			for x := range chromosomeWithoutPath.mines {
 				chromosomeWithoutPath.mines[x].connectedFactory = nil
 			}
+
 			for k := 0; k < NumMutationsPerRound; k++ {
 				rng := NewUniqueRNG(len(MutationsWithoutPaths))
 				done := false
@@ -435,39 +431,24 @@ func (g *GeneticAlgorithm) Run() {
 					newChromosome, err := mutation(g, chromosomeWithoutPath.copy())
 					if err == nil {
 						chromosomeWithoutPath = newChromosome
-						chromosomesWithoutPaths[k] = chromosomeWithoutPath
+						chromosomeWithPaths := newChromosome.copy()
+						for _, comb := range chromosomeWithPaths.combiners {
+							chromosomeWithPaths, _ = g.addPathCombinerToFactory(chromosomeWithPaths, comb)
+						}
+						for m := 0; m < len(chromosomeWithPaths.mines); m++ {
+							newChromosomeWithPaths, err2 := g.addPathMineToFactoryMutation(chromosomeWithPaths)
+							if err2 == nil {
+								newChromosomeWithPaths.fitness = g.evaluateFitness(newChromosomeWithPaths)
+								chromosomeWithPaths = newChromosomeWithPaths.copy()
+								chromosomes = append(chromosomes, newChromosomeWithPaths)
+								g.chromosomeChannel <- newChromosomeWithPaths
+							}
+						}
 						break
 					}
 				}
 				if done {
-					//log.Println("all mutations failed, trying different chromosome")
-				}
-			}
-			// second round path building
-			for z := 0; z < NumMutationsPerRound; z++ {
-				chromosomeWithPaths := chromosomesWithoutPaths[z]
-				for _, comb := range chromosomeWithPaths.combiners {
-					chromosomeWithPaths, _ = g.addPathCombinerToFactory(chromosomeWithPaths, comb)
-				}
-				for k := 0; k < len(chromosomeWithPaths.mines); k++ {
-					rng := NewUniqueRNG(len(MutationsWithPaths))
-					done := false
-					var mutationIndex int
-					for !done {
-						mutationIndex, done = rng.Next()
-						mutation := MutationsWithPaths[mutationIndex]
-						newChromosome, err := mutation(g, chromosomeWithPaths)
-						if err == nil {
-							newChromosome.fitness = g.evaluateFitness(newChromosome)
-							chromosomeWithPaths = newChromosome.copy()
-							chromosomes = append(chromosomes, newChromosome)
-							g.chromosomeChannel <- chromosome
-							break
-						}
-					}
-					if done {
-						//log.Println("all mutations failed, trying different chromosome")
-					}
+					log.Println("all mutations without paths failed, trying different chromosome")
 				}
 			}
 		}
