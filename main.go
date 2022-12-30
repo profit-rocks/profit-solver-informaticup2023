@@ -81,13 +81,22 @@ func main() {
 
 	done := false
 	for !done {
+		var newChromosome Chromosome
 		select {
 		case <-timeChannel:
-			log.Println("time is up")
+			log.Println("terminating: time is up")
 			done = true
 		case <-doneChannel:
+			log.Println("terminating: max iters reached")
 			done = true
-		case chromosome = <-chromosomeChannel:
+		case newChromosome = <-chromosomeChannel:
+			if newChromosome.fitness > chromosome.fitness {
+				chromosome = newChromosome
+				if optimum != NoOptimum && chromosome.fitness == optimum {
+					log.Println("terminating: optimal solution found")
+					done = true
+				}
+			}
 		}
 	}
 	log.Println("final fitness", chromosome.fitness)
