@@ -142,7 +142,7 @@ func (c Chromosome) copy() Chromosome {
 		newChromosome.mines[k] = mine
 	}
 	for k, path := range c.paths {
-		newChromosome.paths[k] = path
+		newChromosome.paths[k] = path.copy()
 	}
 	for k, combiner := range c.combiners {
 		newChromosome.combiners[k] = combiner
