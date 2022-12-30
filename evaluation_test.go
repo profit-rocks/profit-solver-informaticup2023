@@ -195,8 +195,8 @@ func TestSolutionWithOverlappingConveyorsInSamePathIsInvalid(t *testing.T) {
 	}
 }
 
-func TestEvaluationOfSolutionForAlex(t *testing.T) {
-	scenario, solution, err := importFromProfitJson("fixtures/alexSolution.json")
+func TestEvaluationOfSolutionWithDisconnectedMines(t *testing.T) {
+	scenario, solution, err := importFromProfitJson("fixtures/solutionWithDisconnectedMines.json")
 	if err != nil {
 		t.Errorf("import of fixture failed")
 	}
