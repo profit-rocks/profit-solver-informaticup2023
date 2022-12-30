@@ -61,8 +61,8 @@ type GeneticAlgorithm struct {
 	numPaths               int
 	chromosomeChannel      chan<- Chromosome
 	doneChannel            chan<- bool
-	logChromosomes         bool
-	visualizeIterations    bool
+	logChromosomesDir      string
+	visualizeIterationsDir string
 }
 
 func removeRandomElement[T any](arr []T) []T {
@@ -367,10 +367,10 @@ func (g *GeneticAlgorithm) Run() {
 		sort.Slice(chromosomes, func(i, j int) bool {
 			return chromosomes[i].fitness > chromosomes[j].fitness
 		})
-		if g.logChromosomes {
-			err := exportChromosomes(g.scenario, i, chromosomes)
+		if g.logChromosomesDir != "" {
+			err := exportChromosomes(g.scenario, i, chromosomes, g.logChromosomesDir)
 			if err != nil {
-				log.Fatal("could not export chromosomes:", err.Error())
+				log.Fatal("could not export chromosomes: ", err)
 			}
 		}
 		chromosomes = chromosomes[:g.populationSize]
@@ -399,10 +399,10 @@ func (g *GeneticAlgorithm) Run() {
 				}
 			}
 		}
-		if g.visualizeIterations {
-			err := g.visualizeChromosomes(chromosomes, i)
+		if g.visualizeIterationsDir != "" {
+			err := g.visualizeChromosomes(chromosomes, i, g.visualizeIterationsDir)
 			if err != nil {
-				log.Fatal("could not visualize chromosomes:", err.Error())
+				log.Fatal("could not visualize chromosomes: ", err)
 			}
 		}
 	}

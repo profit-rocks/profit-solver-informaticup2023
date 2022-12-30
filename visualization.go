@@ -31,8 +31,7 @@ func (p plottable) Z(c, r int) float64 {
 	return float64(p.grid[c][r])
 }
 
-func (g *GeneticAlgorithm) visualizeChromosomes(chromosomes []Chromosome, iteration int) error {
-	dir := "visuals"
+func (g *GeneticAlgorithm) visualizeChromosomes(chromosomes []Chromosome, iteration int, dir string) error {
 	err := os.MkdirAll(dir, 0o755)
 	if err != nil {
 		return err
@@ -111,8 +110,7 @@ func saveGrid(grid [][]int, path string) error {
 	return p.Save(vg.Length(width)*vg.Inch, vg.Length(height)*vg.Inch, path)
 }
 
-func exportChromosomes(scenario Scenario, i int, chromosomes []Chromosome) error {
-	dir := "intermediateSolutions"
+func exportChromosomes(scenario Scenario, i int, chromosomes []Chromosome, dir string) error {
 	err := os.MkdirAll(dir, 0o755)
 	if err != nil {
 		return err
