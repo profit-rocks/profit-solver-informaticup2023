@@ -222,6 +222,7 @@ func (g *GeneticAlgorithm) removeMineMutation(chromosome Chromosome) (Chromosome
 	chromosome.mines = removeRandomElement(chromosome.mines)
 	return chromosome, nil
 }
+
 func (chromosome *Chromosome) getPositionsForSubtype(subtype int) []PathEndPosition {
 	endPositions := make([]PathEndPosition, 0)
 	for i, factory := range chromosome.factories {
@@ -261,11 +262,11 @@ func (g *GeneticAlgorithm) addPathMineToFactoryMutation(chromosome Chromosome) (
 	if len(chromosome.mines) == 0 || len(chromosome.factories) == 0 {
 		return chromosome, errors.New("no mines or factories to add path")
 	}
-	mineRNG := NewUniqueRNG(len(chromosome.mines))
+	mineRng := NewUniqueRNG(len(chromosome.mines))
 	mineDone := false
 	var mineIndex int
 	for !mineDone {
-		mineIndex, mineDone = mineRNG.Next()
+		mineIndex, mineDone = mineRng.Next()
 		randomMine := chromosome.mines[mineIndex]
 		if randomMine.connectedFactory != nil {
 			continue
