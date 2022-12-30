@@ -432,5 +432,20 @@ func (g *GeneticAlgorithm) path(chromosome Chromosome, startPosition Position, e
 	for i := range path.conveyors {
 		pathMineToFactory.conveyors = append(pathMineToFactory.conveyors, path.conveyors[len(path.conveyors)-i-1])
 	}
+	for i := range pathMineToFactory.conveyors {
+		if i == len(pathMineToFactory.conveyors)-1 {
+			continue
+		}
+		valid := false
+		egressNeighborPositions := pathMineToFactory.conveyors[i].EgressNeighborPositions()
+		for _, p := range egressNeighborPositions {
+			if p == pathMineToFactory.conveyors[i+1].Ingress() {
+				valid = true
+			}
+		}
+		if !valid {
+			return path, nil, 0, errors.New("invalid path found")
+		}
+	}
 	return pathMineToFactory, factory, maxDistance, nil
 }
