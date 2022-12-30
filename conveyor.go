@@ -364,7 +364,13 @@ func (g *GeneticAlgorithm) path(chromosome Chromosome, startPosition Position, e
 		if cellInfo[currentEgress.y][currentEgress.x].numIngressNeighbors >= 1 || current.priority != cellInfo[currentEgress.y][currentEgress.x].distance {
 			continue
 		}
-		for _, nextIngress := range currentConveyor.EgressNeighborPositions() {
+		var nextIngresses []Position
+		if currentConveyor.Egress() == startPosition {
+			nextIngresses = startPosition.NeighborPositions()
+		} else {
+			nextIngresses = currentConveyor.Egress().NeighborPositions()
+		}
+		for _, nextIngress := range nextIngresses {
 			if !g.scenario.inBounds(nextIngress) {
 				continue
 			}
@@ -374,7 +380,7 @@ func (g *GeneticAlgorithm) path(chromosome Chromosome, startPosition Position, e
 			for i := 0; i < NumConveyorSubtypes; i++ {
 				nextConveyor := ConveyorFromIngressAndSubtype(nextIngress, i)
 				nextEgress := nextConveyor.Egress()
-				if !g.scenario.inBounds(nextEgress) || nextConveyor.Rectangle().Intersects(currentConveyor.Rectangle()) {
+				if !g.scenario.inBounds(nextEgress) || (nextConveyor.Rectangle().Intersects(currentConveyor.Rectangle()) && currentEgress != startPosition) {
 					continue
 				}
 				if current.priority+1 < cellInfo[nextEgress.y][nextEgress.x].distance {
