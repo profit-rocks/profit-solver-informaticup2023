@@ -14,10 +14,10 @@ const (
 	Long  ConveyorLength = iota
 )
 
-type PositionFactory struct {
-	position Position
-	factory  *Factory
-	distance int
+type PathEndPosition struct {
+	position         Position
+	connectedFactory *Factory
+	distance         int
 }
 
 type Conveyor struct {
@@ -325,7 +325,7 @@ func (g *GeneticAlgorithm) populateCellInfo(chromosome Chromosome) {
 	}
 }
 
-func (g *GeneticAlgorithm) path(chromosome Chromosome, startPosition Position, endPositions []PositionFactory) (Path, *Factory, int, error) {
+func (g *GeneticAlgorithm) path(chromosome Chromosome, startPosition Position, endPositions []PathEndPosition) (Path, int, error) {
 	var path Path
 
 	g.populateCellInfo(chromosome)
@@ -362,7 +362,7 @@ func (g *GeneticAlgorithm) path(chromosome Chromosome, startPosition Position, e
 				} else {
 					path.conveyors = append(path.conveyors, currentConveyor)
 				}
-				factory = p.factory
+				factory = p.connectedFactory
 				initialDistance = p.distance
 				finished = true
 			}
@@ -417,12 +417,14 @@ func (g *GeneticAlgorithm) path(chromosome Chromosome, startPosition Position, e
 		}
 	}
 	if len(path.conveyors) == 0 {
-		return path, nil, 0, errors.New("no path found")
+		return path, 0, errors.New("no path found")
 	}
 	maxDistance := 0
 	currentEgress := path.conveyors[0].Egress()
 	if currentEgress == startPosition {
-		return Path{}, factory, maxDistance, nil
+		return Path{
+			connectedFactory: factory,
+		}, maxDistance, nil
 	}
 	for {
 		previousEgress := cellInfo[currentEgress.y][currentEgress.x].previousEgress
@@ -453,8 +455,9 @@ func (g *GeneticAlgorithm) path(chromosome Chromosome, startPosition Position, e
 			}
 		}
 		if !valid {
-			return path, nil, 0, errors.New("invalid path found")
+			return path, 0, errors.New("invalid path found")
 		}
 	}
-	return pathMineToFactory, factory, maxDistance, nil
+	pathMineToFactory.connectedFactory = factory
+	return pathMineToFactory, maxDistance, nil
 }
