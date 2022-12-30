@@ -2,10 +2,8 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"log"
 	"math/rand"
-	"os"
 	"sort"
 )
 
@@ -15,7 +13,6 @@ type Path struct {
 
 const NumRoundsPerIteration = 500
 const NumMutationsPerRound = 20
-const NumLoggedChromosomesPerIteration = 5
 
 const NumPathRetries = 10
 
@@ -52,20 +49,20 @@ var Mutations = []MutationFunction{
 // Data in this struct is passed around, but never changed. If there is context information that needs to be
 // changed, it should probably be stored in a chromosome.
 type GeneticAlgorithm struct {
-	scenario               Scenario
-	iterations             int
-	populationSize         int
-	mutationProbability    float64
-	crossoverProbability   float64
-	initialMinNumFactories int
-	initialMaxNumFactories int
-	initialNumMines        int
-	optimum                int
-	numPaths               int
-	chromosomeChannel      chan<- Chromosome
-	doneChannel            chan<- bool
-	logChromosomes         bool
-	visualizeIterations    bool
+	scenario                Scenario
+	iterations              int
+	populationSize          int
+	mutationProbability     float64
+	crossoverProbability    float64
+	initialMinNumFactories  int
+	initialMaxNumFactories  int
+	initialNumMines         int
+	optimum                 int
+	numPaths                int
+	chromosomeChannel       chan<- Chromosome
+	doneChannel             chan<- bool
+	logChromosomesDir       string
+	visualizeChromosomesDir string
 }
 
 func removeRandomElement[T any](arr []T) []T {
@@ -370,27 +367,11 @@ func (g *GeneticAlgorithm) Run() {
 		sort.Slice(chromosomes, func(i, j int) bool {
 			return chromosomes[i].fitness > chromosomes[j].fitness
 		})
-		if g.logChromosomes {
-			dir := "intermediateSolutions"
-			err := os.MkdirAll(dir, 0o755)
+		if g.logChromosomesDir != "" {
+			err := exportChromosomes(g.scenario, i, chromosomes, g.logChromosomesDir)
 			if err != nil {
-				log.Println("Warning: Could not create directory for intermediate solutions:", err)
-			} else {
-				for j := 0; j < NumLoggedChromosomesPerIteration; j++ {
-					if j < len(chromosomes) {
-						err = exportSolution(g.scenario, chromosomes[j].Solution(), fmt.Sprintf("%s/iteration_%d_ch_%d.json", dir, i, j))
-						if err != nil {
-							log.Fatal(err)
-							return
-						}
-					}
-				}
+				log.Fatal("could not export chromosomes: ", err)
 			}
-		}
-		g.chromosomeChannel <- chromosomes[0]
-		if g.optimum != NoOptimum && chromosomes[0].fitness == g.optimum {
-			log.Println("starting iteration", i+1, "/", g.iterations, "fitness", g.optimum, "(optimal)")
-			break
 		}
 		chromosomes = chromosomes[:g.populationSize]
 		log.Println("starting iteration", i+1, "/", g.iterations, "max fitness", chromosomes[0].fitness, "min fitness", chromosomes[len(chromosomes)-1].fitness)
@@ -409,6 +390,7 @@ func (g *GeneticAlgorithm) Run() {
 						chromosome = newChromosome
 						chromosome.fitness = g.evaluateFitness(chromosome)
 						chromosomes = append(chromosomes, chromosome)
+						g.chromosomeChannel <- chromosome
 						break
 					}
 				}
@@ -417,12 +399,12 @@ func (g *GeneticAlgorithm) Run() {
 				}
 			}
 		}
-		if g.visualizeIterations {
-			g.visualizeChromosomes(chromosomes, i)
+		if g.visualizeChromosomesDir != "" {
+			err := g.visualizeChromosomes(chromosomes, i, g.visualizeChromosomesDir)
+			if err != nil {
+				log.Fatal("could not visualize chromosomes: ", err)
+			}
 		}
 	}
-	sort.Slice(chromosomes, func(i, j int) bool {
-		return chromosomes[i].fitness > chromosomes[j].fitness
-	})
 	g.doneChannel <- true
 }

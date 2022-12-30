@@ -6,9 +6,10 @@ import (
 	"gonum.org/v1/plot/palette/moreland"
 	"gonum.org/v1/plot/plotter"
 	"gonum.org/v1/plot/vg"
-	"log"
 	"os"
 )
+
+const NumLoggedChromosomesPerIteration = 5
 
 // Adapted from: https://medium.com/@balazs.dianiska/generating-heatmaps-with-go-83988b22c000
 type plottable struct {
@@ -30,12 +31,10 @@ func (p plottable) Z(c, r int) float64 {
 	return float64(p.grid[c][r])
 }
 
-func (g *GeneticAlgorithm) visualizeChromosomes(chromosomes []Chromosome, iteration int) {
-	dir := "visuals"
+func (g *GeneticAlgorithm) visualizeChromosomes(chromosomes []Chromosome, iteration int, dir string) error {
 	err := os.MkdirAll(dir, 0o755)
 	if err != nil {
-		log.Println("Warning: Could not create directory for visuals:", err)
-		return
+		return err
 	}
 	factoryFrequencies := make([][]int, g.scenario.width)
 	for i := range factoryFrequencies {
@@ -81,13 +80,22 @@ func (g *GeneticAlgorithm) visualizeChromosomes(chromosomes []Chromosome, iterat
 			})
 		}
 	}
-	saveGrid(factoryFrequencies, fmt.Sprintf("%s/f_iteration_%d.png", dir, iteration))
-	saveGrid(combinerFrequencies, fmt.Sprintf("%s/com_iteration_%d.png", dir, iteration))
-	saveGrid(conveyorFrequencies, fmt.Sprintf("%s/con_iteration_%d.png", dir, iteration))
-	saveGrid(mineFrequencies, fmt.Sprintf("%s/m_iteration_%d.png", dir, iteration))
+	err = saveGrid(factoryFrequencies, fmt.Sprintf("%s/f_iteration_%d.png", dir, iteration))
+	if err != nil {
+		return err
+	}
+	err = saveGrid(combinerFrequencies, fmt.Sprintf("%s/com_iteration_%d.png", dir, iteration))
+	if err != nil {
+		return err
+	}
+	err = saveGrid(conveyorFrequencies, fmt.Sprintf("%s/con_iteration_%d.png", dir, iteration))
+	if err != nil {
+		return err
+	}
+	return saveGrid(mineFrequencies, fmt.Sprintf("%s/m_iteration_%d.png", dir, iteration))
 }
 
-func saveGrid(grid [][]int, path string) {
+func saveGrid(grid [][]int, path string) error {
 	width := len(grid)
 	height := len(grid[0])
 	plotData := plottable{
@@ -99,8 +107,21 @@ func saveGrid(grid [][]int, path string) {
 	pal := moreland.SmoothBlueRed().Palette(255)
 	hm := plotter.NewHeatMap(plotData, pal)
 	p.Add(hm)
-	err := p.Save(vg.Length(width)*vg.Inch, vg.Length(height)*vg.Inch, path)
+	return p.Save(vg.Length(width)*vg.Inch, vg.Length(height)*vg.Inch, path)
+}
+
+func exportChromosomes(scenario Scenario, i int, chromosomes []Chromosome, dir string) error {
+	err := os.MkdirAll(dir, 0o755)
 	if err != nil {
-		return
+		return err
 	}
+	for j := 0; j < NumLoggedChromosomesPerIteration; j++ {
+		if j < len(chromosomes) {
+			err = exportSolution(scenario, chromosomes[j].Solution(), fmt.Sprintf("%s/iteration_%d_ch_%d.json", dir, i, j))
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
