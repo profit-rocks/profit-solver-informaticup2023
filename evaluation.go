@@ -14,8 +14,6 @@ type Simulation struct {
 	factories []SimulatedFactory
 	deposits  []SimulatedDeposit
 	mines     []SimulatedMine
-	paths     []SimulatedPath
-	combiners []SimulatedCombiner
 }
 
 type SimulatedDeposit struct {
@@ -31,32 +29,8 @@ type SimulatedFactory struct {
 }
 
 type SimulatedMine struct {
-	mine                   Mine
-	resourcesIngress       []int
-	resourcesEgress        []int
-	resourcesIngressUpdate []int
-	resourcesEgressUpdate  []int
-	connectedFactory       *SimulatedFactory
-}
-
-type SimulatedPath struct {
-	conveyors     []SimulatedConveyor
-	startCombiner *SimulatedCombiner
-	endCombiner   *SimulatedCombiner
-	startMine     *SimulatedMine
-	endFactory    *SimulatedFactory
-}
-
-type SimulatedConveyor struct {
-	conveyor        Conveyor
-	resources       []int
-	resourcesUpdate []int
-}
-
-type SimulatedCombiner struct {
-	combiner        Combiner
-	resources       []int
-	resourcesUpdate []int
+	mine             Mine
+	connectedFactory *SimulatedFactory
 }
 
 // TODO: Try to find a faster implementation
@@ -156,9 +130,7 @@ func (s *Scenario) evaluateSolution(solution Solution) (int, error) {
 	}
 	simulation := simulationFromScenarioAndSolution(s, solution)
 	for i := 0; i < s.turns; i++ {
-		if simulation.simulateOneRound(i) {
-			break
-		}
+		simulation.simulateOneTurn(i)
 	}
 	score := 0
 	for _, factory := range simulation.factories {
@@ -185,8 +157,6 @@ func simulationFromScenarioAndSolution(scenario *Scenario, solution Solution) Si
 		factories: make([]SimulatedFactory, len(solution.factories)),
 		deposits:  make([]SimulatedDeposit, len(scenario.deposits)),
 		mines:     make([]SimulatedMine, len(solution.mines)),
-		combiners: make([]SimulatedCombiner, len(solution.combiners)),
-		paths:     []SimulatedPath{},
 	}
 	for i, deposit := range scenario.deposits {
 		simulation.deposits[i] = SimulatedDeposit{
@@ -202,11 +172,7 @@ func simulationFromScenarioAndSolution(scenario *Scenario, solution Solution) Si
 	}
 	for i, mine := range solution.mines {
 		simulation.mines[i] = SimulatedMine{
-			mine:                   mine,
-			resourcesIngress:       []int{0, 0, 0, 0, 0, 0, 0, 0},
-			resourcesEgress:        []int{0, 0, 0, 0, 0, 0, 0, 0},
-			resourcesIngressUpdate: []int{0, 0, 0, 0, 0, 0, 0, 0},
-			resourcesEgressUpdate:  []int{0, 0, 0, 0, 0, 0, 0, 0},
+			mine: mine,
 		}
 		if mine.connectedFactory == nil {
 			continue
@@ -223,88 +189,7 @@ func simulationFromScenarioAndSolution(scenario *Scenario, solution Solution) Si
 	return simulation
 }
 
-func (s *Simulation) adjacentCombinerToConveyor(conveyor Conveyor, checkCombinerEgress bool) (*SimulatedCombiner, bool) {
-	for i := range s.combiners {
-		if checkCombinerEgress {
-			if s.combiners[i].combiner.Egress().NextTo(conveyor.Ingress()) {
-				return &s.combiners[i], true
-			}
-		} else {
-			for _, ingress := range s.combiners[i].combiner.Ingresses() {
-				if ingress.NextTo(conveyor.Egress()) {
-					return &s.combiners[i], true
-				}
-			}
-		}
-	}
-	return nil, false
-}
-
-func (s *Simulation) adjacentCombinerToCombiner(combiner SimulatedCombiner) (*SimulatedCombiner, bool) {
-	for i := range s.combiners {
-		for _, ingress := range s.combiners[i].combiner.Ingresses() {
-			if ingress.NextTo(combiner.combiner.Egress()) {
-				return &s.combiners[i], true
-			}
-		}
-	}
-	return nil, false
-}
-
-func (s *Simulation) adjacentFactoryToCombiner(combiner SimulatedCombiner) (*SimulatedFactory, bool) {
-	for i := range s.factories {
-		for _, ingress := range s.factories[i].factory.ingressPositions() {
-			if ingress.NextTo(combiner.combiner.Egress()) {
-				return &s.factories[i], true
-			}
-		}
-	}
-	return nil, false
-}
-
-func (s *Simulation) adjacentFactoryToMine(mine SimulatedMine) (*SimulatedFactory, bool) {
-	for i := range s.factories {
-		for _, ingress := range s.factories[i].factory.ingressPositions() {
-			if ingress.NextTo(mine.mine.Egress()) {
-				return &s.factories[i], true
-			}
-		}
-	}
-	return nil, false
-}
-
-func (s *Simulation) adjacentCombinerToMine(mine SimulatedMine) (*SimulatedCombiner, bool) {
-	for i := range s.combiners {
-		for _, ingress := range s.combiners[i].combiner.Ingresses() {
-			if ingress.NextTo(mine.mine.Egress()) {
-				return &s.combiners[i], true
-			}
-		}
-	}
-	return nil, false
-}
-
-func (s *Simulation) adjacentMineToConveyor(conveyor Conveyor) (*SimulatedMine, bool) {
-	for i := range s.mines {
-		if s.mines[i].mine.Egress().NextTo(conveyor.Ingress()) {
-			return &s.mines[i], true
-		}
-	}
-	return nil, false
-}
-
-func (s *Simulation) adjacentFactoryToConveyor(conveyor Conveyor) (*SimulatedFactory, bool) {
-	for i := range s.factories {
-		for _, egress := range s.factories[i].factory.NextToIngressPositions() {
-			if egress == conveyor.Egress() {
-				return &s.factories[i], true
-			}
-		}
-	}
-	return nil, false
-}
-
-func (s *Simulation) simulateOneRound(currentTurn int) bool {
+func (s *Simulation) simulateOneTurn(currentTurn int) {
 	for i := range s.deposits {
 		deposit := &s.deposits[i]
 		if deposit.remainingResources < MaxDepositWithdrawPerMine {
@@ -320,18 +205,6 @@ func (s *Simulation) simulateOneRound(currentTurn int) bool {
 			}
 		}
 	}
-	return false
-}
-
-func (s *Simulation) adjacentMinesToFactory(factory SimulatedFactory) []*SimulatedMine {
-	mines := make([]*SimulatedMine, 0)
-	for _, position := range factory.factory.NextToIngressPositions() {
-		mine, foundMine := s.mineWithEgress(position)
-		if foundMine {
-			mines = append(mines, mine)
-		}
-	}
-	return mines
 }
 
 func (s *Simulation) adjacentMinesToDeposit(deposit SimulatedDeposit) []*SimulatedMine {
@@ -348,15 +221,6 @@ func (s *Simulation) adjacentMinesToDeposit(deposit SimulatedDeposit) []*Simulat
 func (s *Simulation) mineWithIngress(position Position) (*SimulatedMine, bool) {
 	for i := range s.mines {
 		if s.mines[i].mine.Ingress() == position {
-			return &s.mines[i], true
-		}
-	}
-	return nil, false
-}
-
-func (s *Simulation) mineWithEgress(position Position) (*SimulatedMine, bool) {
-	for i := range s.mines {
-		if s.mines[i].mine.Egress() == position {
 			return &s.mines[i], true
 		}
 	}
