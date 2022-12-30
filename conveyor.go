@@ -79,7 +79,7 @@ func (c Conveyor) Egress() Position {
 	return Position{c.position.x, c.position.y - 1}
 }
 
-func (c Conveyor) EgressNeighborPositions() []Position {
+func (c Conveyor) NextToEgressPositions() []Position {
 	p := c.Egress()
 	if c.direction == Right {
 		return []Position{{p.x + 1, p.y}, {p.x, p.y + 1}, {p.x, p.y - 1}}
@@ -144,7 +144,16 @@ func (c Conveyor) Rectangle() Rectangle {
 }
 
 func (c Conveyor) NextToIngressPositions() []Position {
-	return c.Ingress().NeighborPositions()
+	ingress := c.Ingress()
+	if c.direction == Right {
+		return []Position{{ingress.x - 1, ingress.y}, {ingress.x, ingress.y - 1}, {ingress.x, ingress.y + 1}}
+	} else if c.direction == Bottom {
+		return []Position{{ingress.x, ingress.y - 1}, {ingress.x - 1, ingress.y}, {ingress.x + 1, ingress.y}}
+	} else if c.direction == Left {
+		return []Position{{ingress.x + 1, ingress.y}, {ingress.x, ingress.y - 1}, {ingress.x, ingress.y + 1}}
+	}
+	//Top
+	return []Position{{ingress.x, ingress.y + 1}, {ingress.x - 1, ingress.y}, {ingress.x + 1, ingress.y}}
 }
 
 func (s *Scenario) positionAvailableForConveyor(factories []Factory, mines []Mine, combiners []Combiner, paths []Path, conveyor Conveyor) bool {
@@ -298,7 +307,7 @@ func (g *GeneticAlgorithm) populateCellInfo(chromosome Chromosome) {
 		})
 	}
 	for _, f := range chromosome.factories {
-		for _, p := range f.nextToIngressPositions() {
+		for _, p := range f.NextToIngressPositions() {
 			if !g.scenario.inBounds(p) {
 				continue
 			}
@@ -368,7 +377,7 @@ func (g *GeneticAlgorithm) path(chromosome Chromosome, startPosition Position, e
 		if currentConveyor.Egress() == startPosition {
 			nextIngresses = startPosition.NeighborPositions()
 		} else {
-			nextIngresses = currentConveyor.Egress().NeighborPositions()
+			nextIngresses = currentConveyor.NextToEgressPositions()
 		}
 		for _, nextIngress := range nextIngresses {
 			if !g.scenario.inBounds(nextIngress) {
@@ -437,7 +446,7 @@ func (g *GeneticAlgorithm) path(chromosome Chromosome, startPosition Position, e
 			continue
 		}
 		valid := false
-		egressNeighborPositions := pathMineToFactory.conveyors[i].EgressNeighborPositions()
+		egressNeighborPositions := pathMineToFactory.conveyors[i].NextToEgressPositions()
 		for _, p := range egressNeighborPositions {
 			if p == pathMineToFactory.conveyors[i+1].Ingress() {
 				valid = true

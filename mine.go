@@ -87,7 +87,16 @@ func (m *Mine) IntersectsMine(m2 Mine) bool {
 }
 
 func (m *Mine) NextToIngressPositions() []Position {
-	return m.Ingress().NeighborPositions()
+	ingress := m.Ingress()
+	if m.direction == Right {
+		return []Position{{ingress.x - 1, ingress.y}, {ingress.x, ingress.y - 1}, {ingress.x, ingress.y + 1}}
+	} else if m.direction == Bottom {
+		return []Position{{ingress.x, ingress.y - 1}, {ingress.x - 1, ingress.y}, {ingress.x + 1, ingress.y}}
+	} else if m.direction == Left {
+		return []Position{{ingress.x + 1, ingress.y}, {ingress.x, ingress.y - 1}, {ingress.x, ingress.y + 1}}
+	}
+	//Top
+	return []Position{{ingress.x, ingress.y + 1}, {ingress.x - 1, ingress.y}, {ingress.x + 1, ingress.y}}
 }
 
 func (s *Scenario) positionAvailableForMine(factories []Factory, mines []Mine, combiners []Combiner, paths []Path, mine Mine) bool {

@@ -230,7 +230,7 @@ func (chromosome *Chromosome) getPositionsForSubtype(subtype int) []PositionFact
 	endPositions := make([]PositionFactory, 0)
 	for i, factory := range chromosome.factories {
 		if factory.product == subtype {
-			for _, pos := range factory.nextToIngressPositions() {
+			for _, pos := range factory.NextToIngressPositions() {
 				endPositions = append(endPositions, PositionFactory{pos, &chromosome.factories[i], factory.distance})
 			}
 		}

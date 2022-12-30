@@ -295,7 +295,7 @@ func (s *Simulation) adjacentMineToConveyor(conveyor Conveyor) (*SimulatedMine, 
 
 func (s *Simulation) adjacentFactoryToConveyor(conveyor Conveyor) (*SimulatedFactory, bool) {
 	for i := range s.factories {
-		for _, egress := range s.factories[i].factory.nextToIngressPositions() {
+		for _, egress := range s.factories[i].factory.NextToIngressPositions() {
 			if egress == conveyor.Egress() {
 				return &s.factories[i], true
 			}
@@ -325,7 +325,7 @@ func (s *Simulation) simulateOneRound(currentTurn int) bool {
 
 func (s *Simulation) adjacentMinesToFactory(factory SimulatedFactory) []*SimulatedMine {
 	mines := make([]*SimulatedMine, 0)
-	for _, position := range factory.factory.nextToIngressPositions() {
+	for _, position := range factory.factory.NextToIngressPositions() {
 		mine, foundMine := s.mineWithEgress(position)
 		if foundMine {
 			mines = append(mines, mine)

@@ -269,7 +269,7 @@ func importFromProfitJson(path string) (Scenario, Solution, error) {
 	for i := range solution.factories {
 		distance := 0
 		factory := &solution.factories[i]
-		positions := factory.nextToIngressPositions()
+		positions := factory.NextToIngressPositions()
 		visitedPosition := make([][]bool, scenario.width)
 		for j := range visitedPosition {
 			visitedPosition[j] = make([]bool, scenario.height)
