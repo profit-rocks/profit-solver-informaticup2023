@@ -108,7 +108,7 @@ func TestPositionAvailableForCombiner(t *testing.T) {
 	if err != nil {
 		t.Errorf("failed to import fixture: %e", err)
 	}
-	applicableCombiners := []Combiner{{Position{1, 1}, Right}, {Position{1, 5}, Bottom}, {Position{1, 9}, Left}, {Position{1, 13}, Top}}
+	applicableCombiners := []Combiner{{position: Position{1, 1}, direction: Right}, {position: Position{1, 5}, direction: Bottom}, {position: Position{1, 9}, direction: Left}, {position: Position{1, 13}, direction: Top}}
 	for _, combiner := range applicableCombiners {
 		if !scenario.positionAvailableForCombiner(solution.factories, solution.mines, solution.paths, solution.combiners, combiner) {
 			t.Errorf("position %v should be available", combiner)
@@ -121,7 +121,7 @@ func TestPositionNotAvailableForCombiner(t *testing.T) {
 	if err != nil {
 		t.Errorf("failed to import fixture: %e", err)
 	}
-	nonApplicableCombiners := []Combiner{{Position{1, 4}, Right}, {Position{4, 2}, Bottom}, {Position{4, 1}, Top}}
+	nonApplicableCombiners := []Combiner{{position: Position{1, 4}, direction: Right}, {position: Position{4, 2}, direction: Bottom}, {position: Position{4, 1}, direction: Top}}
 	for _, combiner := range nonApplicableCombiners {
 		if scenario.positionAvailableForCombiner(solution.factories, solution.mines, solution.paths, solution.combiners, combiner) {
 			t.Errorf("position %v should not be available", combiner)
@@ -199,7 +199,7 @@ func TestAvailableMinePositions(t *testing.T) {
 	}
 
 	g := geneticAlgorithmFromScenario(scenarioWithDeposit())
-	mines := g.scenario.minePositions(g.scenario.deposits[0], Chromosome{})
+	mines := g.scenario.minePositions(&g.scenario.deposits[0], Chromosome{})
 
 	for _, mine := range mines {
 		found := false
@@ -230,7 +230,7 @@ func TestAvailableMinePositions(t *testing.T) {
 
 func TestTwoMinesSameEgress(t *testing.T) {
 	g := geneticAlgorithmFromScenario(scenarioWithDeposit())
-	mines := g.scenario.minePositions(g.scenario.deposits[0], Chromosome{
+	mines := g.scenario.minePositions(&g.scenario.deposits[0], Chromosome{
 		factories: []Factory{},
 		mines:     []Mine{{position: Position{6, 3}, direction: Right}},
 		fitness:   0,
@@ -258,7 +258,12 @@ func TestPathExistsMineToCombiner(t *testing.T) {
 		t.Errorf("Expected number of combiners of imported solution to be 1")
 	}
 	chromosome := Chromosome{mines: solution.mines, combiners: solution.combiners}
-	_, err = g.path(chromosome, chromosome.mines[0].Egress(), chromosome.combiners[0].NextToIngressPositions())
+	var positions []PositionFactory
+	for _, p := range chromosome.combiners[0].NextToIngressPositions() {
+		positions = append(positions, PositionFactory{
+			position: p})
+	}
+	_, _, _, err = g.path(chromosome, chromosome.mines[0].Egress(), positions)
 	if err != nil {
 		t.Errorf("Searching for a path between mine and combiner should not return err %e", err)
 	}
