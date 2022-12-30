@@ -80,7 +80,7 @@ func removeUniform[T any](arr []T, probability float64) []T {
 func (c Chromosome) Solution() Solution {
 	solution := Solution{
 		factories: make([]Factory, len(c.factories)),
-		mines:     make([]Mine, len(c.mines)),
+		mines:     make([]Mine, 0, len(c.mines)),
 		paths:     []Path{},
 		combiners: make([]Combiner, len(c.combiners)),
 	}
@@ -96,12 +96,14 @@ func (c Chromosome) Solution() Solution {
 			product:  factory.product,
 		}
 	}
-	for i, mine := range c.mines {
-		solution.mines[i] = Mine{
-			position:         mine.position,
-			direction:        mine.direction,
-			connectedFactory: mine.connectedFactory,
-			distance:         mine.distance,
+	for _, mine := range c.mines {
+		if mine.connectedFactory != nil {
+			solution.mines = append(solution.mines, Mine{
+				position:         mine.position,
+				direction:        mine.direction,
+				connectedFactory: mine.connectedFactory,
+				distance:         mine.distance,
+			})
 		}
 	}
 	for _, path := range c.paths {
@@ -418,7 +420,9 @@ func (g *GeneticAlgorithm) Run() {
 			chromosomesWithoutPaths := make([]Chromosome, NumMutationsPerRound)
 			chromosomeWithoutPath := chromosome.copy()
 			chromosomeWithoutPath.paths = make([]Path, 0)
-			chromosomeWithoutPath.combiners = make([]Combiner, 0)
+			for x := range chromosomeWithoutPath.mines {
+				chromosomeWithoutPath.mines[x].connectedFactory = nil
+			}
 			for k := 0; k < NumMutationsPerRound; k++ {
 				rng := NewUniqueRNG(len(MutationsWithoutPaths))
 				done := false
@@ -450,14 +454,7 @@ func (g *GeneticAlgorithm) Run() {
 						newChromosome, err := mutation(g, chromosomeWithPaths)
 						if err == nil {
 							newChromosome.fitness = g.evaluateFitness(newChromosome)
-							if newChromosome.fitness > 120 {
-								_ = exportSolution(g.scenario, newChromosome.Solution(), "solution.json")
-								newChromosome.fitness = g.evaluateFitness(newChromosome)
-							}
 							chromosomeWithPaths = newChromosome.copy()
-							for x := range newChromosome.mines {
-								newChromosome.mines[x].connectedFactory = nil
-							}
 							chromosomes = append(chromosomes, newChromosome)
 							g.chromosomeChannel <- chromosome
 							break
