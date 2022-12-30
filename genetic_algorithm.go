@@ -34,6 +34,9 @@ var MutationsWithoutPaths = []MutationFunction{
 	(*GeneticAlgorithm).addFactoryMutation,
 	(*GeneticAlgorithm).removeFactoryMutation,
 	(*GeneticAlgorithm).moveFactoriesMutation,
+	(*GeneticAlgorithm).addCombinerMutation,
+	(*GeneticAlgorithm).removeCombinerMutation,
+	(*GeneticAlgorithm).moveCombinersMutation,
 }
 
 var MutationsWithPaths = []MutationFunction{
@@ -176,7 +179,6 @@ func (g *GeneticAlgorithm) addCombinerMutation(chromosome Chromosome) (Chromosom
 		return Chromosome{}, err
 	}
 	chromosome.combiners = append(chromosome.combiners, newCombiner)
-	chromosome, err = g.addPathCombinerToFactory(chromosome, newCombiner)
 	if err != nil {
 		return Chromosome{}, err
 	}
@@ -444,6 +446,9 @@ func (g *GeneticAlgorithm) Run() {
 			// second round path building
 			for z := 0; z < NumMutationsPerRound; z++ {
 				chromosomeWithPaths := chromosomesWithoutPaths[z]
+				for _, comb := range chromosomeWithPaths.combiners {
+					chromosomeWithPaths, _ = g.addPathCombinerToFactory(chromosomeWithPaths, comb)
+				}
 				for k := 0; k < len(chromosomeWithPaths.mines); k++ {
 					rng := NewUniqueRNG(len(MutationsWithPaths))
 					done := false
