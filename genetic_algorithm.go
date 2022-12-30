@@ -117,6 +117,7 @@ func (p Path) copy() Path {
 	for _, c := range p.conveyors {
 		path.conveyors = append(path.conveyors, c)
 	}
+	path.connectedFactory = p.connectedFactory
 	return path
 }
 
