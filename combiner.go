@@ -5,9 +5,10 @@ import (
 )
 
 type Combiner struct {
-	position             Position
-	direction            Direction
-	connectedFactoryType int
+	position         Position
+	direction        Direction
+	connectedFactory *Factory
+	distance         int
 }
 
 func (c *Combiner) Ingresses() []Position {

@@ -13,6 +13,7 @@ const FactoryHeight = 5
 type Factory struct {
 	position Position
 	product  int
+	distance int
 }
 
 func (f Factory) Rectangle() Rectangle {
