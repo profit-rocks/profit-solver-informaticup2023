@@ -52,5 +52,6 @@ if __name__ == '__main__':
         }
         l.append(fitness_dict)
         l.append(time_dict)
+        print("fitness", total_fitness / NUM_RUNS_PER_FILE, "time", total_time / NUM_RUNS_PER_FILE, file=sys.stderr)
     print(json.dumps(l))
 

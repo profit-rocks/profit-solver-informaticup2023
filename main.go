@@ -18,6 +18,8 @@ func main() {
 	seedPtr := flag.Int64("seed", 0, "Seed for random number generator")
 	cpuProfilePtr := flag.String("cpuprofile", "", "Path to output cpu profile")
 	itersPtr := flag.Int("iters", 50, "Number of iterations to run. Use 0 for unlimited")
+	logChromosomesDirPtr := flag.String("logdir", "", "Directory to log top chromosomes in each iteration")
+	visualizeChromosomesDirPtr := flag.String("visualizedir", "", "Directory to visualize chromosomes in each iteration")
 	flag.Parse()
 	if *inputPtr == "" || *outputPtr == "" {
 		flag.Usage()
@@ -26,17 +28,17 @@ func main() {
 	if *cpuProfilePtr != "" {
 		f, err := os.Create(*cpuProfilePtr)
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal("could not create cpu profile file: ", err)
 		}
 		err = pprof.StartCPUProfile(f)
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal("could not start cpu profiling: ", err)
 		}
 		defer pprof.StopCPUProfile()
 	}
 	scenario, _, err := importFromProfitJson(*inputPtr)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("could not import scenario: ", err)
 	}
 	var seed int64
 	if *seedPtr != 0 {
@@ -58,16 +60,16 @@ func main() {
 	doneChannel := make(chan bool)
 
 	geneticAlgorithm := GeneticAlgorithm{
-		scenario:             scenario,
-		populationSize:       200,
-		iterations:           *itersPtr,
-		mutationProbability:  0.18,
-		crossoverProbability: 0.7,
-		optimum:              optimum,
-		chromosomeChannel:    chromosomeChannel,
-		doneChannel:          doneChannel,
-		logChromosomes:       false,
-		visualizeIterations:  false,
+		scenario:                scenario,
+		populationSize:          200,
+		iterations:              *itersPtr,
+		mutationProbability:     0.18,
+		crossoverProbability:    0.7,
+		optimum:                 optimum,
+		chromosomeChannel:       chromosomeChannel,
+		doneChannel:             doneChannel,
+		logChromosomesDir:       *logChromosomesDirPtr,
+		visualizeChromosomesDir: *visualizeChromosomesDirPtr,
 	}
 	go geneticAlgorithm.Run()
 
@@ -81,19 +83,28 @@ func main() {
 
 	done := false
 	for !done {
+		var newChromosome Chromosome
 		select {
 		case <-timeChannel:
-			log.Println("time is up")
+			log.Println("terminating: time is up")
 			done = true
 		case <-doneChannel:
+			log.Println("terminating: max iters reached")
 			done = true
-		case chromosome = <-chromosomeChannel:
+		case newChromosome = <-chromosomeChannel:
+			if newChromosome.fitness > chromosome.fitness {
+				chromosome = newChromosome
+				if optimum != NoOptimum && chromosome.fitness == optimum {
+					log.Println("terminating: optimal solution found")
+					done = true
+				}
+			}
 		}
 	}
 	log.Println("final fitness", chromosome.fitness)
 
 	err = exportSolution(scenario, chromosome.Solution(), *outputPtr)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("could not export solution: ", err)
 	}
 }
