@@ -223,31 +223,31 @@ func (g *GeneticAlgorithm) removeMineMutation(chromosome Chromosome) (Chromosome
 	return chromosome, nil
 }
 
-func (chromosome *Chromosome) getPositionsForSubtype(subtype int) []PathEndPosition {
+func (chromosome *Chromosome) getPathEndPositionsForProduct(product int) []PathEndPosition {
 	endPositions := make([]PathEndPosition, 0)
 	for i, factory := range chromosome.factories {
-		if factory.product == subtype {
+		if factory.product == product {
 			for _, pos := range factory.NextToIngressPositions() {
 				endPositions = append(endPositions, PathEndPosition{pos, &chromosome.factories[i], factory.distance})
 			}
 		}
 	}
 	for _, combiner := range chromosome.combiners {
-		if combiner.connectedFactory != nil && combiner.connectedFactory.product == subtype {
+		if combiner.connectedFactory != nil && combiner.connectedFactory.product == product {
 			for _, pos := range combiner.NextToIngressPositions() {
 				endPositions = append(endPositions, PathEndPosition{pos, combiner.connectedFactory, combiner.distance})
 			}
 		}
 	}
 	for _, mine := range chromosome.mines {
-		if mine.connectedFactory != nil && mine.connectedDeposit.subtype == subtype {
+		if mine.connectedFactory != nil && mine.connectedDeposit.subtype == product {
 			for _, pos := range mine.NextToIngressPositions() {
 				endPositions = append(endPositions, PathEndPosition{pos, mine.connectedFactory, mine.distance})
 			}
 		}
 	}
 	for _, path := range chromosome.paths {
-		if path.connectedFactory.product == subtype {
+		if path.connectedFactory.product == product {
 			for _, conveyor := range path.conveyors {
 				for _, pos := range conveyor.NextToIngressPositions() {
 					endPositions = append(endPositions, PathEndPosition{pos, path.connectedFactory, conveyor.distance})
@@ -292,7 +292,7 @@ func (g *GeneticAlgorithm) addPathMineToFactoryMutation(chromosome Chromosome) (
 			index, done = rng.Next()
 			startPosition := randomMine.Egress()
 			randomProduct := viableProducts[index].subtype
-			endPositions := chromosome.getPositionsForSubtype(randomProduct)
+			endPositions := chromosome.getPathEndPositionsForProduct(randomProduct)
 			newPath, distance, err := g.path(chromosome, startPosition, endPositions)
 			if err == nil {
 				chromosome.mines[mineIndex].connectedFactory = newPath.connectedFactory
@@ -315,7 +315,7 @@ func (g *GeneticAlgorithm) addPathCombinerToFactory(chromosome Chromosome, combi
 	for !done {
 		index, done = rng.Next()
 		randomProduct := g.scenario.products[index].subtype
-		endPositions := chromosome.getPositionsForSubtype(randomProduct)
+		endPositions := chromosome.getPathEndPositionsForProduct(randomProduct)
 		startPosition := combiner.Egress()
 		newPath, distance, err := g.path(chromosome, startPosition, endPositions)
 		if err == nil {
