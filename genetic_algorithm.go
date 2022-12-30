@@ -49,20 +49,20 @@ var Mutations = []MutationFunction{
 // Data in this struct is passed around, but never changed. If there is context information that needs to be
 // changed, it should probably be stored in a chromosome.
 type GeneticAlgorithm struct {
-	scenario               Scenario
-	iterations             int
-	populationSize         int
-	mutationProbability    float64
-	crossoverProbability   float64
-	initialMinNumFactories int
-	initialMaxNumFactories int
-	initialNumMines        int
-	optimum                int
-	numPaths               int
-	chromosomeChannel      chan<- Chromosome
-	doneChannel            chan<- bool
-	logChromosomesDir      string
-	visualizeIterationsDir string
+	scenario                Scenario
+	iterations              int
+	populationSize          int
+	mutationProbability     float64
+	crossoverProbability    float64
+	initialMinNumFactories  int
+	initialMaxNumFactories  int
+	initialNumMines         int
+	optimum                 int
+	numPaths                int
+	chromosomeChannel       chan<- Chromosome
+	doneChannel             chan<- bool
+	logChromosomesDir       string
+	visualizeChromosomesDir string
 }
 
 func removeRandomElement[T any](arr []T) []T {
@@ -399,8 +399,8 @@ func (g *GeneticAlgorithm) Run() {
 				}
 			}
 		}
-		if g.visualizeIterationsDir != "" {
-			err := g.visualizeChromosomes(chromosomes, i, g.visualizeIterationsDir)
+		if g.visualizeChromosomesDir != "" {
+			err := g.visualizeChromosomes(chromosomes, i, g.visualizeChromosomesDir)
 			if err != nil {
 				log.Fatal("could not visualize chromosomes: ", err)
 			}
