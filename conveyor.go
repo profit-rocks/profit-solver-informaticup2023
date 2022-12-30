@@ -215,7 +215,8 @@ type CellInfo struct {
 	isConveyorMiddle    bool
 	numEgressNeighbors  int8
 	numIngressNeighbors int8
-	previousConveyor    Conveyor
+	currentConveyor     Conveyor
+	previousEgress      Position
 }
 
 // We allocate a 2D array of CellInfo structs in static storage to decrease the number of dynamic allocations.
@@ -347,7 +348,11 @@ func (g *GeneticAlgorithm) path(chromosome Chromosome, startPosition Position, e
 		finished := false
 		for _, p := range endPositions {
 			if currentEgress == p.position && cellInfo[currentEgress.y][currentEgress.x].numIngressNeighbors <= 1 {
-				path.conveyors = append(path.conveyors, current.value)
+				if p.position != startPosition {
+					path.conveyors = append(path.conveyors, cellInfo[currentEgress.y][currentEgress.x].currentConveyor)
+				} else {
+					path.conveyors = append(path.conveyors, currentConveyor)
+				}
 				factory = p.factory
 				initialDistance = p.distance
 				finished = true
@@ -389,7 +394,8 @@ func (g *GeneticAlgorithm) path(chromosome Chromosome, startPosition Position, e
 						priority: current.priority + 1,
 					}
 					queue.Push(&next)
-					cellInfo[nextEgress.y][nextEgress.x].previousConveyor = current.value
+					cellInfo[nextEgress.y][nextEgress.x].previousEgress = current.value.Egress()
+					cellInfo[nextEgress.y][nextEgress.x].currentConveyor = nextConveyor
 					cellInfo[nextEgress.y][nextEgress.x].distance = next.priority
 				}
 			}
@@ -404,12 +410,12 @@ func (g *GeneticAlgorithm) path(chromosome Chromosome, startPosition Position, e
 		return Path{}, factory, maxDistance, nil
 	}
 	for {
-		conveyor := cellInfo[currentEgress.y][currentEgress.x].previousConveyor
-		if conveyor.Egress() == startPosition {
+		previousEgress := cellInfo[currentEgress.y][currentEgress.x].previousEgress
+		if previousEgress == startPosition {
 			break
 		}
-		path.conveyors = append(path.conveyors, conveyor)
-		currentEgress = conveyor.Egress()
+		path.conveyors = append(path.conveyors, cellInfo[previousEgress.y][previousEgress.x].currentConveyor)
+		currentEgress = previousEgress
 	}
 	for i := range path.conveyors {
 		path.conveyors[i].distance = initialDistance + i + 1
