@@ -327,14 +327,6 @@ func (g *GeneticAlgorithm) addPathCombinerToFactory(chromosome Chromosome, combi
 	return chromosome, errors.New("could not find a path")
 }
 
-func (g *GeneticAlgorithm) removePathMutation(chromosome Chromosome) (Chromosome, error) {
-	if len(chromosome.paths) == 0 {
-		return chromosome, errors.New("no paths to remove")
-	}
-	chromosome.paths = removeRandomElement(chromosome.paths)
-	return chromosome, nil
-}
-
 func (g *GeneticAlgorithm) moveMinesMutation(chromosome Chromosome) (Chromosome, error) {
 	newChromosome := Chromosome{
 		factories: chromosome.factories,
