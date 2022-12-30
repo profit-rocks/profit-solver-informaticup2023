@@ -448,8 +448,7 @@ func (g *GeneticAlgorithm) path(chromosome Chromosome, startPosition Position, e
 			continue
 		}
 		valid := false
-		egressNeighborPositions := pathMineToFactory.conveyors[i].NextToEgressPositions()
-		for _, p := range egressNeighborPositions {
+		for _, p := range pathMineToFactory.conveyors[i].NextToEgressPositions() {
 			if p == pathMineToFactory.conveyors[i+1].Ingress() {
 				valid = true
 			}
