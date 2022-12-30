@@ -194,3 +194,16 @@ func TestSolutionWithOverlappingConveyorsInSamePathIsInvalid(t *testing.T) {
 		t.Errorf("invalid solution with overlapping conveyorrs should be invalid")
 	}
 }
+
+func TestEvaluationOfSolutionForAlex(t *testing.T) {
+	scenario, solution, err := importFromProfitJson("fixtures/alexSolution.json")
+	if err != nil {
+		t.Errorf("import of fixture failed")
+	}
+
+	score, err := scenario.evaluateSolution(solution)
+	expectedScore := 300
+	if score != expectedScore {
+		t.Errorf("score should be %d and not %d", expectedScore, score)
+	}
+}

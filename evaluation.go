@@ -201,15 +201,15 @@ func simulationFromScenarioAndSolution(scenario *Scenario, solution Solution) Si
 		}
 	}
 	for i, mine := range solution.mines {
-		if mine.connectedFactory == nil {
-			continue
-		}
 		simulation.mines[i] = SimulatedMine{
 			mine:                   mine,
 			resourcesIngress:       []int{0, 0, 0, 0, 0, 0, 0, 0},
 			resourcesEgress:        []int{0, 0, 0, 0, 0, 0, 0, 0},
 			resourcesIngressUpdate: []int{0, 0, 0, 0, 0, 0, 0, 0},
 			resourcesEgressUpdate:  []int{0, 0, 0, 0, 0, 0, 0, 0},
+		}
+		if mine.connectedFactory == nil {
+			continue
 		}
 		for n, factory := range solution.factories {
 			if factory.position == mine.connectedFactory.position {
@@ -311,13 +311,13 @@ func (s *Simulation) simulateOneRound(currentTurn int) bool {
 			continue
 		}
 		for _, mine := range deposit.mines {
-			if mine.connectedFactory != nil && deposit.remainingResources > 0 && currentTurn+mine.mine.distance+1 < s.scenario.turns {
+			if deposit.remainingResources > 0 && currentTurn+mine.mine.distance+1 < s.scenario.turns {
 				minedResources := minInt(deposit.remainingResources, MaxDepositWithdrawPerMine)
 				deposit.remainingResources -= minedResources
-				mine.connectedFactory.resources[deposit.deposit.subtype] += minedResources
+				if mine.connectedFactory != nil {
+					mine.connectedFactory.resources[deposit.deposit.subtype] += minedResources
+				}
 			}
-			//withdraw rest of resources
-
 		}
 	}
 	return false
