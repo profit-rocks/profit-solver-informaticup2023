@@ -123,6 +123,9 @@ func (s *Scenario) checkValidity(solution Solution) error {
 }
 
 func (s *Scenario) evaluateSolution(solution Solution) (int, error) {
+	if len(solution.mines) == 0 || len(solution.mines) == 0 {
+		return 0, errors.New("solution has no mines or factories")
+	}
 	// TODO: remove validity check
 	err := s.checkValidity(solution)
 	if err != nil {
