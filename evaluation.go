@@ -111,7 +111,7 @@ func (s *Scenario) checkValidity(solution Solution) error {
 		paths = append(paths, Path{})
 		for _, conveyor := range path.conveyors {
 			if !s.positionAvailableForConveyor(solution.factories, solution.mines, solution.combiners, paths, conveyor) {
-				return errors.New("solution includes a factory which position is invalid, can't evaluate this solution")
+				return errors.New("solution includes a conveyor which position is invalid, can't evaluate this solution")
 			}
 			paths[i].conveyors = append(paths[i].conveyors, conveyor)
 		}
