@@ -1,13 +1,14 @@
 package main
 
 import (
+	"fmt"
 	"testing"
 )
 
 func TestEmptySolutionEvaluation(t *testing.T) {
 	scenario := largeEmptyScenario()
 	solution := Solution{}
-	score, err := scenario.evaluateSolution(solution)
+	score, _, err := scenario.evaluateSolution(solution)
 	if err != nil {
 		t.Errorf("evaluating empty solution should not return an error %v", err)
 	}
@@ -19,7 +20,7 @@ func TestEmptySolutionEvaluation(t *testing.T) {
 func TestSolutionForLargeScenarioWithDepositEvaluation(t *testing.T) {
 	scenario := largeScenarioWithDeposit()
 	solution := solutionForLargeScenarioWithDeposit()
-	score, err := scenario.evaluateSolution(solution)
+	score, _, err := scenario.evaluateSolution(solution)
 	if err != nil {
 		t.Errorf("evaluating empty solution should not return an error %v", err)
 	}
@@ -32,7 +33,7 @@ func TestSolutionForLargeScenarioWithDepositEvaluation(t *testing.T) {
 func TestSolutionWithPathForLargeScenarioWithDepositEvaluation(t *testing.T) {
 	scenario := largeScenarioWithDeposit()
 	solution := solutionWithPathForLargeScenarioWithDeposit()
-	score, err := scenario.evaluateSolution(solution)
+	score, _, err := scenario.evaluateSolution(solution)
 	if err != nil {
 		t.Errorf("evaluating empty solution should not return an error %v", err)
 	}
@@ -45,7 +46,7 @@ func TestSolutionWithPathForLargeScenarioWithDepositEvaluation(t *testing.T) {
 func TestInvalidSolutionEvaluation(t *testing.T) {
 	scenario := largeEmptyScenario()
 	solution := invalidSolutionForLargeEmptyScenario()
-	score, err := scenario.evaluateSolution(solution)
+	score, _, err := scenario.evaluateSolution(solution)
 	if err == nil {
 		t.Errorf("evaluating empty solution should throw an error")
 	}
@@ -180,7 +181,7 @@ func TestSolutionWithOverlappingConveyorsIsInvalid(t *testing.T) {
 	}
 	err = scenario.checkValidity(solution)
 	if err == nil {
-		t.Errorf("invalid solution with overlapping conveyorrs should be invalid")
+		t.Errorf("invalid solution with overlapping conveyors should be invalid")
 	}
 }
 
@@ -191,7 +192,7 @@ func TestSolutionWithOverlappingConveyorsInSamePathIsInvalid(t *testing.T) {
 	}}}
 	err := scenario.checkValidity(solution)
 	if err == nil {
-		t.Errorf("invalid solution with overlapping conveyorrs should be invalid")
+		t.Errorf("invalid solution with overlapping conveyors should be invalid")
 	}
 }
 

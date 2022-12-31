@@ -23,9 +23,10 @@ type SimulatedDeposit struct {
 }
 
 type SimulatedFactory struct {
-	factory   Factory
-	resources []int
-	mines     []*SimulatedMine
+	factory         Factory
+	resources       []int
+	resourceUpdates map[int][]int
+	mines           []*SimulatedMine
 }
 
 type SimulatedMine struct {
@@ -122,33 +123,38 @@ func (s *Scenario) checkValidity(solution Solution) error {
 	return nil
 }
 
-func (s *Scenario) evaluateSolution(solution Solution) (int, error) {
+func (s *Scenario) evaluateSolution(solution Solution) (int, int, error) {
 	// TODO: remove validity check
 	err := s.checkValidity(solution)
 	if err != nil {
-		return 0, err
+		return 0, s.turns, err
 	}
 	simulation := simulationFromScenarioAndSolution(s, solution)
+	neededTurns := 0
+	finalScore := 0
+	products := make(map[int]Product)
+	for _, product := range s.products {
+		products[product.subtype] = product
+	}
 	for i := 0; i < s.turns; i++ {
 		simulation.simulateOneTurn(i)
-	}
-	score := 0
-	for _, factory := range simulation.factories {
-		units := math.MaxInt32
-		// TODO: efficiency can be improved by precomputing a subtype -> product map
-		for _, product := range s.products {
-			if product.subtype == factory.factory.product {
-				for i, resource := range product.resources {
-					if resource != 0 {
-						units = minInt(units, factory.resources[i]/resource)
-					}
+		score := 0
+		for _, factory := range simulation.factories {
+			units := math.MaxInt32
+			product := products[factory.factory.product]
+			for j, resource := range product.resources {
+				if resource != 0 {
+					units = minInt(units, factory.resources[j]/resource)
 				}
-				score += units * product.points
-				break
 			}
+			score += units * product.points
+		}
+		if score > finalScore {
+			finalScore = score
+			neededTurns = i
 		}
 	}
-	return score, nil
+	return finalScore, neededTurns + 1, nil
 }
 
 func simulationFromScenarioAndSolution(scenario *Scenario, solution Solution) Simulation {
@@ -166,8 +172,9 @@ func simulationFromScenarioAndSolution(scenario *Scenario, solution Solution) Si
 	}
 	for i, factory := range solution.factories {
 		simulation.factories[i] = SimulatedFactory{
-			factory:   factory,
-			resources: []int{0, 0, 0, 0, 0, 0, 0, 0},
+			factory:         factory,
+			resources:       []int{0, 0, 0, 0, 0, 0, 0, 0},
+			resourceUpdates: make(map[int][]int),
 		}
 	}
 	for i, mine := range solution.mines {
@@ -190,6 +197,14 @@ func simulationFromScenarioAndSolution(scenario *Scenario, solution Solution) Si
 }
 
 func (s *Simulation) simulateOneTurn(currentTurn int) {
+	for i := range s.factories {
+		factory := &s.factories[i]
+		if factory.resourceUpdates[currentTurn] != nil {
+			for j, resource := range factory.resourceUpdates[currentTurn] {
+				factory.resources[j] += resource
+			}
+		}
+	}
 	for i := range s.deposits {
 		deposit := &s.deposits[i]
 		if deposit.remainingResources < MaxDepositWithdrawPerMine {
@@ -200,7 +215,10 @@ func (s *Simulation) simulateOneTurn(currentTurn int) {
 				minedResources := minInt(deposit.remainingResources, MaxDepositWithdrawPerMine)
 				deposit.remainingResources -= minedResources
 				if mine.connectedFactory != nil {
-					mine.connectedFactory.resources[deposit.deposit.subtype] += minedResources
+					if mine.connectedFactory.resourceUpdates[currentTurn+mine.mine.distance+1] == nil {
+						mine.connectedFactory.resourceUpdates[currentTurn+mine.mine.distance+1] = make([]int, 8)
+					}
+					mine.connectedFactory.resourceUpdates[currentTurn+mine.mine.distance+1][deposit.deposit.subtype] += minedResources
 				}
 			}
 		}

@@ -370,7 +370,7 @@ func (g *GeneticAlgorithm) moveFactoriesMutation(chromosome Chromosome) (Chromos
 }
 
 func (g *GeneticAlgorithm) evaluateFitness(chromosome Chromosome) int {
-	fitness, err := g.scenario.evaluateSolution(chromosome.Solution())
+	fitness, _, err := g.scenario.evaluateSolution(chromosome.Solution())
 	if err != nil {
 		return -1
 	}
