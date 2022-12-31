@@ -6,8 +6,11 @@ import (
 )
 
 type Mine struct {
-	position  Position
-	direction Direction
+	position         Position
+	direction        Direction
+	connectedDeposit *Deposit
+	connectedFactory *Factory
+	distance         int
 }
 
 func (m *Mine) Egress() Position {
@@ -83,6 +86,19 @@ func (m *Mine) IntersectsMine(m2 Mine) bool {
 	return res
 }
 
+func (m *Mine) NextToIngressPositions() []Position {
+	ingress := m.Ingress()
+	if m.direction == Right {
+		return []Position{{ingress.x - 1, ingress.y}, {ingress.x, ingress.y - 1}, {ingress.x, ingress.y + 1}}
+	} else if m.direction == Bottom {
+		return []Position{{ingress.x, ingress.y - 1}, {ingress.x - 1, ingress.y}, {ingress.x + 1, ingress.y}}
+	} else if m.direction == Left {
+		return []Position{{ingress.x + 1, ingress.y}, {ingress.x, ingress.y - 1}, {ingress.x, ingress.y + 1}}
+	}
+	//Top
+	return []Position{{ingress.x, ingress.y + 1}, {ingress.x - 1, ingress.y}, {ingress.x + 1, ingress.y}}
+}
+
 func (s *Scenario) positionAvailableForMine(factories []Factory, mines []Mine, combiners []Combiner, paths []Path, mine Mine) bool {
 	// mine is out of bounds
 	boundRectangles := s.boundRectangles()
@@ -135,7 +151,7 @@ func (s *Scenario) positionAvailableForMine(factories []Factory, mines []Mine, c
 	return true
 }
 
-func (s *Scenario) minePositions(deposit Deposit, chromosome Chromosome) []Mine {
+func (s *Scenario) minePositions(deposit *Deposit, chromosome Chromosome) []Mine {
 	/* For each mine direction, we go counter-clockwise.
 	   There is always one case where the mine corner matches the deposit edge.
 	   We always use the mine ingress coordinate as our iteration variable */
@@ -187,10 +203,12 @@ func (s *Scenario) minePositions(deposit Deposit, chromosome Chromosome) []Mine 
 	return validPositions
 }
 
-func (g *GeneticAlgorithm) randomMine(deposit Deposit, chromosome Chromosome) (Mine, error) {
+func (g *GeneticAlgorithm) randomMine(deposit *Deposit, chromosome Chromosome) (Mine, error) {
 	availableMines := g.scenario.minePositions(deposit, chromosome)
 	if len(availableMines) != 0 {
-		return availableMines[rand.Intn(len(availableMines))], nil
+		randomMine := availableMines[rand.Intn(len(availableMines))]
+		randomMine.connectedDeposit = deposit
+		return randomMine, nil
 	}
 	return Mine{}, errors.New("no mines available")
 }

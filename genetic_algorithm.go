@@ -8,13 +8,12 @@ import (
 )
 
 type Path struct {
-	conveyors []Conveyor
+	conveyors        []Conveyor
+	connectedFactory *Factory
 }
 
-const NumRoundsPerIteration = 500
+const NumRoundsPerIteration = 50
 const NumMutationsPerRound = 20
-
-const NumPathRetries = 10
 
 type Chromosome struct {
 	factories []Factory
@@ -28,18 +27,13 @@ type Chromosome struct {
 type MutationFunction func(algorithm *GeneticAlgorithm, chromosome Chromosome) (Chromosome, error)
 
 // Mutations contains all mutation functions, performed in multiple layers. Each layer operates on the same set of chromosomes
-var Mutations = []MutationFunction{
+var MutationsWithoutPaths = []MutationFunction{
 	(*GeneticAlgorithm).addMineMutation,
 	(*GeneticAlgorithm).removeMineMutation,
 	(*GeneticAlgorithm).moveMinesMutation,
 	(*GeneticAlgorithm).addFactoryMutation,
 	(*GeneticAlgorithm).removeFactoryMutation,
 	(*GeneticAlgorithm).moveFactoriesMutation,
-	(*GeneticAlgorithm).addPathMineToFactoryMutation,
-	(*GeneticAlgorithm).addPathMineToCombinerMutation,
-	(*GeneticAlgorithm).addPathCombinerToFactory,
-	(*GeneticAlgorithm).removePathMutation,
-	(*GeneticAlgorithm).movePathMutation,
 	(*GeneticAlgorithm).addCombinerMutation,
 	(*GeneticAlgorithm).removeCombinerMutation,
 	(*GeneticAlgorithm).moveCombinersMutation,
@@ -85,7 +79,7 @@ func removeUniform[T any](arr []T, probability float64) []T {
 func (c Chromosome) Solution() Solution {
 	solution := Solution{
 		factories: make([]Factory, len(c.factories)),
-		mines:     make([]Mine, len(c.mines)),
+		mines:     make([]Mine, 0, len(c.mines)),
 		paths:     []Path{},
 		combiners: make([]Combiner, len(c.combiners)),
 	}
@@ -101,10 +95,14 @@ func (c Chromosome) Solution() Solution {
 			product:  factory.product,
 		}
 	}
-	for i, mine := range c.mines {
-		solution.mines[i] = Mine{
-			position:  mine.position,
-			direction: mine.direction,
+	for _, mine := range c.mines {
+		if mine.connectedFactory != nil {
+			solution.mines = append(solution.mines, Mine{
+				position:         mine.position,
+				direction:        mine.direction,
+				connectedFactory: mine.connectedFactory,
+				distance:         mine.distance,
+			})
 		}
 	}
 	for _, path := range c.paths {
@@ -120,6 +118,7 @@ func (p Path) copy() Path {
 	for _, c := range p.conveyors {
 		path.conveyors = append(path.conveyors, c)
 	}
+	path.connectedFactory = p.connectedFactory
 	return path
 }
 
@@ -132,19 +131,23 @@ func minInt(x int, y int) int {
 
 func (c Chromosome) copy() Chromosome {
 	newChromosome := Chromosome{
-		fitness: 0,
+		fitness:   0,
+		mines:     make([]Mine, len(c.mines)),
+		factories: make([]Factory, len(c.factories)),
+		combiners: make([]Combiner, len(c.combiners)),
+		paths:     make([]Path, len(c.paths)),
 	}
-	for _, factory := range c.factories {
-		newChromosome.factories = append(newChromosome.factories, factory)
+	for k, factory := range c.factories {
+		newChromosome.factories[k] = factory
 	}
-	for _, mine := range c.mines {
-		newChromosome.mines = append(newChromosome.mines, mine)
+	for k, mine := range c.mines {
+		newChromosome.mines[k] = mine
 	}
-	for _, path := range c.paths {
-		newChromosome.paths = append(newChromosome.paths, path.copy())
+	for k, path := range c.paths {
+		newChromosome.paths[k] = path.copy()
 	}
-	for _, combiner := range c.combiners {
-		newChromosome.combiners = append(newChromosome.combiners, combiner)
+	for k, combiner := range c.combiners {
+		newChromosome.combiners[k] = combiner
 	}
 	return newChromosome
 }
@@ -172,6 +175,9 @@ func (g *GeneticAlgorithm) addCombinerMutation(chromosome Chromosome) (Chromosom
 		return Chromosome{}, err
 	}
 	chromosome.combiners = append(chromosome.combiners, newCombiner)
+	if err != nil {
+		return Chromosome{}, err
+	}
 	return chromosome, nil
 }
 
@@ -200,7 +206,8 @@ func (g *GeneticAlgorithm) moveCombinersMutation(chromosome Chromosome) (Chromos
 }
 
 func (g *GeneticAlgorithm) addMineMutation(chromosome Chromosome) (Chromosome, error) {
-	newMine, err := g.randomMine(g.scenario.deposits[rand.Intn(len(g.scenario.deposits))], chromosome)
+	randomDeposit := &g.scenario.deposits[rand.Intn(len(g.scenario.deposits))]
+	newMine, err := g.randomMine(randomDeposit, chromosome)
 	if err != nil {
 		return chromosome, err
 	}
@@ -216,63 +223,109 @@ func (g *GeneticAlgorithm) removeMineMutation(chromosome Chromosome) (Chromosome
 	return chromosome, nil
 }
 
-func (g *GeneticAlgorithm) addPathMutation(chromosome Chromosome, subtype PathSubtype) (Chromosome, error) {
-	if subtype == MineToFactory && (len(chromosome.mines) == 0 || len(chromosome.factories) == 0) {
-		return chromosome, errors.New("no mines or factories to add path")
-	} else if subtype == CombinerToFactory && (len(chromosome.combiners) == 0 || len(chromosome.factories) == 0) {
-		return chromosome, errors.New("no mines or factories to add path")
-	} else if subtype == MineToCombiner && (len(chromosome.mines) == 0 || len(chromosome.combiners) == 0) {
+func (chromosome *Chromosome) getPathEndPositionsForProduct(product int) []PathEndPosition {
+	endPositions := make([]PathEndPosition, 0)
+	for i, factory := range chromosome.factories {
+		if factory.product == product {
+			for _, pos := range factory.NextToIngressPositions() {
+				endPositions = append(endPositions, PathEndPosition{pos, &chromosome.factories[i], factory.distance})
+			}
+		}
+	}
+	for _, combiner := range chromosome.combiners {
+		if combiner.connectedFactory != nil && combiner.connectedFactory.product == product {
+			for _, pos := range combiner.NextToIngressPositions() {
+				endPositions = append(endPositions, PathEndPosition{pos, combiner.connectedFactory, combiner.distance})
+			}
+		}
+	}
+	for _, mine := range chromosome.mines {
+		if mine.connectedFactory != nil && mine.connectedDeposit.subtype == product {
+			for _, pos := range mine.NextToIngressPositions() {
+				endPositions = append(endPositions, PathEndPosition{pos, mine.connectedFactory, mine.distance})
+			}
+		}
+	}
+	for _, path := range chromosome.paths {
+		if path.connectedFactory.product == product {
+			for _, conveyor := range path.conveyors {
+				for _, pos := range conveyor.NextToIngressPositions() {
+					endPositions = append(endPositions, PathEndPosition{pos, path.connectedFactory, conveyor.distance})
+				}
+			}
+		}
+	}
+	return endPositions
+}
+
+func (g *GeneticAlgorithm) addPathMineToFactoryMutation(chromosome Chromosome) (Chromosome, error) {
+	if len(chromosome.mines) == 0 || len(chromosome.factories) == 0 {
 		return chromosome, errors.New("no mines or factories to add path")
 	}
-	// TODO: take product subtypes into account
-	for j := 0; j < NumPathRetries; j++ {
-		var startPosition Position
-		var endPositions []Position
-		if subtype == MineToFactory {
-			randomFactory := chromosome.factories[rand.Intn(len(chromosome.factories))]
-			randomMine := chromosome.mines[rand.Intn(len(chromosome.mines))]
-			startPosition = randomMine.Egress()
-			endPositions = randomFactory.nextToIngressPositions()
-		} else if subtype == MineToCombiner {
-			randomCombiner := chromosome.combiners[rand.Intn(len(chromosome.combiners))]
-			randomMine := chromosome.mines[rand.Intn(len(chromosome.mines))]
-			startPosition = randomMine.Egress()
-			endPositions = randomCombiner.NextToIngressPositions()
-		} else if subtype == CombinerToFactory {
-			randomCombiner := chromosome.combiners[rand.Intn(len(chromosome.combiners))]
-			randomFactory := chromosome.factories[rand.Intn(len(chromosome.factories))]
-			startPosition = randomCombiner.Egress()
-			endPositions = randomFactory.nextToIngressPositions()
-		} else {
-			return chromosome, errors.New("no such path subtype")
+	mineRng := NewUniqueRNG(len(chromosome.mines))
+	mineDone := false
+	var mineIndex int
+	for !mineDone {
+		mineIndex, mineDone = mineRng.Next()
+		randomMine := chromosome.mines[mineIndex]
+		if randomMine.connectedFactory != nil {
+			continue
 		}
-		newPath, err := g.path(chromosome, startPosition, endPositions)
-		if err == nil {
-			chromosome.paths = append(chromosome.paths, newPath)
-			return chromosome, nil
+		viableProducts := make([]Product, 0)
+		for _, product := range g.scenario.products {
+			if product.resources[randomMine.connectedDeposit.subtype] > 0 {
+				for _, factory := range chromosome.factories {
+					if factory.product == product.subtype {
+						viableProducts = append(viableProducts, product)
+						break
+					}
+				}
+			}
+		}
+		if len(viableProducts) == 0 {
+			continue
+		}
+		rng := NewUniqueRNG(len(viableProducts))
+		done := false
+		var index int
+		for !done {
+			index, done = rng.Next()
+			startPosition := randomMine.Egress()
+			randomProduct := viableProducts[index].subtype
+			endPositions := chromosome.getPathEndPositionsForProduct(randomProduct)
+			newPath, distance, err := g.path(chromosome, startPosition, endPositions)
+			if err == nil {
+				chromosome.mines[mineIndex].connectedFactory = newPath.connectedFactory
+				chromosome.mines[mineIndex].distance = distance + 1
+				chromosome.paths = append(chromosome.paths, newPath)
+				return chromosome, nil
+			}
 		}
 	}
 	return chromosome, errors.New("could not find a path")
 }
 
-func (g *GeneticAlgorithm) addPathMineToFactoryMutation(chromosome Chromosome) (Chromosome, error) {
-	return g.addPathMutation(chromosome, MineToFactory)
-}
-
-func (g *GeneticAlgorithm) addPathMineToCombinerMutation(chromosome Chromosome) (Chromosome, error) {
-	return g.addPathMutation(chromosome, MineToCombiner)
-}
-
-func (g *GeneticAlgorithm) addPathCombinerToFactory(chromosome Chromosome) (Chromosome, error) {
-	return g.addPathMutation(chromosome, CombinerToFactory)
-}
-
-func (g *GeneticAlgorithm) removePathMutation(chromosome Chromosome) (Chromosome, error) {
-	if len(chromosome.paths) == 0 {
-		return chromosome, errors.New("no paths to remove")
+func (g *GeneticAlgorithm) addPathCombinerToFactory(chromosome Chromosome, combiner Combiner) (Chromosome, error) {
+	if len(chromosome.factories) == 0 {
+		return chromosome, errors.New("no factories to add path")
 	}
-	chromosome.paths = removeRandomElement(chromosome.paths)
-	return chromosome, nil
+	rng := NewUniqueRNG(len(g.scenario.products))
+	done := false
+	var index int
+	for !done {
+		index, done = rng.Next()
+		randomProduct := g.scenario.products[index].subtype
+		endPositions := chromosome.getPathEndPositionsForProduct(randomProduct)
+		startPosition := combiner.Egress()
+		newPath, distance, err := g.path(chromosome, startPosition, endPositions)
+		if err == nil {
+			combiner.connectedFactory = newPath.connectedFactory
+			combiner.distance = distance + 1
+			chromosome.paths = append(chromosome.paths, newPath)
+			return chromosome, nil
+		}
+	}
+	return chromosome, errors.New("could not find a path")
 }
 
 func (g *GeneticAlgorithm) moveMinesMutation(chromosome Chromosome) (Chromosome, error) {
@@ -285,9 +338,9 @@ func (g *GeneticAlgorithm) moveMinesMutation(chromosome Chromosome) (Chromosome,
 	for i := len(newChromosome.mines); i < len(chromosome.mines); i++ {
 		mine := chromosome.mines[i]
 		// TODO: this might move the mine to a different deposit
-		for _, deposit := range g.scenario.deposits {
+		for i, deposit := range g.scenario.deposits {
 			if deposit.Rectangle().Intersects(Rectangle{Position{mine.Ingress().x - 1, mine.Ingress().y - 1}, 3, 3}) {
-				newMine, err := g.randomMine(deposit, newChromosome)
+				newMine, err := g.randomMine(&g.scenario.deposits[i], newChromosome)
 				if err == nil {
 					newChromosome.mines = append(newChromosome.mines, newMine)
 					break
@@ -312,32 +365,6 @@ func (g *GeneticAlgorithm) moveFactoriesMutation(chromosome Chromosome) (Chromos
 			newChromosome.factories = append(newChromosome.factories, factory)
 		}
 
-	}
-	return newChromosome, nil
-}
-
-func (g *GeneticAlgorithm) movePathMutation(chromosome Chromosome) (Chromosome, error) {
-	newChromosome := Chromosome{
-		mines:     chromosome.mines,
-		factories: chromosome.factories,
-		combiners: chromosome.combiners,
-	}
-	if len(chromosome.factories) == 0 || len(chromosome.mines) == 0 {
-		return newChromosome, errors.New("no factories or mines")
-	}
-
-	newChromosome.paths = removeUniform(chromosome.paths, g.mutationProbability)
-	for i := len(newChromosome.paths); i < len(chromosome.paths); i++ {
-		// TODO: maybe create path from previous factory to previous mine?
-		for j := 0; j < NumPathRetries; j++ {
-			randomFactory := chromosome.factories[rand.Intn(len(chromosome.factories))]
-			randomMine := chromosome.mines[rand.Intn(len(chromosome.mines))]
-			newPath, err := g.path(newChromosome, randomMine.Egress(), randomFactory.nextToIngressPositions())
-			if err == nil {
-				newChromosome.paths = append(newChromosome.paths, newPath)
-				break
-			}
-		}
 	}
 	return newChromosome, nil
 }
@@ -378,24 +405,41 @@ func (g *GeneticAlgorithm) Run() {
 
 		for j := 0; j < NumRoundsPerIteration; j++ {
 			chromosome := chromosomes[rand.Intn(g.populationSize)]
+			chromosomeWithoutPath := chromosome.copy()
+			// reset paths and mines
+			chromosomeWithoutPath.paths = make([]Path, 0)
+			for x := range chromosomeWithoutPath.mines {
+				chromosomeWithoutPath.mines[x].connectedFactory = nil
+			}
+
 			for k := 0; k < NumMutationsPerRound; k++ {
-				rng := NewUniqueRNG(len(Mutations))
+				rng := NewUniqueRNG(len(MutationsWithoutPaths))
 				done := false
 				var mutationIndex int
 				for !done {
 					mutationIndex, done = rng.Next()
-					mutation := Mutations[mutationIndex]
-					newChromosome, err := mutation(g, chromosome.copy())
+					mutation := MutationsWithoutPaths[mutationIndex]
+					newChromosome, err := mutation(g, chromosomeWithoutPath.copy())
 					if err == nil {
-						chromosome = newChromosome
-						chromosome.fitness = g.evaluateFitness(chromosome)
-						chromosomes = append(chromosomes, chromosome)
-						g.chromosomeChannel <- chromosome
+						chromosomeWithoutPath = newChromosome
+						chromosomeWithPaths := newChromosome.copy()
+						for _, comb := range chromosomeWithPaths.combiners {
+							chromosomeWithPaths, _ = g.addPathCombinerToFactory(chromosomeWithPaths, comb)
+						}
+						for m := 0; m < len(chromosomeWithPaths.mines); m++ {
+							newChromosomeWithPaths, err2 := g.addPathMineToFactoryMutation(chromosomeWithPaths)
+							if err2 == nil {
+								newChromosomeWithPaths.fitness = g.evaluateFitness(newChromosomeWithPaths)
+								chromosomeWithPaths = newChromosomeWithPaths.copy()
+								chromosomes = append(chromosomes, newChromosomeWithPaths)
+								g.chromosomeChannel <- newChromosomeWithPaths
+							}
+						}
 						break
 					}
 				}
 				if done {
-					log.Println("all mutations failed, trying different chromosome")
+					log.Println("all mutations without paths failed, trying different chromosome")
 				}
 			}
 		}

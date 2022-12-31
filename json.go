@@ -227,5 +227,84 @@ func importFromProfitJson(path string) (Scenario, Solution, error) {
 			resources: product.Resources,
 		})
 	}
+
+	// Do a BFS starting at every factory, to determine distance from every mine to it's factory
+	combinerMatrix := make([][]*Combiner, scenario.width)
+	for i := range combinerMatrix {
+		combinerMatrix[i] = make([]*Combiner, scenario.height)
+	}
+	mineMatrix := make([][]*Mine, scenario.width)
+	for i := range mineMatrix {
+		mineMatrix[i] = make([]*Mine, scenario.height)
+	}
+	conveyorMatrix := make([][]*Conveyor, scenario.width)
+	for i := range conveyorMatrix {
+		conveyorMatrix[i] = make([]*Conveyor, scenario.height)
+	}
+	for i := range solution.mines {
+		mine := &solution.mines[i]
+		mine.RectanglesEach(func(rectangle Rectangle) {
+			rectangle.ForEach(func(position Position) {
+				mineMatrix[position.x][position.y] = mine
+			})
+		})
+	}
+	for i := range solution.combiners {
+		combiner := &solution.combiners[i]
+		combiner.RectanglesEach(func(rectangle Rectangle) {
+			rectangle.ForEach(func(position Position) {
+				combinerMatrix[position.x][position.y] = combiner
+			})
+		})
+	}
+	for i := range solution.paths {
+		for j := range solution.paths[i].conveyors {
+			conveyor := &solution.paths[i].conveyors[j]
+			conveyor.Rectangle().ForEach(func(position Position) {
+				conveyorMatrix[position.x][position.y] = conveyor
+			})
+		}
+	}
+
+	for i := range solution.factories {
+		distance := 0
+		factory := &solution.factories[i]
+		positions := factory.NextToIngressPositions()
+		visitedPosition := make([][]bool, scenario.width)
+		for j := range visitedPosition {
+			visitedPosition[j] = make([]bool, scenario.height)
+		}
+		for {
+			distance++
+			nextPositions := make([]Position, 0)
+			for _, p := range positions {
+				if p.x < 0 || p.x >= scenario.width || p.y < 0 || p.y >= scenario.height {
+					continue
+				}
+				if visitedPosition[p.x][p.y] {
+					continue
+				}
+				visitedPosition[p.x][p.y] = true
+				if conveyorMatrix[p.x][p.y] != nil && conveyorMatrix[p.x][p.y].Egress() == p {
+					conveyorMatrix[p.x][p.y].distance = distance
+					nextPositions = append(nextPositions, conveyorMatrix[p.x][p.y].NextToIngressPositions()...)
+				}
+				if combinerMatrix[p.x][p.y] != nil && combinerMatrix[p.x][p.y].Egress() == p {
+					combinerMatrix[p.x][p.y].distance = distance
+					nextPositions = append(nextPositions, combinerMatrix[p.x][p.y].NextToIngressPositions()...)
+				}
+				if mineMatrix[p.x][p.y] != nil && mineMatrix[p.x][p.y].Egress() == p {
+					mineMatrix[p.x][p.y].distance = distance
+					mineMatrix[p.x][p.y].connectedFactory = factory
+					nextPositions = append(nextPositions, mineMatrix[p.x][p.y].NextToIngressPositions()...)
+				}
+			}
+			positions = nextPositions
+			if len(positions) == 0 {
+				break
+			}
+		}
+	}
+
 	return scenario, solution, nil
 }

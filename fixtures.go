@@ -74,40 +74,48 @@ func largeScenarioWithDeposit() Scenario {
 }
 
 func solutionForLargeScenarioWithDeposit() Solution {
+	factory := Factory{
+		position: Position{
+			x: 9,
+			y: 0,
+		},
+		product: 0,
+	}
 	return Solution{
-		factories: []Factory{{
-			position: Position{
-				x: 9,
-				y: 0,
-			},
-			product: 0,
-		}},
+		factories: []Factory{
+			factory,
+		},
 		mines: []Mine{{
 			position: Position{
 				x: 6,
 				y: 1,
 			},
-			direction: 0,
+			distance:         1,
+			connectedFactory: &factory,
+			direction:        0,
 		}},
 		paths: nil,
 	}
 }
 
 func solutionWithPathForLargeScenarioWithDeposit() Solution {
+	factory := Factory{
+		position: Position{
+			x: 14,
+			y: 0,
+		},
+		product: 0,
+	}
 	return Solution{
-		factories: []Factory{{
-			position: Position{
-				x: 14,
-				y: 0,
-			},
-			product: 0,
-		}},
+		factories: []Factory{factory},
 		mines: []Mine{{
 			position: Position{
 				x: 6,
 				y: 1,
 			},
-			direction: 0,
+			connectedFactory: &factory,
+			distance:         3,
+			direction:        0,
 		}},
 		paths: []Path{{conveyors: []Conveyor{{position: Position{9, 3}, direction: Right, length: Short},
 			{position: Position{11, 2}, direction: Right, length: Long}},
