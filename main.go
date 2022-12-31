@@ -92,7 +92,7 @@ func main() {
 			log.Println("terminating: max iters reached")
 			done = true
 		case newChromosome = <-chromosomeChannel:
-			if newChromosome.fitness > chromosome.fitness {
+			if newChromosome.fitness > chromosome.fitness || (newChromosome.fitness == chromosome.fitness && newChromosome.neededTurns < chromosome.neededTurns) {
 				chromosome = newChromosome
 				if optimum != NoOptimum && chromosome.fitness == optimum {
 					log.Println("terminating: optimal solution found")
@@ -101,7 +101,7 @@ func main() {
 			}
 		}
 	}
-	log.Println("final fitness", chromosome.fitness)
+	log.Println("final fitness", chromosome.fitness, "turns", chromosome.neededTurns)
 
 	err = exportSolution(scenario, chromosome.Solution(), *outputPtr)
 	if err != nil {

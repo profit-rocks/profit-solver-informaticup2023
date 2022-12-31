@@ -10,10 +10,11 @@ const MaxDepositWithdrawPerMine = 3
 const NumResourceTypes = 8
 
 type Simulation struct {
-	scenario  *Scenario
-	factories []SimulatedFactory
-	deposits  []SimulatedDeposit
-	mines     []SimulatedMine
+	scenario    *Scenario
+	factories   []SimulatedFactory
+	deposits    []SimulatedDeposit
+	mines       []SimulatedMine
+	maxDistance int
 }
 
 type SimulatedDeposit struct {
@@ -23,9 +24,10 @@ type SimulatedDeposit struct {
 }
 
 type SimulatedFactory struct {
-	factory   Factory
-	resources []int
-	mines     []*SimulatedMine
+	factory         Factory
+	resources       []int
+	resourceUpdates [][]int
+	mines           []*SimulatedMine
 }
 
 type SimulatedMine struct {
@@ -122,33 +124,57 @@ func (s *Scenario) checkValidity(solution Solution) error {
 	return nil
 }
 
-func (s *Scenario) evaluateSolution(solution Solution) (int, error) {
+func (s *Scenario) evaluateSolution(solution Solution) (int, int, error) {
 	// TODO: remove validity check
 	err := s.checkValidity(solution)
 	if err != nil {
-		return 0, err
+		return 0, s.turns, err
 	}
 	simulation := simulationFromScenarioAndSolution(s, solution)
-	for i := 0; i < s.turns; i++ {
-		simulation.simulateOneTurn(i)
+	neededTurns := 0
+	finalScore := 0
+	products := make(map[int]Product)
+	for _, product := range s.products {
+		products[product.subtype] = product
 	}
-	score := 0
-	for _, factory := range simulation.factories {
-		units := math.MaxInt32
-		// TODO: efficiency can be improved by precomputing a subtype -> product map
-		for _, product := range s.products {
-			if product.subtype == factory.factory.product {
-				for i, resource := range product.resources {
-					if resource != 0 {
-						units = minInt(units, factory.resources[i]/resource)
-					}
-				}
-				score += units * product.points
-				break
-			}
+	maxDistance := 0
+	for i := range solution.mines {
+		mine := &solution.mines[i]
+		if mine.distance > maxDistance {
+			maxDistance = mine.distance
 		}
 	}
-	return score, nil
+	// add 1 since we need one more round to mine resources from deposits
+	maxDistance += 1
+
+	for i := range simulation.factories {
+		factory := &simulation.factories[i]
+		factory.resourceUpdates = make([][]int, maxDistance)
+		for j := 0; j < maxDistance; j++ {
+			factory.resourceUpdates[j] = make([]int, NumResourceTypes)
+		}
+	}
+	simulation.maxDistance = maxDistance
+
+	for i := 0; i < s.turns; i++ {
+		simulation.simulateOneTurn(i)
+		score := 0
+		for _, factory := range simulation.factories {
+			units := math.MaxInt32
+			product := products[factory.factory.product]
+			for j, resource := range product.resources {
+				if resource != 0 {
+					units = minInt(units, factory.resources[j]/resource)
+				}
+			}
+			score += units * product.points
+		}
+		if score > finalScore {
+			finalScore = score
+			neededTurns = i
+		}
+	}
+	return finalScore, neededTurns + 1, nil
 }
 
 func simulationFromScenarioAndSolution(scenario *Scenario, solution Solution) Simulation {
@@ -190,17 +216,25 @@ func simulationFromScenarioAndSolution(scenario *Scenario, solution Solution) Si
 }
 
 func (s *Simulation) simulateOneTurn(currentTurn int) {
+	// deliver resources that arrive in this turn to factories
+	for i := range s.factories {
+		factory := &s.factories[i]
+		updateIndex := currentTurn % s.maxDistance
+		for j := range factory.resourceUpdates[updateIndex] {
+			factory.resources[j] += factory.resourceUpdates[updateIndex][j]
+			factory.resourceUpdates[updateIndex][j] = 0
+		}
+	}
+	// mine new resources from deposits
 	for i := range s.deposits {
 		deposit := &s.deposits[i]
-		if deposit.remainingResources < MaxDepositWithdrawPerMine {
-			continue
-		}
 		for _, mine := range deposit.mines {
-			if deposit.remainingResources > 0 && currentTurn+mine.mine.distance+1 < s.scenario.turns {
+			if deposit.remainingResources > 0 && currentTurn < s.scenario.turns {
 				minedResources := minInt(deposit.remainingResources, MaxDepositWithdrawPerMine)
 				deposit.remainingResources -= minedResources
 				if mine.connectedFactory != nil {
-					mine.connectedFactory.resources[deposit.deposit.subtype] += minedResources
+					updateIndex := (currentTurn + mine.mine.distance + 1) % s.maxDistance
+					mine.connectedFactory.resourceUpdates[updateIndex][deposit.deposit.subtype] += minedResources
 				}
 			}
 		}

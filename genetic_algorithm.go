@@ -16,11 +16,12 @@ const NumRoundsPerIteration = 50
 const NumMutationsPerRound = 20
 
 type Chromosome struct {
-	factories []Factory
-	mines     []Mine
-	combiners []Combiner
-	paths     []Path
-	fitness   int
+	factories   []Factory
+	mines       []Mine
+	combiners   []Combiner
+	paths       []Path
+	fitness     int
+	neededTurns int
 }
 
 // MutationFunction expects a copy of the chromosome which it can modify.
@@ -131,11 +132,12 @@ func minInt(x int, y int) int {
 
 func (c Chromosome) copy() Chromosome {
 	newChromosome := Chromosome{
-		fitness:   0,
-		mines:     make([]Mine, len(c.mines)),
-		factories: make([]Factory, len(c.factories)),
-		combiners: make([]Combiner, len(c.combiners)),
-		paths:     make([]Path, len(c.paths)),
+		fitness:     c.fitness,
+		neededTurns: c.neededTurns,
+		mines:       make([]Mine, len(c.mines)),
+		factories:   make([]Factory, len(c.factories)),
+		combiners:   make([]Combiner, len(c.combiners)),
+		paths:       make([]Path, len(c.paths)),
 	}
 	for k, factory := range c.factories {
 		newChromosome.factories[k] = factory
@@ -369,29 +371,29 @@ func (g *GeneticAlgorithm) moveFactoriesMutation(chromosome Chromosome) (Chromos
 	return newChromosome, nil
 }
 
-func (g *GeneticAlgorithm) evaluateFitness(chromosome Chromosome) int {
-	fitness, err := g.scenario.evaluateSolution(chromosome.Solution())
+func (g *GeneticAlgorithm) evaluateFitness(chromosome Chromosome) (int, int) {
+	fitness, turns, err := g.scenario.evaluateSolution(chromosome.Solution())
 	if err != nil {
-		return -1
+		return -1, g.scenario.turns
 	}
-	return fitness
+	return fitness, turns
 }
 
 func (g *GeneticAlgorithm) generateChromosomes() []Chromosome {
 	chromosomes := make([]Chromosome, g.populationSize)
 	for i := 0; i < g.populationSize; i++ {
-		chromosomes[i] = Chromosome{mines: make([]Mine, 0), factories: make([]Factory, 0), paths: make([]Path, 0), combiners: make([]Combiner, 0)}
+		chromosomes[i] = Chromosome{mines: make([]Mine, 0), factories: make([]Factory, 0), paths: make([]Path, 0), combiners: make([]Combiner, 0), fitness: 0, neededTurns: g.scenario.turns}
 	}
 	return chromosomes
 }
 
 func (g *GeneticAlgorithm) Run() {
 	chromosomes := g.generateChromosomes()
-	for i, chromosome := range chromosomes {
-		chromosomes[i].fitness = g.evaluateFitness(chromosome)
-	}
 	for i := 0; g.iterations == 0 || i < g.iterations; i++ {
 		sort.Slice(chromosomes, func(i, j int) bool {
+			if chromosomes[i].fitness == chromosomes[j].fitness {
+				return chromosomes[i].neededTurns < chromosomes[j].neededTurns
+			}
 			return chromosomes[i].fitness > chromosomes[j].fitness
 		})
 		if g.logChromosomesDir != "" {
@@ -401,7 +403,7 @@ func (g *GeneticAlgorithm) Run() {
 			}
 		}
 		chromosomes = chromosomes[:g.populationSize]
-		log.Println("starting iteration", i+1, "/", g.iterations, "max fitness", chromosomes[0].fitness, "min fitness", chromosomes[len(chromosomes)-1].fitness)
+		log.Println("starting iteration", i+1, "/", g.iterations, "max fitness", chromosomes[0].fitness, "turns", chromosomes[0].neededTurns, "min fitness", chromosomes[len(chromosomes)-1].fitness, "turns", chromosomes[len(chromosomes)-1].neededTurns)
 
 		for j := 0; j < NumRoundsPerIteration; j++ {
 			chromosome := chromosomes[rand.Intn(g.populationSize)]
@@ -429,7 +431,7 @@ func (g *GeneticAlgorithm) Run() {
 						for m := 0; m < len(chromosomeWithPaths.mines); m++ {
 							newChromosomeWithPaths, err2 := g.addPathMineToFactoryMutation(chromosomeWithPaths)
 							if err2 == nil {
-								newChromosomeWithPaths.fitness = g.evaluateFitness(newChromosomeWithPaths)
+								newChromosomeWithPaths.fitness, newChromosomeWithPaths.neededTurns = g.evaluateFitness(newChromosomeWithPaths)
 								chromosomeWithPaths = newChromosomeWithPaths.copy()
 								chromosomes = append(chromosomes, newChromosomeWithPaths)
 								g.chromosomeChannel <- newChromosomeWithPaths
