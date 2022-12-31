@@ -10,10 +10,11 @@ const MaxDepositWithdrawPerMine = 3
 const NumResourceTypes = 8
 
 type Simulation struct {
-	scenario  *Scenario
-	factories []SimulatedFactory
-	deposits  []SimulatedDeposit
-	mines     []SimulatedMine
+	scenario    *Scenario
+	factories   []SimulatedFactory
+	deposits    []SimulatedDeposit
+	mines       []SimulatedMine
+	maxDistance int
 }
 
 type SimulatedDeposit struct {
@@ -25,7 +26,7 @@ type SimulatedDeposit struct {
 type SimulatedFactory struct {
 	factory         Factory
 	resources       []int
-	resourceUpdates map[int][]int
+	resourceUpdates [][]int
 	mines           []*SimulatedMine
 }
 
@@ -136,6 +137,25 @@ func (s *Scenario) evaluateSolution(solution Solution) (int, int, error) {
 	for _, product := range s.products {
 		products[product.subtype] = product
 	}
+	maxDistance := 0
+	for i := range solution.mines {
+		mine := &solution.mines[i]
+		if mine.distance > maxDistance {
+			maxDistance = mine.distance
+		}
+	}
+	// add 1 since we need one more round to mine resources from deposits
+	maxDistance += 1
+
+	for i := range simulation.factories {
+		factory := &simulation.factories[i]
+		factory.resourceUpdates = make([][]int, maxDistance)
+		for j := 0; j < maxDistance; j++ {
+			factory.resourceUpdates[j] = make([]int, NumResourceTypes)
+		}
+	}
+	simulation.maxDistance = maxDistance
+
 	for i := 0; i < s.turns; i++ {
 		simulation.simulateOneTurn(i)
 		score := 0
@@ -172,9 +192,8 @@ func simulationFromScenarioAndSolution(scenario *Scenario, solution Solution) Si
 	}
 	for i, factory := range solution.factories {
 		simulation.factories[i] = SimulatedFactory{
-			factory:         factory,
-			resources:       []int{0, 0, 0, 0, 0, 0, 0, 0},
-			resourceUpdates: make(map[int][]int),
+			factory:   factory,
+			resources: []int{0, 0, 0, 0, 0, 0, 0, 0},
 		}
 	}
 	for i, mine := range solution.mines {
@@ -197,14 +216,16 @@ func simulationFromScenarioAndSolution(scenario *Scenario, solution Solution) Si
 }
 
 func (s *Simulation) simulateOneTurn(currentTurn int) {
+	// deliver resources that arrive in this turn to factories
 	for i := range s.factories {
 		factory := &s.factories[i]
-		if factory.resourceUpdates[currentTurn] != nil {
-			for j, resource := range factory.resourceUpdates[currentTurn] {
-				factory.resources[j] += resource
-			}
+		updateIndex := currentTurn % s.maxDistance
+		for j := range factory.resourceUpdates[updateIndex] {
+			factory.resources[j] += factory.resourceUpdates[updateIndex][j]
+			factory.resourceUpdates[updateIndex][j] = 0
 		}
 	}
+	// mine new resources from deposits
 	for i := range s.deposits {
 		deposit := &s.deposits[i]
 		for _, mine := range deposit.mines {
@@ -212,10 +233,8 @@ func (s *Simulation) simulateOneTurn(currentTurn int) {
 				minedResources := minInt(deposit.remainingResources, MaxDepositWithdrawPerMine)
 				deposit.remainingResources -= minedResources
 				if mine.connectedFactory != nil {
-					if mine.connectedFactory.resourceUpdates[currentTurn+mine.mine.distance+1] == nil {
-						mine.connectedFactory.resourceUpdates[currentTurn+mine.mine.distance+1] = make([]int, 8)
-					}
-					mine.connectedFactory.resourceUpdates[currentTurn+mine.mine.distance+1][deposit.deposit.subtype] += minedResources
+					updateIndex := (currentTurn + mine.mine.distance + 1) % s.maxDistance
+					mine.connectedFactory.resourceUpdates[updateIndex][deposit.deposit.subtype] += minedResources
 				}
 			}
 		}
