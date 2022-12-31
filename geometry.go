@@ -6,9 +6,10 @@ type Position struct {
 }
 
 type Rectangle struct {
-	position Position
-	width    int
-	height   int
+	position  Position
+	width     int
+	height    int
+	positions []Position
 }
 
 func (p Position) NeighborPositions() []Position {
@@ -45,4 +46,18 @@ func (r Rectangle) ForEach(f func(Position)) {
 			f(Position{x, y})
 		}
 	}
+}
+
+func (r *Rectangle) Positions() []Position {
+	if r.positions != nil {
+		return r.positions
+	}
+	res := make([]Position, r.width*r.height)
+	for x := 0; x < r.width; x++ {
+		for y := 0; y < r.height; y++ {
+			res[x*r.height+y] = Position{r.position.x + x, r.position.y + y}
+		}
+	}
+	r.positions = res
+	return res
 }

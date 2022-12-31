@@ -104,6 +104,7 @@ func (s *Scenario) positionAvailableForFactory(factories []Factory, mines []Mine
 			Position{depositRectangle.position.x - 1, depositRectangle.position.y - 1},
 			depositRectangle.width + 2,
 			depositRectangle.height + 2,
+			nil,
 		}
 		if factoryRectangle.Intersects(extendedDepositRectangle) {
 			// top left

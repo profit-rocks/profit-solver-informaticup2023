@@ -339,7 +339,7 @@ func (g *GeneticAlgorithm) moveMinesMutation(chromosome Chromosome) (Chromosome,
 		mine := chromosome.mines[i]
 		// TODO: this might move the mine to a different deposit
 		for i, deposit := range g.scenario.deposits {
-			if deposit.Rectangle().Intersects(Rectangle{Position{mine.Ingress().x - 1, mine.Ingress().y - 1}, 3, 3}) {
+			if deposit.Rectangle().Intersects(Rectangle{Position{mine.Ingress().x - 1, mine.Ingress().y - 1}, 3, 3, nil}) {
 				newMine, err := g.randomMine(&g.scenario.deposits[i], newChromosome)
 				if err == nil {
 					newChromosome.mines = append(newChromosome.mines, newMine)

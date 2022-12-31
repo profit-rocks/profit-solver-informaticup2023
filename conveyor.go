@@ -394,13 +394,13 @@ func (g *GeneticAlgorithm) path(chromosome Chromosome, startPosition Position, e
 				}
 				if current.priority+1 < cellInfo[nextEgress.y][nextEgress.x].distance {
 					isBlocked := false
-					nextConveyor.Rectangle().ForEach(func(p Position) {
+					for _, p := range nextConveyorRectangle.Positions() {
 						if cellInfo[p.y][p.x].blocked {
 							if !(cellInfo[p.y][p.x].isConveyorMiddle && p != nextConveyor.Egress() && p != nextConveyor.Ingress()) {
 								isBlocked = true
 							}
 						}
-					})
+					}
 					if isBlocked {
 						continue
 					}
