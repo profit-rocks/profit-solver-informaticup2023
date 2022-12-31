@@ -430,6 +430,10 @@ func (g *GeneticAlgorithm) Run() {
 							newChromosomeWithPaths, err2 := g.addPathMineToFactoryMutation(chromosomeWithPaths)
 							if err2 == nil {
 								newChromosomeWithPaths.fitness = g.evaluateFitness(newChromosomeWithPaths)
+								// if the new chromosome is invalid, it won't get valid by building more paths
+								if newChromosomeWithPaths.fitness == -1 {
+									break
+								}
 								chromosomeWithPaths = newChromosomeWithPaths.copy()
 								chromosomes = append(chromosomes, newChromosomeWithPaths)
 								g.chromosomeChannel <- newChromosomeWithPaths
