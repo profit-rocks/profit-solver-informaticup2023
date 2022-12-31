@@ -8,7 +8,7 @@ import (
 func TestEmptySolutionEvaluation(t *testing.T) {
 	scenario := largeEmptyScenario()
 	solution := Solution{}
-	_, err := scenario.evaluateSolution(solution)
+	_, _, err := scenario.evaluateSolution(solution)
 	if fmt.Sprint(err) != "solution has no mines or factories" {
 		t.Errorf("evaluating empty solution should return an error %v", err)
 	}
@@ -17,7 +17,7 @@ func TestEmptySolutionEvaluation(t *testing.T) {
 func TestSolutionForLargeScenarioWithDepositEvaluation(t *testing.T) {
 	scenario := largeScenarioWithDeposit()
 	solution := solutionForLargeScenarioWithDeposit()
-	score, err := scenario.evaluateSolution(solution)
+	score, _, err := scenario.evaluateSolution(solution)
 	if err != nil {
 		t.Errorf("evaluating empty solution should not return an error %v", err)
 	}
@@ -30,7 +30,7 @@ func TestSolutionForLargeScenarioWithDepositEvaluation(t *testing.T) {
 func TestSolutionWithPathForLargeScenarioWithDepositEvaluation(t *testing.T) {
 	scenario := largeScenarioWithDeposit()
 	solution := solutionWithPathForLargeScenarioWithDeposit()
-	score, err := scenario.evaluateSolution(solution)
+	score, _, err := scenario.evaluateSolution(solution)
 	if err != nil {
 		t.Errorf("evaluating empty solution should not return an error %v", err)
 	}
@@ -43,7 +43,7 @@ func TestSolutionWithPathForLargeScenarioWithDepositEvaluation(t *testing.T) {
 func TestInvalidSolutionEvaluation(t *testing.T) {
 	scenario := largeEmptyScenario()
 	solution := invalidSolutionForLargeEmptyScenario()
-	score, err := scenario.evaluateSolution(solution)
+	score, _, err := scenario.evaluateSolution(solution)
 	if err == nil {
 		t.Errorf("evaluating empty solution should throw an error")
 	}
@@ -82,81 +82,37 @@ func TestSolutionWithMultipleIngressesAtEgressInvalid(t *testing.T) {
 	}
 }
 
-func TestEvaluationOfSolutionWithCombiner(t *testing.T) {
-	scenario, solution, err := importFromProfitJson("fixtures/solutionWithCombiner.json")
-	if err != nil {
-		t.Errorf("import of fixture failed")
-	}
-
-	score, err := scenario.evaluateSolution(solution)
-	expectedScore := 60
-	if score != expectedScore {
-		t.Errorf("score should be %d and not %d", expectedScore, score)
-	}
+type EvaluationTestConfig struct {
+	pathToFixture string
+	expectedScore int
+	expectedTurns int
 }
 
-func TestEvaluationOfSolutionWithMineCombinerPath(t *testing.T) {
-	scenario, solution, err := importFromProfitJson("fixtures/solutionWithMineCombinerPath.json")
-	if err != nil {
-		t.Errorf("import of fixture failed")
+func TestEvaluationOfSolutions(t *testing.T) {
+	configs := []EvaluationTestConfig{
+		{"fixtures/solutionWithCombiner.json", 60, 15},
+		{"fixtures/solutionWithMineCombinerPath.json", 20, 10},
+		{"fixtures/solutionWithMultipleCombinersPath.json", 80, 19},
+		{"fixtures/solutionWithAdjacentCombiners.json", 70, 20},
+		{"fixtures/solutionWithCombinerNextToFactory.json", 80, 20},
+		{"fixtures/solutionWithCombiningCombiner.json", 100, 39},
+		{"fixtures/solutionWithDisconnectedMines.json", 300, 31}, // on profit.phinau this only needs 30 turns to reach score 300. This is due to random distribution of last few resources
 	}
 
-	score, err := scenario.evaluateSolution(solution)
-	expectedScore := 20
-	if score != expectedScore {
-		t.Errorf("score should be %d and not %d", expectedScore, score)
-	}
-}
-
-func TestEvaluationOfSolutionWithMultipleCombinersPath(t *testing.T) {
-	scenario, solution, err := importFromProfitJson("fixtures/solutionWithMultipleCombinersPath.json")
-	if err != nil {
-		t.Errorf("import of fixture failed")
-	}
-
-	score, err := scenario.evaluateSolution(solution)
-	expectedScore := 80
-	if score != expectedScore {
-		t.Errorf("score should be %d and not %d", expectedScore, score)
-	}
-}
-
-func TestEvaluationOfSolutionWithAdjacentCombiners(t *testing.T) {
-	scenario, solution, err := importFromProfitJson("fixtures/solutionWithAdjacentCombiners.json")
-	if err != nil {
-		t.Errorf("import of fixture failed")
-	}
-
-	score, err := scenario.evaluateSolution(solution)
-	expectedScore := 70
-	if score != expectedScore {
-		t.Errorf("score should be %d and not %d", expectedScore, score)
-	}
-}
-
-func TestEvaluationOfSolutionWithCombinerNextToFactory(t *testing.T) {
-	scenario, solution, err := importFromProfitJson("fixtures/solutionWithCombinerNextToFactory.json")
-	if err != nil {
-		t.Errorf("import of fixture failed")
-	}
-
-	score, err := scenario.evaluateSolution(solution)
-	expectedScore := 80
-	if score != expectedScore {
-		t.Errorf("score should be %d and not %d", expectedScore, score)
-	}
-}
-
-func TestEvaluationOfSolutionWithCombiningCombiner(t *testing.T) {
-	scenario, solution, err := importFromProfitJson("fixtures/solutionWithCombiningCombiner.json")
-	if err != nil {
-		t.Errorf("import of fixture failed")
-	}
-
-	score, err := scenario.evaluateSolution(solution)
-	expectedScore := 100
-	if score != expectedScore {
-		t.Errorf("score should be %d and not %d", expectedScore, score)
+	for _, config := range configs {
+		t.Run(fmt.Sprintf("Testing_%s", config.pathToFixture), func(t *testing.T) {
+			scenario, solution, err := importFromProfitJson(config.pathToFixture)
+			if err != nil {
+				t.Errorf("import of fixture failed")
+			}
+			score, turns, err := scenario.evaluateSolution(solution)
+			if score != config.expectedScore {
+				t.Errorf("score should be %d and not %d", config.expectedScore, score)
+			}
+			if turns != config.expectedTurns {
+				t.Errorf("turns should be %d and not %d", config.expectedTurns, turns)
+			}
+		})
 	}
 }
 
@@ -178,7 +134,7 @@ func TestSolutionWithOverlappingConveyorsIsInvalid(t *testing.T) {
 	}
 	err = scenario.checkValidity(solution)
 	if err == nil {
-		t.Errorf("invalid solution with overlapping conveyorrs should be invalid")
+		t.Errorf("invalid solution with overlapping conveyors should be invalid")
 	}
 }
 
@@ -189,19 +145,6 @@ func TestSolutionWithOverlappingConveyorsInSamePathIsInvalid(t *testing.T) {
 	}}}
 	err := scenario.checkValidity(solution)
 	if err == nil {
-		t.Errorf("invalid solution with overlapping conveyorrs should be invalid")
-	}
-}
-
-func TestEvaluationOfSolutionWithDisconnectedMines(t *testing.T) {
-	scenario, solution, err := importFromProfitJson("fixtures/solutionWithDisconnectedMines.json")
-	if err != nil {
-		t.Errorf("import of fixture failed")
-	}
-
-	score, err := scenario.evaluateSolution(solution)
-	expectedScore := 300
-	if score != expectedScore {
-		t.Errorf("score should be %d and not %d", expectedScore, score)
+		t.Errorf("invalid solution with overlapping conveyors should be invalid")
 	}
 }
