@@ -207,11 +207,8 @@ func (s *Simulation) simulateOneTurn(currentTurn int) {
 	}
 	for i := range s.deposits {
 		deposit := &s.deposits[i]
-		if deposit.remainingResources < MaxDepositWithdrawPerMine {
-			continue
-		}
 		for _, mine := range deposit.mines {
-			if deposit.remainingResources > 0 && currentTurn+mine.mine.distance+1 < s.scenario.turns {
+			if deposit.remainingResources > 0 && currentTurn < s.scenario.turns {
 				minedResources := minInt(deposit.remainingResources, MaxDepositWithdrawPerMine)
 				deposit.remainingResources -= minedResources
 				if mine.connectedFactory != nil {
