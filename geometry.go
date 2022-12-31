@@ -12,6 +12,10 @@ type Rectangle struct {
 	positions []Position
 }
 
+func (r Rectangle) isEqualTo(rectangle Rectangle) bool {
+	return r.position == rectangle.position && r.width == rectangle.width && r.height == rectangle.height
+}
+
 func (p Position) NeighborPositions() []Position {
 	return []Position{{p.x + 1, p.y}, {p.x - 1, p.y}, {p.x, p.y + 1}, {p.x, p.y - 1}}
 }

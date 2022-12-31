@@ -1,18 +1,16 @@
 package main
 
 import (
+	"fmt"
 	"testing"
 )
 
 func TestEmptySolutionEvaluation(t *testing.T) {
 	scenario := largeEmptyScenario()
 	solution := Solution{}
-	score, err := scenario.evaluateSolution(solution)
-	if err != nil {
-		t.Errorf("evaluating empty solution should not return an error %v", err)
-	}
-	if score != 0 {
-		t.Errorf("score should be 0 and not %d", score)
+	_, err := scenario.evaluateSolution(solution)
+	if fmt.Sprint(err) != "solution has no mines or factories" {
+		t.Errorf("evaluating empty solution should return an error %v", err)
 	}
 }
 

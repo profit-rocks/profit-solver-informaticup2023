@@ -15,12 +15,12 @@ func TestRightCombinerRectangles(t *testing.T) {
 
 	rectangles := combinerRectanglesSlice(&combiner)
 	validRectangles := []Rectangle{
-		{Position{0, 0}, 2, 3},
-		{Position{2, 1}, 1, 1},
+		{Position{0, 0}, 2, 3, nil},
+		{Position{2, 1}, 1, 1, nil},
 	}
 
 	for i := range validRectangles {
-		if rectangles[i] != validRectangles[i] {
+		if !rectangles[i].isEqualTo(validRectangles[i]) {
 			t.Errorf("Rectangle %d is not valid", i)
 		}
 	}
@@ -31,12 +31,12 @@ func TestBottomCombinerRectangles(t *testing.T) {
 
 	rectangles := combinerRectanglesSlice(&combiner)
 	validRectangles := []Rectangle{
-		{Position{0, 0}, 3, 2},
-		{Position{1, 2}, 1, 1},
+		{Position{0, 0}, 3, 2, nil},
+		{Position{1, 2}, 1, 1, nil},
 	}
 
 	for i := range validRectangles {
-		if rectangles[i] != validRectangles[i] {
+		if !rectangles[i].isEqualTo(validRectangles[i]) {
 			t.Errorf("Rectangle %d is not valid", i)
 		}
 	}
@@ -47,12 +47,12 @@ func TestLeftCombinerRectangles(t *testing.T) {
 
 	rectangles := combinerRectanglesSlice(&combiner)
 	validRectangles := []Rectangle{
-		{Position{1, 0}, 2, 3},
-		{Position{0, 1}, 1, 1},
+		{Position{1, 0}, 2, 3, nil},
+		{Position{0, 1}, 1, 1, nil},
 	}
 
 	for i := range validRectangles {
-		if rectangles[i] != validRectangles[i] {
+		if !rectangles[i].isEqualTo(validRectangles[i]) {
 			t.Errorf("Rectangle %d is not valid", i)
 		}
 	}
@@ -63,12 +63,12 @@ func TestTopCombinerRectangles(t *testing.T) {
 
 	rectangles := combinerRectanglesSlice(&combiner)
 	validRectangles := []Rectangle{
-		{Position{0, 1}, 3, 2},
-		{Position{1, 0}, 1, 1},
+		{Position{0, 1}, 3, 2, nil},
+		{Position{1, 0}, 1, 1, nil},
 	}
 
 	for i := range validRectangles {
-		if rectangles[i] != validRectangles[i] {
+		if !rectangles[i].isEqualTo(validRectangles[i]) {
 			t.Errorf("Rectangle %d is not valid", i)
 		}
 	}
