@@ -224,13 +224,14 @@ func checkOverlapIsValid(conveyor1 Conveyor, conveyor2 Conveyor) bool {
 
 // CellInfo contains information on each cell that is used while pathfinding.
 type CellInfo struct {
-	distance            int
-	blocked             bool
-	isConveyorMiddle    bool
-	numEgressNeighbors  int8
-	numIngressNeighbors int8
-	currentConveyor     Conveyor
-	previousEgress      Position
+	distance                   int
+	blocked                    bool
+	isConveyorMiddle           bool
+	numEgressNeighbors         int8
+	numIngressNeighbors        int8
+	currentConveyor            Conveyor
+	previousEgress             Position
+	blockedByObstacleOrDeposit bool
 }
 
 // We allocate a 2D array of CellInfo structs in static storage to decrease the number of dynamic allocations.
@@ -260,6 +261,13 @@ func (g *GeneticAlgorithm) blockCellInfoWithRectangle(rectangle Rectangle) {
 	})
 }
 
+func (g *GeneticAlgorithm) blockCellInfoWithRectangleOfDepositOrObstacle(rectangle Rectangle) {
+	rectangle.ForEach(func(p Position) {
+		cellInfo[p.y][p.x].blocked = true
+		cellInfo[p.y][p.x].blockedByObstacleOrDeposit = true
+	})
+}
+
 func (g *GeneticAlgorithm) populateCellInfoWithConveyor(conveyor Conveyor) {
 	conveyor.Rectangle().ForEach(func(p Position) {
 		if p != conveyor.Egress() && p != conveyor.Ingress() {
@@ -268,14 +276,43 @@ func (g *GeneticAlgorithm) populateCellInfoWithConveyor(conveyor Conveyor) {
 	})
 }
 
-func (g *GeneticAlgorithm) populateCellInfo(chromosome Chromosome) {
+func (g *GeneticAlgorithm) resetCellInfo() {
 	for y := 0; y < g.scenario.height; y++ {
 		for x := 0; x < g.scenario.width; x++ {
-			cellInfo[y][x] = CellInfo{
-				distance:            1000000,
-				blocked:             false,
-				numIngressNeighbors: 0,
-				numEgressNeighbors:  0,
+			cellInfo[y][x].distance = 1000000
+		}
+	}
+}
+
+func (g *GeneticAlgorithm) addNewPathToCellInfo(path Path) {
+	for _, conveyor := range path.conveyors {
+		g.populateCellInfoWithIngress(conveyor.Ingress())
+		g.populateCellInfoWithEgress(conveyor.Egress())
+		g.populateCellInfoWithConveyor(conveyor)
+		g.blockCellInfoWithRectangle(*conveyor.Rectangle())
+	}
+
+}
+
+func (g *GeneticAlgorithm) initializeCellInfoWithScenario() {
+	for _, deposit := range g.scenario.deposits {
+		g.blockCellInfoWithRectangleOfDepositOrObstacle(deposit.Rectangle())
+	}
+	for _, obstacle := range g.scenario.obstacles {
+		g.blockCellInfoWithRectangleOfDepositOrObstacle(obstacle)
+	}
+}
+
+func (g *GeneticAlgorithm) populateCellInfoWithNewChromosome(chromosome Chromosome) {
+	// Cell info has to be initialized for the scenario before we can populate it with the chromosome!
+	for y := 0; y < g.scenario.height; y++ {
+		for x := 0; x < g.scenario.width; x++ {
+			if !cellInfo[y][x].blockedByObstacleOrDeposit {
+				cellInfo[y][x].blocked = false
+				cellInfo[y][x].distance = 1000000
+				cellInfo[y][x].isConveyorMiddle = false
+				cellInfo[y][x].numEgressNeighbors = 0
+				cellInfo[y][x].numIngressNeighbors = 0
 			}
 		}
 	}
@@ -288,10 +325,6 @@ func (g *GeneticAlgorithm) populateCellInfo(chromosome Chromosome) {
 			}
 			cellInfo[p.y][p.x].numEgressNeighbors += 1
 		}
-		g.blockCellInfoWithRectangle(deposit.Rectangle())
-	}
-	for _, obstacle := range g.scenario.obstacles {
-		g.blockCellInfoWithRectangle(obstacle)
 	}
 	for _, m := range chromosome.mines {
 		g.populateCellInfoWithIngress(m.Ingress())
@@ -333,7 +366,7 @@ func (g *GeneticAlgorithm) populateCellInfo(chromosome Chromosome) {
 func (g *GeneticAlgorithm) path(chromosome Chromosome, startPosition Position, endPositions []PathEndPosition) (Path, int, error) {
 	var path Path
 
-	g.populateCellInfo(chromosome)
+	g.resetCellInfo()
 
 	// Dummy conveyor used for backtracking
 	startConveyor := Conveyor{
@@ -462,6 +495,7 @@ func (g *GeneticAlgorithm) path(chromosome Chromosome, startPosition Position, e
 			return path, 0, errors.New("invalid path found")
 		}
 	}
+	g.addNewPathToCellInfo(pathMineToFactory)
 	pathMineToFactory.connectedFactory = factory
 	return pathMineToFactory, maxDistance, nil
 }

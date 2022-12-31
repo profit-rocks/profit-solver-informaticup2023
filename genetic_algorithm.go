@@ -387,6 +387,7 @@ func (g *GeneticAlgorithm) generateChromosomes() []Chromosome {
 
 func (g *GeneticAlgorithm) Run() {
 	chromosomes := g.generateChromosomes()
+	g.initializeCellInfoWithScenario()
 	for i, chromosome := range chromosomes {
 		chromosomes[i].fitness = g.evaluateFitness(chromosome)
 	}
@@ -426,6 +427,11 @@ func (g *GeneticAlgorithm) Run() {
 						for _, comb := range chromosomeWithPaths.combiners {
 							chromosomeWithPaths, _ = g.addPathCombinerToFactory(chromosomeWithPaths, comb)
 						}
+						for _, comb := range chromosomeWithPaths.combiners {
+							chromosomeWithPaths, _ = g.addPathCombinerToFactory(chromosomeWithPaths, comb)
+						}
+						// Before building paths, we have to update the cell Info
+						g.populateCellInfoWithNewChromosome(chromosomeWithPaths)
 						for m := 0; m < len(chromosomeWithPaths.mines); m++ {
 							newChromosomeWithPaths, err2 := g.addPathMineToFactoryMutation(chromosomeWithPaths)
 							if err2 == nil {
