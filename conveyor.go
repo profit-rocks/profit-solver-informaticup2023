@@ -426,6 +426,22 @@ func (g *GeneticAlgorithm) path(chromosome Chromosome, startPosition Position, e
 			}
 			for i := 0; i < NumConveyorSubtypes; i++ {
 				nextConveyor := ConveyorFromIngressAndSubtype(nextIngress, i)
+				// Check for zig-zag
+				if currentConveyor.length == nextConveyor.length && currentEgress != startPosition {
+					if currentConveyor.direction == Right && nextConveyor.direction == Left {
+						continue
+					}
+					if currentConveyor.direction == Left && nextConveyor.direction == Right {
+						continue
+					}
+					if currentConveyor.direction == Bottom && nextConveyor.direction == Top {
+						continue
+					}
+					if currentConveyor.direction == Top && nextConveyor.direction == Bottom {
+						continue
+					}
+				}
+				nextConveyorRectangle := nextConveyor.Rectangle()
 				nextEgress := nextConveyor.Egress()
 				if !g.scenario.inBounds(nextEgress) || (nextConveyorRectangle.Intersects(*currentConveyor.Rectangle()) && currentEgress != startPosition) {
 					continue
