@@ -127,7 +127,7 @@ func (s *Scenario) positionAvailableForFactory(factories []Factory, mines []Mine
 	}
 	for _, path := range paths {
 		for _, conveyor := range path.conveyors {
-			if factoryRectangle.Intersects(conveyor.Rectangle()) {
+			if factoryRectangle.Intersects(*conveyor.Rectangle()) {
 				return false
 			}
 		}

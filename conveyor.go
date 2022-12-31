@@ -25,6 +25,7 @@ type Conveyor struct {
 	direction Direction
 	length    ConveyorLength
 	distance  int
+	rectangle Rectangle
 }
 
 func ConveyorLengthFromSubtype(subtype int) ConveyorLength {
@@ -115,32 +116,36 @@ func (c Conveyor) Subtype() int {
 	return (int(c.length) << 2) | int(c.direction)
 }
 
-func (c Conveyor) Rectangle() Rectangle {
-	r := Rectangle{}
+func (c *Conveyor) Rectangle() *Rectangle {
+	if c.rectangle.width != 0 {
+		return &c.rectangle
+	}
 	if c.direction == Right || c.direction == Bottom {
-		r.position = c.Ingress()
+		c.rectangle.position.x = c.Ingress().x
+		c.rectangle.position.y = c.Ingress().y
 	} else {
-		r.position = c.Egress()
+		c.rectangle.position.x = c.Egress().x
+		c.rectangle.position.y = c.Egress().y
 	}
 
 	if c.length == Short {
 		if c.direction == Right || c.direction == Left {
-			r.width = 3
-			r.height = 1
+			c.rectangle.width = 3
+			c.rectangle.height = 1
 		} else {
-			r.width = 1
-			r.height = 3
+			c.rectangle.width = 1
+			c.rectangle.height = 3
 		}
 	} else if c.length == Long {
 		if c.direction == Right || c.direction == Left {
-			r.width = 4
-			r.height = 1
+			c.rectangle.width = 4
+			c.rectangle.height = 1
 		} else {
-			r.width = 1
-			r.height = 4
+			c.rectangle.width = 1
+			c.rectangle.height = 4
 		}
 	}
-	return r
+	return &c.rectangle
 }
 
 func (c Conveyor) NextToIngressPositions() []Position {
@@ -174,12 +179,12 @@ func (s *Scenario) positionAvailableForConveyor(factories []Factory, mines []Min
 		}
 	}
 	for _, mine := range mines {
-		if mine.Intersects(conveyor.Rectangle()) {
+		if mine.Intersects(*conveyor.Rectangle()) {
 			return false
 		}
 	}
 	for _, combiner := range combiners {
-		if combiner.Intersects(conveyor.Rectangle()) {
+		if combiner.Intersects(*conveyor.Rectangle()) {
 			return false
 		}
 	}
@@ -202,7 +207,7 @@ func (s *Scenario) positionAvailableForConveyor(factories []Factory, mines []Min
 
 func checkOverlapIsValid(conveyor1 Conveyor, conveyor2 Conveyor) bool {
 	isValidOverlap := true
-	if conveyor1.Rectangle().Intersects(conveyor2.Rectangle()) {
+	if conveyor1.Rectangle().Intersects(*conveyor2.Rectangle()) {
 		conveyor2.Rectangle().ForEach(func(p Position) {
 			if p == conveyor1.Egress() || p == conveyor1.Ingress() {
 				isValidOverlap = false
@@ -320,7 +325,7 @@ func (g *GeneticAlgorithm) populateCellInfo(chromosome Chromosome) {
 			g.populateCellInfoWithIngress(conveyor.Ingress())
 			g.populateCellInfoWithEgress(conveyor.Egress())
 			g.populateCellInfoWithConveyor(conveyor)
-			g.blockCellInfoWithRectangle(conveyor.Rectangle())
+			g.blockCellInfoWithRectangle(*conveyor.Rectangle())
 		}
 	}
 }
@@ -389,7 +394,7 @@ func (g *GeneticAlgorithm) path(chromosome Chromosome, startPosition Position, e
 			for i := 0; i < NumConveyorSubtypes; i++ {
 				nextConveyor := ConveyorFromIngressAndSubtype(nextIngress, i)
 				nextEgress := nextConveyor.Egress()
-				if !g.scenario.inBounds(nextEgress) || (nextConveyor.Rectangle().Intersects(currentConveyor.Rectangle()) && currentEgress != startPosition) {
+				if !g.scenario.inBounds(nextEgress) || (nextConveyorRectangle.Intersects(*currentConveyor.Rectangle()) && currentEgress != startPosition) {
 					continue
 				}
 				if current.priority+1 < cellInfo[nextEgress.y][nextEgress.x].distance {
