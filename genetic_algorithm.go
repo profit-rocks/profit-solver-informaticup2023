@@ -424,8 +424,9 @@ func (g *GeneticAlgorithm) Run() {
 					if err == nil {
 						chromosomeWithoutPath = newChromosome
 						chromosomeWithPaths := newChromosome.copy()
-						for _, comb := range chromosomeWithPaths.combiners {
-							chromosomeWithPaths, _ = g.addPathCombinerToFactory(chromosomeWithPaths, comb)
+						// fitness is always 0 for chromosomes without mines or factories
+						if len(chromosomeWithPaths.factories) == 0 || len(chromosomeWithPaths.mines) == 0 {
+							break
 						}
 						for _, comb := range chromosomeWithPaths.combiners {
 							chromosomeWithPaths, _ = g.addPathCombinerToFactory(chromosomeWithPaths, comb)
