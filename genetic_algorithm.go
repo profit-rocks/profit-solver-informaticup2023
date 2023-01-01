@@ -430,11 +430,11 @@ func (g *GeneticAlgorithm) Run() {
 						if len(chromosomeWithPaths.factories) == 0 || len(chromosomeWithPaths.mines) == 0 {
 							break
 						}
+						// Before building paths, we have to update the cell Info
+						g.populateCellInfoWithNewChromosome(chromosomeWithPaths)
 						for _, comb := range chromosomeWithPaths.combiners {
 							chromosomeWithPaths, _ = g.addPathCombinerToFactory(chromosomeWithPaths, comb)
 						}
-						// Before building paths, we have to update the cell Info
-						g.populateCellInfoWithNewChromosome(chromosomeWithPaths)
 						for m := 0; m < len(chromosomeWithPaths.mines); m++ {
 							newChromosomeWithPaths, err2 := g.addPathMineToFactoryMutation(chromosomeWithPaths)
 							if err2 == nil {
