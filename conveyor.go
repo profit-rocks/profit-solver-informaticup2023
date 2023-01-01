@@ -81,16 +81,17 @@ func (c Conveyor) Egress() Position {
 }
 
 func (c Conveyor) NextToEgressPositions() []Position {
+	// return positions clockwise
 	p := c.Egress()
 	if c.direction == Right {
-		return []Position{{p.x + 1, p.y}, {p.x, p.y + 1}, {p.x, p.y - 1}}
+		return []Position{{p.x, p.y - 1}, {p.x + 1, p.y}, {p.x, p.y + 1}}
 	} else if c.direction == Bottom {
-		return []Position{{p.x + 1, p.y}, {p.x - 1, p.y}, {p.x, p.y + 1}}
+		return []Position{{p.x + 1, p.y}, {p.x, p.y + 1}, {p.x - 1, p.y}}
 	} else if c.direction == Left {
-		return []Position{{p.x - 1, p.y}, {p.x, p.y + 1}, {p.x, p.y - 1}}
+		return []Position{{p.x, p.y + 1}, {p.x - 1, p.y}, {p.x, p.y - 1}}
 	}
 	// Top
-	return []Position{{p.x + 1, p.y}, {p.x - 1, p.y}, {p.x, p.y - 1}}
+	return []Position{{p.x - 1, p.y}, {p.x, p.y - 1}, {p.x + 1, p.y}}
 }
 
 func (c Conveyor) Ingress() Position {
@@ -159,6 +160,13 @@ func (c Conveyor) NextToIngressPositions() []Position {
 	}
 	//Top
 	return []Position{{ingress.x, ingress.y + 1}, {ingress.x - 1, ingress.y}, {ingress.x + 1, ingress.y}}
+}
+
+func (c Conveyor) Positions(i int) Position {
+	if c.direction == Right || c.direction == Left {
+		return Position{c.position.x + i - 1, c.position.y}
+	}
+	return Position{c.position.x, c.position.y + i - 1}
 }
 
 func (s *Scenario) positionAvailableForConveyor(factories []Factory, mines []Mine, combiners []Combiner, paths []Path, conveyor Conveyor) bool {
@@ -417,7 +425,7 @@ func (g *GeneticAlgorithm) path(chromosome Chromosome, startPosition Position, e
 		} else {
 			nextIngresses = currentConveyor.NextToEgressPositions()
 		}
-		for _, nextIngress := range nextIngresses {
+		for z, nextIngress := range nextIngresses {
 			if !g.scenario.inBounds(nextIngress) {
 				continue
 			}
@@ -426,20 +434,36 @@ func (g *GeneticAlgorithm) path(chromosome Chromosome, startPosition Position, e
 			}
 			for i := 0; i < NumConveyorSubtypes; i++ {
 				nextConveyor := ConveyorFromIngressAndSubtype(nextIngress, i)
+				// Check if new conveyor would overlap with current conveyor
+				// The formula calculates the forbidden direction based on our direction and the new ingress position we are on
+				if (z+1+int(currentConveyor.direction))%4 == int(nextConveyor.direction) && currentEgress != startPosition {
+					continue
+				}
 				// Don't build conveyors that would connect back to our ingress
-				if currentConveyor.length == nextConveyor.length && currentEgress != startPosition {
-					if currentConveyor.direction+2%4 == nextConveyor.direction {
+				// A conveyor with the same length and opposite direction always results in an invalid path
+				if (currentConveyor.length == nextConveyor.length || z == 1) && currentEgress != startPosition {
+					if (currentConveyor.direction+2)%4 == nextConveyor.direction {
 						continue
 					}
 				}
-				nextConveyorRectangle := nextConveyor.Rectangle()
 				nextEgress := nextConveyor.Egress()
-				if !g.scenario.inBounds(nextEgress) || (nextConveyorRectangle.Intersects(*currentConveyor.Rectangle()) && currentEgress != startPosition) {
+				if !g.scenario.inBounds(nextEgress) {
 					continue
 				}
 				if current.priority+1 < cellInfo[nextEgress.y][nextEgress.x].distance {
 					isBlocked := false
-					for _, p := range nextConveyorRectangle.Positions() {
+					var length int
+					if nextConveyor.length == Short {
+						length = 3
+					} else {
+						length = 4
+					}
+					for m := 0; m < length; m++ {
+						p := nextConveyor.Positions(m)
+						if !g.scenario.inBounds(p) {
+							isBlocked = true
+							break
+						}
 						if cellInfo[p.y][p.x].blocked {
 							if !(cellInfo[p.y][p.x].isConveyorMiddle && p != nextConveyor.Egress() && p != nextConveyor.Ingress()) {
 								isBlocked = true
