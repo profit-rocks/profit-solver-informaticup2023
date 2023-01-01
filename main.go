@@ -11,6 +11,7 @@ import (
 
 // TODO: is this enough when running in docker?
 const PercentTimeUsed = 90
+const MaxFinishingTime = 2
 
 func main() {
 	inputPtr := flag.String("input", "-", "Path to input scenario json")
@@ -76,7 +77,12 @@ func main() {
 
 	var timeChannel <-chan time.Time
 	if scenario.time != 0 {
-		timeChannel = time.After(time.Duration(scenario.time) * time.Second * PercentTimeUsed / 100)
+		buffer := time.Duration(scenario.time) * time.Second * (100 - PercentTimeUsed) / 100
+		if buffer > MaxFinishingTime*time.Second {
+			buffer = MaxFinishingTime * time.Second
+		}
+		deadline := time.Duration(scenario.time)*time.Second - buffer
+		timeChannel = time.After(deadline)
 	} else {
 		timeChannel = make(<-chan time.Time)
 	}
