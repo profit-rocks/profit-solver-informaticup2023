@@ -20,6 +20,7 @@ func main() {
 	itersPtr := flag.Int("iters", 50, "Number of iterations to run. Use 0 for unlimited")
 	logChromosomesDirPtr := flag.String("logdir", "", "Directory to log top chromosomes in each iteration")
 	visualizeChromosomesDirPtr := flag.String("visualizedir", "", "Directory to visualize chromosomes in each iteration")
+	endOnOptimalPtr := flag.Bool("endonoptimal", false, "End when optimal solution is found")
 	flag.Parse()
 	if *inputPtr == "" || *outputPtr == "" {
 		flag.Usage()
@@ -94,7 +95,7 @@ func main() {
 		case newChromosome = <-chromosomeChannel:
 			if newChromosome.fitness > chromosome.fitness || (newChromosome.fitness == chromosome.fitness && newChromosome.neededTurns < chromosome.neededTurns) {
 				chromosome = newChromosome
-				if optimum != NoOptimum && chromosome.fitness == optimum {
+				if optimum != NoOptimum && chromosome.fitness == optimum && endOnOptimalPtr != nil && *endOnOptimalPtr {
 					log.Println("terminating: optimal solution found")
 					done = true
 				}
