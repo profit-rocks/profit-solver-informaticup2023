@@ -125,14 +125,15 @@ func (s *Scenario) checkValidity(solution Solution) error {
 }
 
 func (s *Scenario) evaluateSolution(solution Solution) (int, int, error) {
-	if len(solution.mines) == 0 || len(solution.mines) == 0 {
-		return 0, s.turns, errors.New("solution has no mines or factories")
-	}
 	// TODO: remove validity check
 	err := s.checkValidity(solution)
 	if err != nil {
 		return 0, s.turns, err
 	}
+	if len(solution.mines) == 0 || len(solution.mines) == 0 {
+		return 0, s.turns, nil
+	}
+
 	simulation := simulationFromScenarioAndSolution(s, solution)
 	neededTurns := 0
 	finalScore := 0
