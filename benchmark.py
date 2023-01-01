@@ -25,7 +25,7 @@ def output_to_needed_turns(output):
 def input_to_benchmark_dicts(file):
     output_file = file + ".out"
     start = time.time()
-    p = subprocess.Popen(["./profit-solver-icup23", "-input", "tasks/" + file, "-output", output_file], stderr=subprocess.PIPE)
+    p = subprocess.Popen(["./profit-solver-icup23", "-endonoptimal=true", "-input", "tasks/" + file, "-output", output_file], stderr=subprocess.PIPE)
     p.wait()
     end = time.time()
 
