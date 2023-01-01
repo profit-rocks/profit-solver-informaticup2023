@@ -389,7 +389,7 @@ func (g *GeneticAlgorithm) path(chromosome Chromosome, startPosition Position, e
 	var factory *Factory
 	var initialDistance int
 	for queue.Len() > 0 {
-		current := queue.Pop().(*Item)
+		current := heap.Pop(&queue).(*Item)
 		currentConveyor := current.value
 		currentEgress := current.value.Egress()
 		finished := false
@@ -462,7 +462,7 @@ func (g *GeneticAlgorithm) path(chromosome Chromosome, startPosition Position, e
 						value:    nextConveyor,
 						priority: current.priority + 1,
 					}
-					queue.Push(&next)
+					heap.Push(&queue, &next)
 					cellInfo[nextEgress.y][nextEgress.x].previousEgress = current.value.Egress()
 					cellInfo[nextEgress.y][nextEgress.x].currentConveyor = nextConveyor
 					cellInfo[nextEgress.y][nextEgress.x].distance = next.priority
