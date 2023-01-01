@@ -295,7 +295,7 @@ func (g *GeneticAlgorithm) addPathMineToFactoryMutation(chromosome Chromosome) (
 			startPosition := randomMine.Egress()
 			randomProduct := viableProducts[index].subtype
 			endPositions := chromosome.getPathEndPositionsForProduct(randomProduct)
-			newPath, distance, err := g.path(chromosome, startPosition, endPositions)
+			newPath, distance, err := g.path(startPosition, endPositions)
 			if err == nil {
 				chromosome.mines[mineIndex].connectedFactory = newPath.connectedFactory
 				chromosome.mines[mineIndex].distance = distance + 1
@@ -319,7 +319,7 @@ func (g *GeneticAlgorithm) addPathCombinerToFactory(chromosome Chromosome, combi
 		randomProduct := g.scenario.products[index].subtype
 		endPositions := chromosome.getPathEndPositionsForProduct(randomProduct)
 		startPosition := combiner.Egress()
-		newPath, distance, err := g.path(chromosome, startPosition, endPositions)
+		newPath, distance, err := g.path(startPosition, endPositions)
 		if err == nil {
 			combiner.connectedFactory = newPath.connectedFactory
 			combiner.distance = distance + 1

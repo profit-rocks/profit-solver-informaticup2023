@@ -371,7 +371,7 @@ func (g *GeneticAlgorithm) populateCellInfoWithNewChromosome(chromosome Chromoso
 	}
 }
 
-func (g *GeneticAlgorithm) path(chromosome Chromosome, startPosition Position, endPositions []PathEndPosition) (Path, int, error) {
+func (g *GeneticAlgorithm) path(startPosition Position, endPositions []PathEndPosition) (Path, int, error) {
 	var path Path
 
 	g.resetCellInfo()
