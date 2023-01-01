@@ -6,6 +6,7 @@ import (
 )
 
 const NumConveyorSubtypes = 8
+const InfiniteDistance = 1000000
 
 type ConveyorLength int
 
@@ -285,7 +286,7 @@ func (g *GeneticAlgorithm) populateCellInfoWithConveyor(conveyor Conveyor) {
 func (g *GeneticAlgorithm) resetCellInfo() {
 	for y := 0; y < g.scenario.height; y++ {
 		for x := 0; x < g.scenario.width; x++ {
-			cellInfo[y][x].distance = 1000000
+			cellInfo[y][x].distance = InfiniteDistance
 		}
 	}
 }
@@ -315,7 +316,7 @@ func (g *GeneticAlgorithm) populateCellInfoWithNewChromosome(chromosome Chromoso
 		for x := 0; x < g.scenario.width; x++ {
 			if !cellInfo[y][x].blockedByObstacleOrDeposit {
 				cellInfo[y][x].blocked = false
-				cellInfo[y][x].distance = 1000000
+				cellInfo[y][x].distance = InfiniteDistance
 				cellInfo[y][x].isConveyorMiddle = false
 				cellInfo[y][x].numEgressNeighbors = 0
 				cellInfo[y][x].numIngressNeighbors = 0
