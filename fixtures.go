@@ -39,7 +39,7 @@ func scenarioWithObstacle() Scenario {
 		width:     10,
 		height:    10,
 		deposits:  []Deposit{},
-		obstacles: []Obstacle{{Position{4, 4}, 2, 2}}, turns: 100,
+		obstacles: []Obstacle{{Position{4, 4}, 2, 2, nil}}, turns: 100,
 	}
 }
 

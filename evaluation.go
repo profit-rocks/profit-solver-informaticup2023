@@ -113,7 +113,7 @@ func (s *Scenario) checkValidity(solution Solution) error {
 		paths = append(paths, Path{})
 		for _, conveyor := range path.conveyors {
 			if !s.positionAvailableForConveyor(solution.factories, solution.mines, solution.combiners, paths, conveyor) {
-				return errors.New("solution includes a factory which position is invalid, can't evaluate this solution")
+				return errors.New("solution includes a conveyor which position is invalid, can't evaluate this solution")
 			}
 			paths[i].conveyors = append(paths[i].conveyors, conveyor)
 		}
@@ -130,6 +130,10 @@ func (s *Scenario) evaluateSolution(solution Solution) (int, int, error) {
 	if err != nil {
 		return 0, s.turns, err
 	}
+	if len(solution.mines) == 0 || len(solution.mines) == 0 {
+		return 0, s.turns, nil
+	}
+
 	simulation := simulationFromScenarioAndSolution(s, solution)
 	neededTurns := 0
 	finalScore := 0

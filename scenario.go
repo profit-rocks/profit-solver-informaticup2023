@@ -40,10 +40,10 @@ type Solution struct {
 }
 
 func (s *Scenario) boundRectangles() []Rectangle {
-	return []Rectangle{{Position{0, -1}, s.width, 1},
-		{Position{-1, 0}, 1, s.height},
-		{Position{s.width, 0}, 1, s.height},
-		{Position{0, s.height}, s.width, 1}}
+	return []Rectangle{{Position{0, -1}, s.width, 1, nil},
+		{Position{-1, 0}, 1, s.height, nil},
+		{Position{s.width, 0}, 1, s.height, nil},
+		{Position{0, s.height}, s.width, 1, nil}}
 }
 
 func (s *Scenario) inBounds(position Position) bool {

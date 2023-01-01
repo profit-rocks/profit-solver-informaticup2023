@@ -295,7 +295,7 @@ func (g *GeneticAlgorithm) addPathMineToFactoryMutation(chromosome Chromosome) (
 			startPosition := randomMine.Egress()
 			randomProduct := viableProducts[index].subtype
 			endPositions := chromosome.getPathEndPositionsForProduct(randomProduct)
-			newPath, distance, err := g.path(chromosome, startPosition, endPositions)
+			newPath, distance, err := g.path(startPosition, endPositions)
 			if err == nil {
 				chromosome.mines[mineIndex].connectedFactory = newPath.connectedFactory
 				chromosome.mines[mineIndex].distance = distance + 1
@@ -319,7 +319,7 @@ func (g *GeneticAlgorithm) addPathCombinerToFactory(chromosome Chromosome, combi
 		randomProduct := g.scenario.products[index].subtype
 		endPositions := chromosome.getPathEndPositionsForProduct(randomProduct)
 		startPosition := combiner.Egress()
-		newPath, distance, err := g.path(chromosome, startPosition, endPositions)
+		newPath, distance, err := g.path(startPosition, endPositions)
 		if err == nil {
 			combiner.connectedFactory = newPath.connectedFactory
 			combiner.distance = distance + 1
@@ -341,7 +341,7 @@ func (g *GeneticAlgorithm) moveMinesMutation(chromosome Chromosome) (Chromosome,
 		mine := chromosome.mines[i]
 		// TODO: this might move the mine to a different deposit
 		for i, deposit := range g.scenario.deposits {
-			if deposit.Rectangle().Intersects(Rectangle{Position{mine.Ingress().x - 1, mine.Ingress().y - 1}, 3, 3}) {
+			if deposit.Rectangle().Intersects(Rectangle{Position{mine.Ingress().x - 1, mine.Ingress().y - 1}, 3, 3, nil}) {
 				newMine, err := g.randomMine(&g.scenario.deposits[i], newChromosome)
 				if err == nil {
 					newChromosome.mines = append(newChromosome.mines, newMine)
@@ -389,6 +389,7 @@ func (g *GeneticAlgorithm) generateChromosomes() []Chromosome {
 
 func (g *GeneticAlgorithm) Run() {
 	chromosomes := g.generateChromosomes()
+	g.initializeCellInfoWithScenario()
 	for i := 0; g.iterations == 0 || i < g.iterations; i++ {
 		sort.Slice(chromosomes, func(i, j int) bool {
 			if chromosomes[i].fitness == chromosomes[j].fitness {
@@ -425,6 +426,12 @@ func (g *GeneticAlgorithm) Run() {
 					if err == nil {
 						chromosomeWithoutPath = newChromosome
 						chromosomeWithPaths := newChromosome.copy()
+						// fitness is always 0 for chromosomes without mines or factories
+						if len(chromosomeWithPaths.factories) == 0 || len(chromosomeWithPaths.mines) == 0 {
+							break
+						}
+						// Before building paths, we have to update the cell Info
+						g.populateCellInfoWithNewChromosome(chromosomeWithPaths)
 						for _, comb := range chromosomeWithPaths.combiners {
 							chromosomeWithPaths, _ = g.addPathCombinerToFactory(chromosomeWithPaths, comb)
 						}
@@ -432,6 +439,10 @@ func (g *GeneticAlgorithm) Run() {
 							newChromosomeWithPaths, err2 := g.addPathMineToFactoryMutation(chromosomeWithPaths)
 							if err2 == nil {
 								newChromosomeWithPaths.fitness, newChromosomeWithPaths.neededTurns = g.evaluateFitness(newChromosomeWithPaths)
+								// if the new chromosome is invalid, it won't get valid by building more paths
+								if newChromosomeWithPaths.fitness == -1 {
+									break
+								}
 								chromosomeWithPaths = newChromosomeWithPaths.copy()
 								chromosomes = append(chromosomes, newChromosomeWithPaths)
 								g.chromosomeChannel <- newChromosomeWithPaths

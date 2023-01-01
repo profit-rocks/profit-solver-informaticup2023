@@ -8,12 +8,15 @@ import (
 func TestEmptySolutionEvaluation(t *testing.T) {
 	scenario := largeEmptyScenario()
 	solution := Solution{}
-	score, _, err := scenario.evaluateSolution(solution)
+	score, turns, err := scenario.evaluateSolution(solution)
 	if err != nil {
 		t.Errorf("evaluating empty solution should not return an error %v", err)
 	}
 	if score != 0 {
-		t.Errorf("score should be 0 and not %d", score)
+		t.Errorf("score of empty solution should be 0 and not %d", score)
+	}
+	if turns != scenario.turns {
+		t.Errorf("turns of empty solution should be %d and not %d", scenario.turns, turns)
 	}
 }
 
