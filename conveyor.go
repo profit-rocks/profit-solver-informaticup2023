@@ -122,11 +122,9 @@ func (c *Conveyor) Rectangle() *Rectangle {
 		return &c.rectangle
 	}
 	if c.direction == Right || c.direction == Bottom {
-		c.rectangle.position.x = c.Ingress().x
-		c.rectangle.position.y = c.Ingress().y
+		c.rectangle.position = c.Ingress()
 	} else {
-		c.rectangle.position.x = c.Egress().x
-		c.rectangle.position.y = c.Egress().y
+		c.rectangle.position = c.Egress()
 	}
 
 	if c.length == Short {
