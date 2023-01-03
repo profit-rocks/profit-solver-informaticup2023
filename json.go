@@ -228,7 +228,13 @@ func importFromProfitJson(path string) (Scenario, Solution, error) {
 		})
 	}
 
-	// Do a BFS starting at every factory, to determine distance from every mine to it's factory
+	solution.determineDistancesFromMinesToFactories(scenario)
+
+	return scenario, solution, nil
+}
+
+// we perform a BFS from all factories to the mines
+func (s *Solution) determineDistancesFromMinesToFactories(scenario Scenario) {
 	combinerMatrix := make([][]*Combiner, scenario.width)
 	for i := range combinerMatrix {
 		combinerMatrix[i] = make([]*Combiner, scenario.height)
@@ -241,34 +247,34 @@ func importFromProfitJson(path string) (Scenario, Solution, error) {
 	for i := range conveyorMatrix {
 		conveyorMatrix[i] = make([]*Conveyor, scenario.height)
 	}
-	for i := range solution.mines {
-		mine := &solution.mines[i]
+	for i := range s.mines {
+		mine := &s.mines[i]
 		mine.RectanglesEach(func(rectangle Rectangle) {
 			rectangle.ForEach(func(position Position) {
 				mineMatrix[position.x][position.y] = mine
 			})
 		})
 	}
-	for i := range solution.combiners {
-		combiner := &solution.combiners[i]
+	for i := range s.combiners {
+		combiner := &s.combiners[i]
 		combiner.RectanglesEach(func(rectangle Rectangle) {
 			rectangle.ForEach(func(position Position) {
 				combinerMatrix[position.x][position.y] = combiner
 			})
 		})
 	}
-	for i := range solution.paths {
-		for j := range solution.paths[i].conveyors {
-			conveyor := &solution.paths[i].conveyors[j]
+	for i := range s.paths {
+		for j := range s.paths[i].conveyors {
+			conveyor := &s.paths[i].conveyors[j]
 			conveyor.Rectangle().ForEach(func(position Position) {
 				conveyorMatrix[position.x][position.y] = conveyor
 			})
 		}
 	}
 
-	for i := range solution.factories {
+	for i := range s.factories {
 		distance := 0
-		factory := &solution.factories[i]
+		factory := &s.factories[i]
 		positions := factory.NextToIngressPositions()
 		visitedPosition := make([][]bool, scenario.width)
 		for j := range visitedPosition {
@@ -305,6 +311,4 @@ func importFromProfitJson(path string) (Scenario, Solution, error) {
 			}
 		}
 	}
-
-	return scenario, solution, nil
 }
