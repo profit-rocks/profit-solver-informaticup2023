@@ -370,11 +370,12 @@ func populateCellInfoWithNewChromosome(chromosome Chromosome, scenario Scenario)
 	}
 }
 
+// findPath uses the cellInfo to check if placing a conveyor is legal and to perform backtracking
+// make sure to initialize and populate the cellInfo before calling findPath
 func findPath(startPosition Position, endPositions []PathEndPosition, scenario Scenario) (Path, int, error) {
 	var path Path
 
 	resetCellInfo()
-
 	// Dummy conveyor used for backtracking
 	startConveyor := Conveyor{
 		position:  Position{startPosition.x - 1, startPosition.y},
