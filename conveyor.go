@@ -283,9 +283,9 @@ func populateCellInfoWithConveyor(conveyor Conveyor) {
 	})
 }
 
-func resetCellInfo() {
-	for y := 0; y < 100; y++ {
-		for x := 0; x < 100; x++ {
+func resetCellInfo(scenario Scenario) {
+	for y := 0; y < scenario.height; y++ {
+		for x := 0; x < scenario.width; x++ {
 			cellInfo[y][x].distance = InfiniteDistance
 		}
 	}
@@ -375,7 +375,7 @@ func populateCellInfoWithNewChromosome(chromosome Chromosome, scenario Scenario)
 func findPath(startPosition Position, endPositions []PathEndPosition, scenario Scenario) (Path, int, error) {
 	var path Path
 
-	resetCellInfo()
+	resetCellInfo(scenario)
 	// Dummy conveyor used for backtracking
 	startConveyor := Conveyor{
 		position:  Position{startPosition.x - 1, startPosition.y},
