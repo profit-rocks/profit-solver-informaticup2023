@@ -11,8 +11,8 @@ const InfiniteDistance = 1000000
 type ConveyorLength int
 
 const (
-	Short ConveyorLength = iota
-	Long  ConveyorLength = iota
+	Short ConveyorLength = 3
+	Long  ConveyorLength = 4
 )
 
 type PathEndPosition struct {
@@ -30,7 +30,7 @@ type Conveyor struct {
 }
 
 func ConveyorLengthFromSubtype(subtype int) ConveyorLength {
-	return ConveyorLength(subtype >> 2)
+	return ConveyorLength(3 + subtype>>2)
 }
 
 func ConveyorFromIngressAndSubtype(ingress Position, subtype int) Conveyor {
@@ -115,7 +115,7 @@ func (c Conveyor) Ingress() Position {
 }
 
 func (c Conveyor) Subtype() int {
-	return (int(c.length) << 2) | int(c.direction)
+	return ((int(c.length) - 3) << 2) | int(c.direction)
 }
 
 func (c *Conveyor) Rectangle() *Rectangle {
@@ -442,13 +442,7 @@ func (g *GeneticAlgorithm) path(startPosition Position, endPositions []PathEndPo
 				}
 				if current.priority+1 < cellInfo[nextEgress.y][nextEgress.x].distance {
 					isBlocked := false
-					var length int
-					if nextConveyor.length == Short {
-						length = 3
-					} else {
-						length = 4
-					}
-					for m := 0; m < length; m++ {
+					for m := 0; m < int(nextConveyor.length); m++ {
 						p := nextConveyor.Positions(m)
 						if !g.scenario.inBounds(p) {
 							isBlocked = true
