@@ -414,11 +414,7 @@ func (g *GeneticAlgorithm) Run() {
 		for j := 0; j < NumRoundsPerIteration; j++ {
 			chromosome := chromosomes[rand.Intn(g.populationSize)]
 			chromosomeWithoutPath := chromosome.copy()
-			// reset paths and mines
-			chromosomeWithoutPath.paths = make([]Path, 0)
-			for x := range chromosomeWithoutPath.mines {
-				chromosomeWithoutPath.mines[x].connectedFactory = nil
-			}
+			chromosomeWithoutPath.resetPaths()
 
 			for k := 0; k < NumMutationsPerRound; k++ {
 				rng := NewUniqueRNG(len(MutationsWithoutPaths))
@@ -469,4 +465,11 @@ func (g *GeneticAlgorithm) Run() {
 		}
 	}
 	g.doneChannel <- true
+}
+
+func (c *Chromosome) resetPaths() {
+	c.paths = make([]Path, 0)
+	for x := range c.mines {
+		c.mines[x].connectedFactory = nil
+	}
 }
