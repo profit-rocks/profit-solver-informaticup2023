@@ -506,18 +506,13 @@ func (g *GeneticAlgorithm) path(startPosition Position, endPositions []PathEndPo
 		path.conveyors[i].distance = initialDistance + i + 1
 		maxDistance = initialDistance + i + 1
 	}
-	// Reverse the path
-	var pathMineToFactory Path
 	for i := range path.conveyors {
-		pathMineToFactory.conveyors = append(pathMineToFactory.conveyors, path.conveyors[len(path.conveyors)-i-1])
-	}
-	for i := range pathMineToFactory.conveyors {
-		if i == len(pathMineToFactory.conveyors)-1 {
+		if i == 0 {
 			continue
 		}
 		valid := false
-		for _, p := range pathMineToFactory.conveyors[i].NextToEgressPositions() {
-			if p == pathMineToFactory.conveyors[i+1].Ingress() {
+		for _, p := range path.conveyors[len(path.conveyors)-i].NextToEgressPositions() {
+			if p == path.conveyors[len(path.conveyors)-1-i].Ingress() {
 				valid = true
 			}
 		}
@@ -525,7 +520,7 @@ func (g *GeneticAlgorithm) path(startPosition Position, endPositions []PathEndPo
 			return path, 0, errors.New("invalid path found")
 		}
 	}
-	g.addNewPathToCellInfo(pathMineToFactory)
-	pathMineToFactory.connectedFactory = factory
-	return pathMineToFactory, maxDistance, nil
+	g.addNewPathToCellInfo(path)
+	path.connectedFactory = factory
+	return path, maxDistance, nil
 }
