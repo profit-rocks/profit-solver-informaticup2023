@@ -426,29 +426,7 @@ func (g *GeneticAlgorithm) Run() {
 					newChromosome, err := mutation(g, chromosomeWithoutPath.copy())
 					if err == nil {
 						chromosomeWithoutPath = newChromosome
-						chromosomeWithPaths := newChromosome.copy()
-						// fitness is always 0 for chromosomes without mines or factories
-						if len(chromosomeWithPaths.factories) == 0 || len(chromosomeWithPaths.mines) == 0 {
-							break
-						}
-						// Before building paths, we have to update the cell Info
-						populateCellInfoWithNewChromosome(chromosomeWithPaths, g.scenario)
-						for _, comb := range chromosomeWithPaths.combiners {
-							chromosomeWithPaths, _ = g.addPathCombinerToFactory(chromosomeWithPaths, comb)
-						}
-						for m := 0; m < len(chromosomeWithPaths.mines); m++ {
-							newChromosomeWithPaths, err2 := g.addPathMineToFactory(chromosomeWithPaths)
-							if err2 == nil {
-								newChromosomeWithPaths.fitness, newChromosomeWithPaths.neededTurns = g.evaluateChromosome(newChromosomeWithPaths)
-								// if the new chromosome is invalid, it won't get valid by building more paths
-								if newChromosomeWithPaths.fitness == -1 {
-									break
-								}
-								chromosomeWithPaths = newChromosomeWithPaths.copy()
-								chromosomes = append(chromosomes, newChromosomeWithPaths)
-								g.chromosomeChannel <- newChromosomeWithPaths
-							}
-						}
+						chromosomes = append(chromosomes, g.chromosomesWithPaths(newChromosome.copy())...)
 						break
 					}
 				}
@@ -472,4 +450,31 @@ func (c *Chromosome) resetPaths() {
 	for x := range c.mines {
 		c.mines[x].connectedFactory = nil
 	}
+}
+
+func (g *GeneticAlgorithm) chromosomesWithPaths(chromosome Chromosome) []Chromosome {
+	var chromosomes []Chromosome
+	// fitness is always 0 for chromosomes without mines or factories
+	if len(chromosome.factories) == 0 || len(chromosome.mines) == 0 {
+		return chromosomes
+	}
+	// Before building paths, we have to update the cell Info
+	populateCellInfoWithNewChromosome(chromosome, g.scenario)
+	for _, comb := range chromosome.combiners {
+		chromosome, _ = g.addPathCombinerToFactory(chromosome, comb)
+	}
+	for m := 0; m < len(chromosome.mines); m++ {
+		newChromosome, err2 := g.addPathMineToFactory(chromosome)
+		if err2 == nil {
+			newChromosome.fitness, newChromosome.neededTurns = g.evaluateChromosome(newChromosome)
+			// if the new chromosome is invalid, it won't get valid by building more paths
+			if newChromosome.fitness == -1 {
+				break
+			}
+			chromosome = newChromosome.copy()
+			chromosomes = append(chromosomes, newChromosome)
+			g.chromosomeChannel <- newChromosome
+		}
+	}
+	return chromosomes
 }
