@@ -506,21 +506,29 @@ func (g *GeneticAlgorithm) path(startPosition Position, endPositions []PathEndPo
 		path.conveyors[i].distance = initialDistance + i + 1
 		maxDistance = initialDistance + i + 1
 	}
-	for i := range path.conveyors {
-		if i == 0 {
-			continue
-		}
-		valid := false
-		for _, p := range path.conveyors[len(path.conveyors)-i].NextToEgressPositions() {
-			if p == path.conveyors[len(path.conveyors)-1-i].Ingress() {
-				valid = true
-			}
-		}
-		if !valid {
-			return path, 0, errors.New("invalid path found")
-		}
+
+	if !path.conveyorsConnected() {
+		return path, 0, errors.New("invalid path found")
 	}
 	g.addNewPathToCellInfo(path)
 	path.connectedFactory = factory
 	return path, maxDistance, nil
+}
+
+func (p Path) conveyorsConnected() bool {
+	for i := range p.conveyors {
+		if i == 0 {
+			continue
+		}
+		valid := false
+		for _, position := range p.conveyors[len(p.conveyors)-i].NextToEgressPositions() {
+			if position == p.conveyors[len(p.conveyors)-1-i].Ingress() {
+				valid = true
+			}
+		}
+		if !valid {
+			return false
+		}
+	}
+	return true
 }
