@@ -295,7 +295,7 @@ func (g *GeneticAlgorithm) addPathMineToFactoryMutation(chromosome Chromosome) (
 			startPosition := randomMine.Egress()
 			randomProduct := viableProducts[index].subtype
 			endPositions := chromosome.getPathEndPositionsForProduct(randomProduct)
-			newPath, distance, err := g.path(startPosition, endPositions)
+			newPath, distance, err := findPath(startPosition, endPositions, g.scenario)
 			if err == nil {
 				chromosome.mines[mineIndex].connectedFactory = newPath.connectedFactory
 				chromosome.mines[mineIndex].distance = distance + 1
@@ -319,7 +319,7 @@ func (g *GeneticAlgorithm) addPathCombinerToFactory(chromosome Chromosome, combi
 		randomProduct := g.scenario.products[index].subtype
 		endPositions := chromosome.getPathEndPositionsForProduct(randomProduct)
 		startPosition := combiner.Egress()
-		newPath, distance, err := g.path(startPosition, endPositions)
+		newPath, distance, err := findPath(startPosition, endPositions, g.scenario)
 		if err == nil {
 			combiner.connectedFactory = newPath.connectedFactory
 			combiner.distance = distance + 1
@@ -389,7 +389,7 @@ func (g *GeneticAlgorithm) generateChromosomes() []Chromosome {
 
 func (g *GeneticAlgorithm) Run() {
 	chromosomes := g.generateChromosomes()
-	g.initializeCellInfoWithScenario()
+	initializeCellInfo(g.scenario)
 	for i := 0; g.iterations == 0 || i < g.iterations; i++ {
 		sort.Slice(chromosomes, func(i, j int) bool {
 			if chromosomes[i].fitness == chromosomes[j].fitness {
@@ -431,7 +431,7 @@ func (g *GeneticAlgorithm) Run() {
 							break
 						}
 						// Before building paths, we have to update the cell Info
-						g.populateCellInfoWithNewChromosome(chromosomeWithPaths)
+						populateCellInfoWithNewChromosome(chromosomeWithPaths, g.scenario)
 						for _, comb := range chromosomeWithPaths.combiners {
 							chromosomeWithPaths, _ = g.addPathCombinerToFactory(chromosomeWithPaths, comb)
 						}
