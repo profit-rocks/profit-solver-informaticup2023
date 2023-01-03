@@ -1,7 +1,6 @@
 package main
 
 import (
-	"container/heap"
 	"errors"
 )
 
@@ -381,23 +380,21 @@ func (g *GeneticAlgorithm) path(startPosition Position, endPositions []PathEndPo
 		direction: Right,
 		length:    Short,
 	}
-	queue := PriorityQueue{}
+	queue := New()
 	startItem := Item{
 		value:    startConveyor,
-		priority: 0,
+		distance: 0,
 	}
 
 	// TODO: Conveyors of same path may overlap
 	// TODO: Conveyors of same path may violate ingress-egress-rules
-	heap.Init(&queue)
 	queue.Push(&startItem)
 
 	cellInfo[startPosition.y][startPosition.x].distance = 0
 	var factory *Factory
 	var initialDistance int
 	for queue.Len() > 0 {
-		current := heap.Pop(&queue).(*Item)
-		currentConveyor := current.value
+		current := queue.Pop().(*Item)
 		currentEgress := current.value.Egress()
 		finished := false
 		for _, p := range endPositions {
@@ -405,7 +402,7 @@ func (g *GeneticAlgorithm) path(startPosition Position, endPositions []PathEndPo
 				if p.position != startPosition {
 					path.conveyors = append(path.conveyors, cellInfo[currentEgress.y][currentEgress.x].currentConveyor)
 				} else {
-					path.conveyors = append(path.conveyors, currentConveyor)
+					path.conveyors = append(path.conveyors, current.value)
 				}
 				factory = p.connectedFactory
 				initialDistance = p.distance
@@ -415,33 +412,33 @@ func (g *GeneticAlgorithm) path(startPosition Position, endPositions []PathEndPo
 		if finished {
 			break
 		}
-		if cellInfo[currentEgress.y][currentEgress.x].numIngressNeighbors >= 1 || current.priority != cellInfo[currentEgress.y][currentEgress.x].distance {
+		if cellInfo[currentEgress.y][currentEgress.x].numIngressNeighbors >= 1 || current.distance != cellInfo[currentEgress.y][currentEgress.x].distance {
 			continue
 		}
 		var nextIngresses []Position
-		if currentConveyor.Egress() == startPosition {
+		if current.value.Egress() == startPosition {
 			nextIngresses = startPosition.NeighborPositions()
 		} else {
-			nextIngresses = currentConveyor.NextToEgressPositions()
+			nextIngresses = current.value.NextToEgressPositions()
 		}
 		for z, nextIngress := range nextIngresses {
 			if !g.scenario.inBounds(nextIngress) {
 				continue
 			}
-			if cellInfo[nextIngress.y][nextIngress.x].numEgressNeighbors >= 1 && currentConveyor.Egress() != startPosition || cellInfo[nextIngress.y][nextIngress.x].numEgressNeighbors >= 2 {
+			if cellInfo[nextIngress.y][nextIngress.x].numEgressNeighbors >= 1 && current.value.Egress() != startPosition || cellInfo[nextIngress.y][nextIngress.x].numEgressNeighbors >= 2 {
 				continue
 			}
 			for i := 0; i < NumConveyorSubtypes; i++ {
 				nextConveyor := ConveyorFromIngressAndSubtype(nextIngress, i)
 				// Check if new conveyor would overlap with current conveyor
 				// The formula calculates the forbidden direction based on our direction and the new ingress position we are on
-				if (z+1+int(currentConveyor.direction))%4 == int(nextConveyor.direction) && currentEgress != startPosition {
+				if (z+1+int(current.value.direction))%4 == int(nextConveyor.direction) && currentEgress != startPosition {
 					continue
 				}
 				// Don't build conveyors that would connect back to our ingress
 				// A conveyor with the same length and opposite direction always results in an invalid path
-				if (currentConveyor.length == nextConveyor.length || z == 1) && currentEgress != startPosition {
-					if (currentConveyor.direction+2)%4 == nextConveyor.direction {
+				if (current.value.length == nextConveyor.length || z == 1) && currentEgress != startPosition {
+					if (current.value.direction+2)%4 == nextConveyor.direction {
 						continue
 					}
 				}
@@ -449,7 +446,7 @@ func (g *GeneticAlgorithm) path(startPosition Position, endPositions []PathEndPo
 				if !g.scenario.inBounds(nextEgress) {
 					continue
 				}
-				if current.priority+1 < cellInfo[nextEgress.y][nextEgress.x].distance {
+				if current.distance+1 < cellInfo[nextEgress.y][nextEgress.x].distance {
 					isBlocked := false
 					var length int
 					if nextConveyor.length == Short {
@@ -474,12 +471,12 @@ func (g *GeneticAlgorithm) path(startPosition Position, endPositions []PathEndPo
 					}
 					next := Item{
 						value:    nextConveyor,
-						priority: current.priority + 1,
+						distance: current.distance + 1,
 					}
-					heap.Push(&queue, &next)
+					queue.Push(&next)
 					cellInfo[nextEgress.y][nextEgress.x].previousEgress = current.value.Egress()
 					cellInfo[nextEgress.y][nextEgress.x].currentConveyor = nextConveyor
-					cellInfo[nextEgress.y][nextEgress.x].distance = next.priority
+					cellInfo[nextEgress.y][nextEgress.x].distance = next.distance
 				}
 			}
 		}
@@ -506,26 +503,8 @@ func (g *GeneticAlgorithm) path(startPosition Position, endPositions []PathEndPo
 		path.conveyors[i].distance = initialDistance + i + 1
 		maxDistance = initialDistance + i + 1
 	}
-	// Reverse the path
-	var pathMineToFactory Path
-	for i := range path.conveyors {
-		pathMineToFactory.conveyors = append(pathMineToFactory.conveyors, path.conveyors[len(path.conveyors)-i-1])
-	}
-	for i := range pathMineToFactory.conveyors {
-		if i == len(pathMineToFactory.conveyors)-1 {
-			continue
-		}
-		valid := false
-		for _, p := range pathMineToFactory.conveyors[i].NextToEgressPositions() {
-			if p == pathMineToFactory.conveyors[i+1].Ingress() {
-				valid = true
-			}
-		}
-		if !valid {
-			return path, 0, errors.New("invalid path found")
-		}
-	}
-	g.addNewPathToCellInfo(pathMineToFactory)
-	pathMineToFactory.connectedFactory = factory
-	return pathMineToFactory, maxDistance, nil
+
+	g.addNewPathToCellInfo(path)
+	path.connectedFactory = factory
+	return path, maxDistance, nil
 }

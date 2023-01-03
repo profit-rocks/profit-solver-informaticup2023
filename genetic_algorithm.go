@@ -226,7 +226,28 @@ func (g *GeneticAlgorithm) removeMineMutation(chromosome Chromosome) (Chromosome
 }
 
 func (chromosome *Chromosome) getPathEndPositionsForProduct(product int) []PathEndPosition {
-	endPositions := make([]PathEndPosition, 0)
+	length := 0
+	for _, factory := range chromosome.factories {
+		if factory.product == product {
+			length += 20
+		}
+	}
+	for _, combiner := range chromosome.combiners {
+		if combiner.connectedFactory != nil && combiner.connectedFactory.product == product {
+			length += 5
+		}
+	}
+	for _, mine := range chromosome.mines {
+		if mine.connectedFactory != nil && mine.connectedDeposit.subtype == product {
+			length += 3
+		}
+	}
+	for _, path := range chromosome.paths {
+		if path.connectedFactory.product == product {
+			length += len(path.conveyors) * 3
+		}
+	}
+	endPositions := make([]PathEndPosition, 0, length)
 	for i, factory := range chromosome.factories {
 		if factory.product == product {
 			for _, pos := range factory.NextToIngressPositions() {
