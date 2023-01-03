@@ -33,6 +33,7 @@ var MutationsWithoutPaths = []MutationFunction{
 	(*GeneticAlgorithm).removeMineMutation,
 	(*GeneticAlgorithm).moveMinesMutation,
 	(*GeneticAlgorithm).addFactoryMutation,
+	(*GeneticAlgorithm).changeProduct,
 	(*GeneticAlgorithm).removeFactoryMutation,
 	(*GeneticAlgorithm).moveFactoriesMutation,
 	(*GeneticAlgorithm).addCombinerMutation,
@@ -160,6 +161,15 @@ func (g *GeneticAlgorithm) addFactoryMutation(chromosome Chromosome) (Chromosome
 		return Chromosome{}, err
 	}
 	chromosome.factories = append(chromosome.factories, newFactory)
+	return chromosome, nil
+}
+
+func (g *GeneticAlgorithm) changeProduct(chromosome Chromosome) (Chromosome, error) {
+	if len(chromosome.factories) == 0 {
+		return chromosome, errors.New("no factories to change product")
+	}
+	factory := &chromosome.factories[rand.Intn(len(chromosome.factories))]
+	factory.product = rand.Intn(len(g.scenario.products))
 	return chromosome, nil
 }
 
