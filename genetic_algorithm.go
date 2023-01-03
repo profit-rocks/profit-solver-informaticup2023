@@ -49,12 +49,7 @@ type GeneticAlgorithm struct {
 	iterations              int
 	populationSize          int
 	mutationProbability     float64
-	crossoverProbability    float64
-	initialMinNumFactories  int
-	initialMaxNumFactories  int
-	initialNumMines         int
 	optimum                 int
-	numPaths                int
 	chromosomeChannel       chan<- Chromosome
 	doneChannel             chan<- bool
 	logChromosomesDir       string
