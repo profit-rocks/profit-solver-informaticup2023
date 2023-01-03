@@ -265,7 +265,7 @@ func (c *Chromosome) getPathEndPositionsForProduct(product int) []PathEndPositio
 	return endPositions
 }
 
-func (g *GeneticAlgorithm) addPathMineToFactoryMutation(chromosome Chromosome) (Chromosome, error) {
+func (g *GeneticAlgorithm) addPathMineToFactory(chromosome Chromosome) (Chromosome, error) {
 	if len(chromosome.mines) == 0 || len(chromosome.factories) == 0 {
 		return chromosome, errors.New("no mines or factories to add path")
 	}
@@ -376,7 +376,7 @@ func (g *GeneticAlgorithm) moveFactoriesMutation(chromosome Chromosome) (Chromos
 	return newChromosome, nil
 }
 
-func (g *GeneticAlgorithm) evaluateFitness(chromosome Chromosome) (int, int) {
+func (g *GeneticAlgorithm) evaluateChromosome(chromosome Chromosome) (int, int) {
 	fitness, turns, err := g.scenario.evaluateSolution(chromosome.Solution())
 	if err != nil {
 		return -1, g.scenario.turns
@@ -441,9 +441,9 @@ func (g *GeneticAlgorithm) Run() {
 							chromosomeWithPaths, _ = g.addPathCombinerToFactory(chromosomeWithPaths, comb)
 						}
 						for m := 0; m < len(chromosomeWithPaths.mines); m++ {
-							newChromosomeWithPaths, err2 := g.addPathMineToFactoryMutation(chromosomeWithPaths)
+							newChromosomeWithPaths, err2 := g.addPathMineToFactory(chromosomeWithPaths)
 							if err2 == nil {
-								newChromosomeWithPaths.fitness, newChromosomeWithPaths.neededTurns = g.evaluateFitness(newChromosomeWithPaths)
+								newChromosomeWithPaths.fitness, newChromosomeWithPaths.neededTurns = g.evaluateChromosome(newChromosomeWithPaths)
 								// if the new chromosome is invalid, it won't get valid by building more paths
 								if newChromosomeWithPaths.fitness == -1 {
 									break
