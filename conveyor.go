@@ -433,17 +433,8 @@ func (g *GeneticAlgorithm) path(startPosition Position, endPositions []PathEndPo
 			}
 			for i := 0; i < NumConveyorSubtypes; i++ {
 				nextConveyor := ConveyorFromIngressAndSubtype(nextIngress, i)
-				// Check if new conveyor would overlap with current conveyor
-				// The formula calculates the forbidden direction based on our direction and the new ingress position we are on
-				if (z+1+int(currentConveyor.direction))%4 == int(nextConveyor.direction) && currentEgress != startPosition {
+				if (currentConveyor.overlapsWith(nextConveyor, z) || currentConveyor.buildsLoopWith(nextConveyor, z)) && currentEgress != startPosition {
 					continue
-				}
-				// Don't build conveyors that would connect back to our ingress
-				// A conveyor with the same length and opposite direction always results in an invalid path
-				if (currentConveyor.length == nextConveyor.length || z == 1) && currentEgress != startPosition {
-					if (currentConveyor.direction+2)%4 == nextConveyor.direction {
-						continue
-					}
 				}
 				nextEgress := nextConveyor.Egress()
 				if !g.scenario.inBounds(nextEgress) {
@@ -531,4 +522,15 @@ func (p Path) conveyorsConnected() bool {
 		}
 	}
 	return true
+}
+
+func (c Conveyor) overlapsWith(conveyor Conveyor, nextIngressIndex int) bool {
+	// The formula calculates the forbidden direction based on our direction and the new ingress position we are on
+	return (nextIngressIndex+1+int(c.direction))%4 == int(conveyor.direction)
+
+}
+
+func (c Conveyor) buildsLoopWith(conveyor Conveyor, nextIngressIndex int) bool {
+	// Adjacent conveyors with the same length and opposite directions always result in a loop of two conveyors
+	return (c.length == conveyor.length || nextIngressIndex == 1) && (c.direction+2)%4 == conveyor.direction
 }
