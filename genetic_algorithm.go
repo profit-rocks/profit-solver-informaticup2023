@@ -28,7 +28,7 @@ type Chromosome struct {
 type MutationFunction func(algorithm *GeneticAlgorithm, chromosome Chromosome) (Chromosome, error)
 
 // Mutations contains all mutation functions, performed in multiple layers. Each layer operates on the same set of chromosomes
-var MutationsWithoutPaths = []MutationFunction{
+var Mutations = []MutationFunction{
 	(*GeneticAlgorithm).addMineMutation,
 	(*GeneticAlgorithm).removeMineMutation,
 	(*GeneticAlgorithm).moveMinesMutation,
@@ -412,26 +412,25 @@ func (g *GeneticAlgorithm) Run() {
 		log.Println("starting iteration", i+1, "/", g.iterations, "max fitness", chromosomes[0].fitness, "turns", chromosomes[0].neededTurns, "min fitness", chromosomes[len(chromosomes)-1].fitness, "turns", chromosomes[len(chromosomes)-1].neededTurns)
 
 		for j := 0; j < NumRoundsPerIteration; j++ {
-			chromosome := chromosomes[rand.Intn(g.populationSize)]
-			chromosomeWithoutPath := chromosome.copy()
-			chromosomeWithoutPath.resetPaths()
+			chromosome := chromosomes[rand.Intn(g.populationSize)].copy()
+			chromosome.resetPaths()
 
 			for k := 0; k < NumMutationsPerRound; k++ {
-				rng := NewUniqueRNG(len(MutationsWithoutPaths))
+				rng := NewUniqueRNG(len(Mutations))
 				done := false
 				var mutationIndex int
 				for !done {
 					mutationIndex, done = rng.Next()
-					mutation := MutationsWithoutPaths[mutationIndex]
-					newChromosome, err := mutation(g, chromosomeWithoutPath.copy())
+					mutation := Mutations[mutationIndex]
+					newChromosome, err := mutation(g, chromosome.copy())
 					if err == nil {
-						chromosomeWithoutPath = newChromosome
+						chromosome = newChromosome
 						chromosomes = append(chromosomes, g.chromosomesWithPaths(newChromosome.copy())...)
 						break
 					}
 				}
 				if done {
-					log.Println("all mutations without paths failed, trying different chromosome")
+					log.Println("all mutations failed, trying different chromosome")
 				}
 			}
 		}
@@ -464,8 +463,8 @@ func (g *GeneticAlgorithm) chromosomesWithPaths(chromosome Chromosome) []Chromos
 		chromosome, _ = g.addPathCombinerToFactory(chromosome, comb)
 	}
 	for m := 0; m < len(chromosome.mines); m++ {
-		newChromosome, err2 := g.addPathMineToFactory(chromosome)
-		if err2 == nil {
+		newChromosome, err := g.addPathMineToFactory(chromosome)
+		if err == nil {
 			newChromosome.fitness, newChromosome.neededTurns = g.evaluateChromosome(newChromosome)
 			// if the new chromosome is invalid, it won't get valid by building more paths
 			if newChromosome.fitness == -1 {
