@@ -230,30 +230,30 @@ func (g *GeneticAlgorithm) removeMineMutation(chromosome Chromosome) (Chromosome
 	return chromosome, nil
 }
 
-func (chromosome *Chromosome) getPathEndPositionsForProduct(product int) []PathEndPosition {
+func (c *Chromosome) getPathEndPositionsForProduct(product int) []PathEndPosition {
 	endPositions := make([]PathEndPosition, 0)
-	for i, factory := range chromosome.factories {
+	for i, factory := range c.factories {
 		if factory.product == product {
 			for _, pos := range factory.NextToIngressPositions() {
-				endPositions = append(endPositions, PathEndPosition{pos, &chromosome.factories[i], factory.distance})
+				endPositions = append(endPositions, PathEndPosition{pos, &c.factories[i], factory.distance})
 			}
 		}
 	}
-	for _, combiner := range chromosome.combiners {
+	for _, combiner := range c.combiners {
 		if combiner.connectedFactory != nil && combiner.connectedFactory.product == product {
 			for _, pos := range combiner.NextToIngressPositions() {
 				endPositions = append(endPositions, PathEndPosition{pos, combiner.connectedFactory, combiner.distance})
 			}
 		}
 	}
-	for _, mine := range chromosome.mines {
+	for _, mine := range c.mines {
 		if mine.connectedFactory != nil && mine.connectedDeposit.subtype == product {
 			for _, pos := range mine.NextToIngressPositions() {
 				endPositions = append(endPositions, PathEndPosition{pos, mine.connectedFactory, mine.distance})
 			}
 		}
 	}
-	for _, path := range chromosome.paths {
+	for _, path := range c.paths {
 		if path.connectedFactory.product == product {
 			for _, conveyor := range path.conveyors {
 				for _, pos := range conveyor.NextToIngressPositions() {
