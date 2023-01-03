@@ -14,6 +14,7 @@ type Path struct {
 
 const NumRoundsPerIteration = 50
 const NumMutationsPerRound = 20
+const NumChosenForCrossover = 10
 
 type Chromosome struct {
 	factories   []Factory
@@ -405,9 +406,43 @@ func (g *GeneticAlgorithm) Run() {
 		}
 		chromosomes = chromosomes[:g.populationSize]
 		log.Println("starting iteration", i+1, "/", g.iterations, "max fitness", chromosomes[0].fitness, "turns", chromosomes[0].neededTurns, "min fitness", chromosomes[len(chromosomes)-1].fitness, "turns", chromosomes[len(chromosomes)-1].neededTurns)
+		for z := 0; z < NumChosenForCrossover; z++ {
+			for j := z + 1; j < NumChosenForCrossover; j++ {
+				chromosome1 := chromosomes[z]
+				chromosome2 := chromosomes[j]
+				newChromosome, err := g.crossover(chromosome1, chromosome2)
+				if err == nil {
+					if len(newChromosome.factories) == 0 || len(newChromosome.mines) == 0 {
+						break
+					}
+					for x := range newChromosome.mines {
+						newChromosome.mines[x].connectedFactory = nil
+					}
+					// Before building paths, we have to update the cell Info
+					g.populateCellInfoWithNewChromosome(newChromosome)
+					for _, comb := range newChromosome.combiners {
+						newChromosome, _ = g.addPathCombinerToFactory(newChromosome, comb)
+					}
+					chromosomeWithPaths := newChromosome
+					for m := 0; m < len(newChromosome.mines); m++ {
+						newChromosomeWithPaths, err2 := g.addPathMineToFactoryMutation(chromosomeWithPaths)
+						if err2 == nil {
+							newChromosomeWithPaths.fitness, newChromosomeWithPaths.neededTurns = g.evaluateFitness(newChromosomeWithPaths)
+							// if the new chromosome is invalid, it won't get valid by building more paths
+							if newChromosomeWithPaths.fitness == -1 {
+								break
+							}
+							chromosomeWithPaths = newChromosomeWithPaths.copy()
+							chromosomes = append(chromosomes, newChromosomeWithPaths)
+							g.chromosomeChannel <- newChromosomeWithPaths
+						}
+					}
+				}
+			}
+		}
 
 		for j := 0; j < NumRoundsPerIteration; j++ {
-			chromosome := chromosomes[rand.Intn(g.populationSize)]
+			chromosome := chromosomes[rand.Intn(len(chromosomes)-j)]
 			chromosomeWithoutPath := chromosome.copy()
 			// reset paths and mines
 			chromosomeWithoutPath.paths = make([]Path, 0)
@@ -464,4 +499,49 @@ func (g *GeneticAlgorithm) Run() {
 		}
 	}
 	g.doneChannel <- true
+}
+
+func (g *GeneticAlgorithm) crossover(chromosome1 Chromosome, chromosome2 Chromosome) (Chromosome, error) {
+	newChromosome := chromosome1.copy()
+	newChromosome.paths = make([]Path, 0)
+	newChromosome.fitness = 0
+	for _, factory := range chromosome2.factories {
+		same := false
+		for _, oldFactory := range newChromosome.factories {
+			if oldFactory.Rectangle().Intersects(factory.Rectangle()) {
+				if oldFactory.product == factory.product {
+					same = true
+					break
+				}
+			}
+		}
+		if same {
+			continue
+		}
+		if g.scenario.positionAvailableForFactory(newChromosome.factories, newChromosome.mines, newChromosome.combiners, newChromosome.paths, factory.position) {
+			newChromosome.factories = append(newChromosome.factories, factory)
+		} else {
+			newFactory, err := g.scenario.randomFactory(newChromosome)
+			if err == nil {
+				newFactory.product = factory.product
+				newChromosome.factories = append(newChromosome.factories, newFactory)
+			}
+		}
+	}
+	for _, mine := range chromosome2.mines {
+		if g.scenario.positionAvailableForMine(newChromosome.factories, newChromosome.mines, newChromosome.combiners, newChromosome.paths, mine) {
+			newChromosome.mines = append(newChromosome.mines, mine)
+		} else {
+			newMine, err := g.randomMine(mine.connectedDeposit, newChromosome)
+			if err == nil {
+				newChromosome.mines = append(newChromosome.mines, newMine)
+			}
+		}
+	}
+	for _, combiner := range chromosome2.combiners {
+		if g.scenario.positionAvailableForCombiner(newChromosome.factories, newChromosome.mines, newChromosome.paths, newChromosome.combiners, combiner) {
+			newChromosome.combiners = append(newChromosome.combiners, combiner)
+		}
+	}
+	return newChromosome, nil
 }
