@@ -288,7 +288,13 @@ func ImportScenario(path string) (Scenario, Chromosome, error) {
 		})
 	}
 
-	// Do a BFS starting at every factory, to determine distance from every mine to it's factory
+	chromosome.determineDistancesFromMinesToFactories(scenario)
+
+	return scenario, chromosome, nil
+}
+
+// we perform a BFS from all factories to the mines
+func (c *Chromosome) determineDistancesFromMinesToFactories(scenario Scenario) {
 	combinerMatrix := make([][]*Combiner, scenario.width)
 	for i := range combinerMatrix {
 		combinerMatrix[i] = make([]*Combiner, scenario.height)
@@ -301,34 +307,34 @@ func ImportScenario(path string) (Scenario, Chromosome, error) {
 	for i := range conveyorMatrix {
 		conveyorMatrix[i] = make([]*Conveyor, scenario.height)
 	}
-	for i := range chromosome.mines {
-		mine := &chromosome.mines[i]
+	for i := range c.mines {
+		mine := &c.mines[i]
 		mine.RectanglesEach(func(rectangle Rectangle) {
 			rectangle.ForEach(func(position Position) {
 				mineMatrix[position.x][position.y] = mine
 			})
 		})
 	}
-	for i := range chromosome.combiners {
-		combiner := &chromosome.combiners[i]
+	for i := range c.combiners {
+		combiner := &c.combiners[i]
 		combiner.RectanglesEach(func(rectangle Rectangle) {
 			rectangle.ForEach(func(position Position) {
 				combinerMatrix[position.x][position.y] = combiner
 			})
 		})
 	}
-	for i := range chromosome.paths {
-		for j := range chromosome.paths[i].conveyors {
-			conveyor := &chromosome.paths[i].conveyors[j]
+	for i := range c.paths {
+		for j := range c.paths[i].conveyors {
+			conveyor := &c.paths[i].conveyors[j]
 			conveyor.Rectangle().ForEach(func(position Position) {
 				conveyorMatrix[position.x][position.y] = conveyor
 			})
 		}
 	}
 
-	for i := range chromosome.factories {
+	for i := range c.factories {
 		distance := 0
-		factory := &chromosome.factories[i]
+		factory := &c.factories[i]
 		positions := factory.NextToIngressPositions()
 		visitedPosition := make([][]bool, scenario.width)
 		for j := range visitedPosition {
@@ -365,6 +371,4 @@ func ImportScenario(path string) (Scenario, Chromosome, error) {
 			}
 		}
 	}
-
-	return scenario, chromosome, nil
 }

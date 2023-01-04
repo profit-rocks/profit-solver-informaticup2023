@@ -263,7 +263,7 @@ func TestPathExistsMineToCombiner(t *testing.T) {
 		positions = append(positions, PathEndPosition{
 			position: p})
 	}
-	_, _, err = g.path(c.mines[0].Egress(), positions)
+	_, _, err = findPath(c.mines[0].Egress(), positions, scenario)
 	if err != nil {
 		t.Errorf("Searching for a path between mine and combiner should not return err %e", err)
 	}
