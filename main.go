@@ -119,7 +119,7 @@ func main() {
 	}
 	log.Println("final fitness", chromosome.fitness, "turns", chromosome.neededTurns)
 
-	err = chromosome.Export(scenario, exporter, *outputPtr)
+	err = chromosome.CleanCopy().Export(scenario, exporter, *outputPtr)
 	if err != nil {
 		log.Fatal("could not export solution: ", err)
 	}

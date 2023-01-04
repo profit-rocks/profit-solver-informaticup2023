@@ -94,7 +94,7 @@ func minInt(x int, y int) int {
 	return y
 }
 
-func (c Chromosome) copy() Chromosome {
+func (c Chromosome) Copy() Chromosome {
 	newChromosome := Chromosome{
 		fitness:     c.fitness,
 		neededTurns: c.neededTurns,
@@ -108,6 +108,32 @@ func (c Chromosome) copy() Chromosome {
 	}
 	for k, mine := range c.mines {
 		newChromosome.mines[k] = mine
+	}
+	for k, path := range c.paths {
+		newChromosome.paths[k] = path.copy()
+	}
+	for k, combiner := range c.combiners {
+		newChromosome.combiners[k] = combiner
+	}
+	return newChromosome
+}
+
+func (c Chromosome) CleanCopy() Chromosome {
+	newChromosome := Chromosome{
+		fitness:     c.fitness,
+		neededTurns: c.neededTurns,
+		mines:       make([]Mine, len(c.mines)),
+		factories:   make([]Factory, len(c.factories)),
+		combiners:   make([]Combiner, len(c.combiners)),
+		paths:       make([]Path, len(c.paths)),
+	}
+	for k, factory := range c.factories {
+		newChromosome.factories[k] = factory
+	}
+	for k, mine := range c.mines {
+		if mine.connectedFactory != nil {
+			newChromosome.mines[k] = mine
+		}
 	}
 	for k, path := range c.paths {
 		newChromosome.paths[k] = path.copy()
@@ -344,14 +370,6 @@ func (g *GeneticAlgorithm) moveFactoriesMutation(chromosome Chromosome) (Chromos
 	return newChromosome, nil
 }
 
-func (g *GeneticAlgorithm) evaluateFitness(chromosome Chromosome) (int, int) {
-	fitness, turns, err := g.scenario.evaluateChromosome(chromosome)
-	if err != nil {
-		return -1, g.scenario.turns
-	}
-	return fitness, turns
-}
-
 func (g *GeneticAlgorithm) generateChromosomes() []Chromosome {
 	chromosomes := make([]Chromosome, g.populationSize)
 	for i := 0; i < g.populationSize; i++ {
@@ -381,7 +399,7 @@ func (g *GeneticAlgorithm) Run() {
 
 		for j := 0; j < NumRoundsPerIteration; j++ {
 			chromosome := chromosomes[rand.Intn(g.populationSize)]
-			chromosomeWithoutPath := chromosome.copy()
+			chromosomeWithoutPath := chromosome.Copy()
 			// reset paths and mines
 			chromosomeWithoutPath.paths = make([]Path, 0)
 			for x := range chromosomeWithoutPath.mines {
@@ -395,10 +413,10 @@ func (g *GeneticAlgorithm) Run() {
 				for !done {
 					mutationIndex, done = rng.Next()
 					mutation := MutationsWithoutPaths[mutationIndex]
-					newChromosome, err := mutation(g, chromosomeWithoutPath.copy())
+					newChromosome, err := mutation(g, chromosomeWithoutPath.Copy())
 					if err == nil {
 						chromosomeWithoutPath = newChromosome
-						chromosomeWithPaths := newChromosome.copy()
+						chromosomeWithPaths := newChromosome.Copy()
 						// fitness is always 0 for chromosomes without mines or factories
 						if len(chromosomeWithPaths.factories) == 0 || len(chromosomeWithPaths.mines) == 0 {
 							break
@@ -411,12 +429,12 @@ func (g *GeneticAlgorithm) Run() {
 						for m := 0; m < len(chromosomeWithPaths.mines); m++ {
 							newChromosomeWithPaths, err2 := g.addPathMineToFactoryMutation(chromosomeWithPaths)
 							if err2 == nil {
-								newChromosomeWithPaths.fitness, newChromosomeWithPaths.neededTurns = g.evaluateFitness(newChromosomeWithPaths)
+								newChromosomeWithPaths.fitness, newChromosomeWithPaths.neededTurns, err = g.scenario.evaluateChromosome(newChromosomeWithPaths.CleanCopy())
 								// if the new chromosome is invalid, it won't get valid by building more paths
-								if newChromosomeWithPaths.fitness == -1 {
+								if err != nil {
 									break
 								}
-								chromosomeWithPaths = newChromosomeWithPaths.copy()
+								chromosomeWithPaths = newChromosomeWithPaths.Copy()
 								chromosomes = append(chromosomes, newChromosomeWithPaths)
 								g.chromosomeChannel <- newChromosomeWithPaths
 							}
