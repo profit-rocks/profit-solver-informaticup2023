@@ -122,7 +122,7 @@ func (c Chromosome) CleanCopy() Chromosome {
 	newChromosome := Chromosome{
 		fitness:     c.fitness,
 		neededTurns: c.neededTurns,
-		mines:       make([]Mine, len(c.mines)),
+		mines:       make([]Mine, 0, len(c.mines)),
 		factories:   make([]Factory, len(c.factories)),
 		combiners:   make([]Combiner, len(c.combiners)),
 		paths:       make([]Path, len(c.paths)),
@@ -130,9 +130,9 @@ func (c Chromosome) CleanCopy() Chromosome {
 	for k, factory := range c.factories {
 		newChromosome.factories[k] = factory
 	}
-	for k, mine := range c.mines {
+	for _, mine := range c.mines {
 		if mine.connectedFactory != nil {
-			newChromosome.mines[k] = mine
+			newChromosome.mines = append(newChromosome.mines, mine)
 		}
 	}
 	for k, path := range c.paths {
