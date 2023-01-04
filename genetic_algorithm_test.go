@@ -249,8 +249,6 @@ func TestPathExistsMineToCombiner(t *testing.T) {
 		t.Errorf("failed to import fixture: %e", err)
 	}
 
-	g := geneticAlgorithmFromScenario(scenario)
-
 	if len(chromosome.mines) != 1 {
 		t.Errorf("Expected number of mines of imported solution to be 1")
 	}

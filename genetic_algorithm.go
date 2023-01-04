@@ -449,12 +449,11 @@ func (g *GeneticAlgorithm) chromosomesWithPaths(chromosome Chromosome) []Chromos
 	for m := 0; m < len(chromosome.mines); m++ {
 		newChromosome, err := g.addPathMineToFactory(chromosome)
 		if err == nil {
-			newChromosome.fitness, newChromosome.neededTurns = g.evaluateChromosome(newChromosome)
-			// if the new chromosome is invalid, it won't get valid by building more paths
-			if newChromosome.fitness == -1 {
+			newChromosome.fitness, newChromosome.neededTurns, err = g.scenario.evaluateChromosome(newChromosome)
+			if err != nil {
 				break
 			}
-			chromosome = newChromosome.copy()
+			chromosome = newChromosome.Copy()
 			chromosomes = append(chromosomes, newChromosome)
 		}
 	}
