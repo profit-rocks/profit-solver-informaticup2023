@@ -425,7 +425,10 @@ func (g *GeneticAlgorithm) Run() {
 					newChromosome, err := mutation(g, chromosome.copy())
 					if err == nil {
 						chromosome = newChromosome
-						chromosomes = append(chromosomes, g.chromosomesWithPaths(newChromosome.copy())...)
+						for _, c := range g.chromosomesWithPaths(newChromosome.copy()) {
+							chromosomes = append(chromosomes, c)
+							g.chromosomeChannel <- c
+						}
 						break
 					}
 				}
@@ -472,7 +475,6 @@ func (g *GeneticAlgorithm) chromosomesWithPaths(chromosome Chromosome) []Chromos
 			}
 			chromosome = newChromosome.copy()
 			chromosomes = append(chromosomes, newChromosome)
-			g.chromosomeChannel <- newChromosome
 		}
 	}
 	return chromosomes
