@@ -93,19 +93,19 @@ func (s *Scenario) checkEgressesHaveSingleIngress(c Chromosome) bool {
 func (s *Scenario) checkValidity(c Chromosome) error {
 	for i, mine := range c.mines {
 		if !s.positionAvailableForMine(c.factories, c.mines[:i], c.combiners, c.paths, mine) {
-			return errors.New("solution includes a mine which position is invalid, can't evaluate this solution")
+			return errors.New("chromosome includes a mine which position is invalid, can't evaluate this chromosome")
 		}
 	}
 
 	for i, factory := range c.factories {
 		if !s.positionAvailableForFactory(c.factories[:i], c.mines, c.combiners, c.paths, factory.position) {
-			return errors.New("solution includes a factory which position is invalid, can't evaluate this solution")
+			return errors.New("chromosome includes a factory which position is invalid, can't evaluate this chromosome")
 		}
 	}
 
 	for i, combiner := range c.combiners {
 		if !s.positionAvailableForCombiner(c.factories, c.mines, c.paths, c.combiners[:i], combiner) {
-			return errors.New("solution includes a combiner which position is invalid, can't evaluate this solution")
+			return errors.New("chromosome includes a combiner which position is invalid, can't evaluate this chromosome")
 		}
 	}
 	paths := make([]Path, len(c.paths))
@@ -113,18 +113,18 @@ func (s *Scenario) checkValidity(c Chromosome) error {
 		paths = append(paths, Path{})
 		for _, conveyor := range path.conveyors {
 			if !s.positionAvailableForConveyor(c.factories, c.mines, c.combiners, paths, conveyor) {
-				return errors.New("solution includes a conveyor which position is invalid, can't evaluate this solution")
+				return errors.New("chromosome includes a conveyor which position is invalid, can't evaluate this chromosome")
 			}
 			paths[i].conveyors = append(paths[i].conveyors, conveyor)
 		}
 	}
 	if !s.checkEgressesHaveSingleIngress(c) {
-		return errors.New("solution includes multiple ingresses at an egress")
+		return errors.New("chromosome includes multiple ingresses at an egress")
 	}
 	return nil
 }
 
-func (s *Scenario) evaluateSolution(c Chromosome) (int, int, error) {
+func (s *Scenario) evaluateChromosome(c Chromosome) (int, int, error) {
 	// TODO: remove validity check
 	err := s.checkValidity(c)
 	if err != nil {

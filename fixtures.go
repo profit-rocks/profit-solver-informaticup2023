@@ -124,7 +124,7 @@ func chromosomeWithPathForLargeScenarioWithDeposit() Chromosome {
 	}
 }
 
-func solutionWithSingleMineForLargeEmptyScenario() Chromosome {
+func chromosomeWithSingleMineForLargeEmptyScenario() Chromosome {
 	return Chromosome{
 		factories: []Factory{},
 		mines: []Mine{{
