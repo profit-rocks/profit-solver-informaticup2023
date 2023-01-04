@@ -78,43 +78,6 @@ func removeUniform[T any](arr []T, probability float64) []T {
 	return arr
 }
 
-func (c Chromosome) Solution() Solution {
-	solution := Solution{
-		factories: make([]Factory, len(c.factories)),
-		mines:     make([]Mine, 0, len(c.mines)),
-		paths:     []Path{},
-		combiners: make([]Combiner, len(c.combiners)),
-	}
-	for i, combiner := range c.combiners {
-		solution.combiners[i] = Combiner{
-			position:  combiner.position,
-			direction: combiner.direction,
-		}
-	}
-	for i, factory := range c.factories {
-		solution.factories[i] = Factory{
-			position: factory.position,
-			product:  factory.product,
-		}
-	}
-	for _, mine := range c.mines {
-		if mine.connectedFactory != nil {
-			solution.mines = append(solution.mines, Mine{
-				position:         mine.position,
-				direction:        mine.direction,
-				connectedFactory: mine.connectedFactory,
-				distance:         mine.distance,
-			})
-		}
-	}
-	for _, path := range c.paths {
-		if len(path.conveyors) > 0 {
-			solution.paths = append(solution.paths, path)
-		}
-	}
-	return solution
-}
-
 func (p Path) copy() Path {
 	path := Path{}
 	for _, c := range p.conveyors {
@@ -382,7 +345,7 @@ func (g *GeneticAlgorithm) moveFactoriesMutation(chromosome Chromosome) (Chromos
 }
 
 func (g *GeneticAlgorithm) evaluateFitness(chromosome Chromosome) (int, int) {
-	fitness, turns, err := g.scenario.evaluateSolution(chromosome.Solution())
+	fitness, turns, err := g.scenario.evaluateSolution(chromosome)
 	if err != nil {
 		return -1, g.scenario.turns
 	}

@@ -10,8 +10,8 @@ func largeEmptyScenario() Scenario {
 	}
 }
 
-func invalidSolutionForLargeEmptyScenario() Solution {
-	return Solution{
+func invalidChromosomeForLargeEmptyScenario() Chromosome {
+	return Chromosome{
 		factories: []Factory{{
 			position: Position{0, 0},
 			product:  0,
@@ -73,7 +73,7 @@ func largeScenarioWithDeposit() Scenario {
 	}
 }
 
-func solutionForLargeScenarioWithDeposit() Solution {
+func chromosomeForLargeScenarioWithDeposit() Chromosome {
 	factory := Factory{
 		position: Position{
 			x: 9,
@@ -81,7 +81,7 @@ func solutionForLargeScenarioWithDeposit() Solution {
 		},
 		product: 0,
 	}
-	return Solution{
+	return Chromosome{
 		factories: []Factory{
 			factory,
 		},
@@ -98,7 +98,7 @@ func solutionForLargeScenarioWithDeposit() Solution {
 	}
 }
 
-func solutionWithPathForLargeScenarioWithDeposit() Solution {
+func chromosomeWithPathForLargeScenarioWithDeposit() Chromosome {
 	factory := Factory{
 		position: Position{
 			x: 14,
@@ -106,7 +106,7 @@ func solutionWithPathForLargeScenarioWithDeposit() Solution {
 		},
 		product: 0,
 	}
-	return Solution{
+	return Chromosome{
 		factories: []Factory{factory},
 		mines: []Mine{{
 			position: Position{
@@ -124,8 +124,8 @@ func solutionWithPathForLargeScenarioWithDeposit() Solution {
 	}
 }
 
-func solutionWithSingleMineForLargeEmptyScenario() Solution {
-	return Solution{
+func solutionWithSingleMineForLargeEmptyScenario() Chromosome {
+	return Chromosome{
 		factories: []Factory{},
 		mines: []Mine{{
 			position: Position{

@@ -91,12 +91,12 @@ func TestScenarioWithFactory(t *testing.T) {
 
 func TestPositionAvailableForFactory(t *testing.T) {
 	scenario := largeEmptyScenario()
-	solution := solutionWithSingleMineForLargeEmptyScenario()
-	mines := make([]Mine, len(solution.mines))
-	for i, mine := range solution.mines {
+	chromosome := solutionWithSingleMineForLargeEmptyScenario()
+	mines := make([]Mine, len(chromosome.mines))
+	for i, mine := range chromosome.mines {
 		mines[i] = mine
 	}
-	for _, mine := range solution.mines {
+	for _, mine := range chromosome.mines {
 		if scenario.positionAvailableForFactory([]Factory{}, mines, []Combiner{}, []Path{}, mine.position) {
 			t.Errorf("position %v should not be available", mine.position)
 		}
@@ -104,7 +104,7 @@ func TestPositionAvailableForFactory(t *testing.T) {
 }
 
 func TestPositionAvailableForCombiner(t *testing.T) {
-	scenario, solution, err := importFromProfitJson("fixtures/freePlacesForCombiners.json")
+	scenario, solution, err := ImportScenario("fixtures/freePlacesForCombiners.json")
 	if err != nil {
 		t.Errorf("failed to import fixture: %e", err)
 	}
@@ -117,7 +117,7 @@ func TestPositionAvailableForCombiner(t *testing.T) {
 }
 
 func TestPositionNotAvailableForCombiner(t *testing.T) {
-	scenario, solution, err := importFromProfitJson("fixtures/scenarioWithSingleDeposit.json")
+	scenario, solution, err := ImportScenario("fixtures/scenarioWithSingleDeposit.json")
 	if err != nil {
 		t.Errorf("failed to import fixture: %e", err)
 	}
@@ -244,7 +244,7 @@ func TestTwoMinesSameEgress(t *testing.T) {
 }
 
 func TestPathExistsMineToCombiner(t *testing.T) {
-	scenario, solution, err := importFromProfitJson("fixtures/pathExistsMineToCombiner.json")
+	scenario, solution, err := ImportScenario("fixtures/pathExistsMineToCombiner.json")
 	if err != nil {
 		t.Errorf("failed to import fixture: %e", err)
 	}
