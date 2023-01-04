@@ -66,7 +66,6 @@ func main() {
 		populationSize:          200,
 		iterations:              *itersPtr,
 		mutationProbability:     0.18,
-		crossoverProbability:    0.7,
 		optimum:                 optimum,
 		chromosomeChannel:       chromosomeChannel,
 		doneChannel:             doneChannel,
