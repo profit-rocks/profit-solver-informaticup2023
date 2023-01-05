@@ -449,7 +449,7 @@ func (g *GeneticAlgorithm) chromosomesWithPaths(chromosome Chromosome) []Chromos
 	for m := 0; m < len(chromosome.mines); m++ {
 		newChromosome, err := g.addPathMineToFactory(chromosome)
 		if err == nil {
-			newChromosome.fitness, newChromosome.neededTurns, err = g.scenario.evaluateChromosome(newChromosome)
+			newChromosome.fitness, newChromosome.neededTurns, err = g.scenario.evaluateChromosome(newChromosome.CopyWithoutDisconnectedMines())
 			if err != nil {
 				break
 			}
