@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1672905983482,
+  "lastUpdate": 1672915284997,
   "repoUrl": "https://github.com/profit-rocks/profit-solver-icup23",
   "entries": {
     "Benchmark": [
@@ -18641,6 +18641,170 @@ window.BENCHMARK_DATA = {
           {
             "name": "big_empty.json - time",
             "value": 0.020018815994262695,
+            "unit": "seconds"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "richard@rgwohlbold.de",
+            "name": "Richard Wohlbold",
+            "username": "rgwohlbold"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "e763aaaa85cf47979f489bf974aa666c1b983e42",
+          "message": "Export Compliance (#67)\n\n* Remove solution struct, add exporter abstraction\r\n\r\n* Use \"chromosome\" instead of \"solution\" in more places\r\n\r\n* Implement CleanCopy() that removes all unconnected mines\r\n\r\n* Use length of 0 for initialization of mines\r\n\r\n* fix problems after merge\r\n\r\n* rename cleanCopy to CopyWithoutDisconnectedMines\r\n\r\n* fix typo from previous commit\r\n\r\n* remove disconnected mines before evaluating chromosome\r\n\r\nCo-authored-by: Jacob Schäfer <js.jacobschaefer@gmail.com>",
+          "timestamp": "2023-01-05T11:34:32+01:00",
+          "tree_id": "8720fe44bd29b38dc31e6f96274f96c2a6df0f81",
+          "url": "https://github.com/profit-rocks/profit-solver-icup23/commit/e763aaaa85cf47979f489bf974aa666c1b983e42"
+        },
+        "date": 1672915282100,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "003.task.json - fitness",
+            "value": 50,
+            "unit": "points"
+          },
+          {
+            "name": "003.task.json - time",
+            "value": 98.00939869880676,
+            "unit": "seconds"
+          },
+          {
+            "name": "002.task.json - fitness",
+            "value": 90,
+            "unit": "points"
+          },
+          {
+            "name": "002.task.json - time",
+            "value": 2.279366970062256,
+            "unit": "seconds"
+          },
+          {
+            "name": "multiple_paths_required.json - fitness",
+            "value": 380,
+            "unit": "points"
+          },
+          {
+            "name": "multiple_paths_required.json - time",
+            "value": 0.4809398651123047,
+            "unit": "seconds"
+          },
+          {
+            "name": "exampleScenario.json - fitness",
+            "value": 450,
+            "unit": "points"
+          },
+          {
+            "name": "exampleScenario.json - time",
+            "value": 23.97073483467102,
+            "unit": "seconds"
+          },
+          {
+            "name": "alex.json - fitness",
+            "value": 590,
+            "unit": "points"
+          },
+          {
+            "name": "alex.json - time",
+            "value": 98.02111887931824,
+            "unit": "seconds"
+          },
+          {
+            "name": "004.task.json - fitness",
+            "value": 240,
+            "unit": "points"
+          },
+          {
+            "name": "004.task.json - time",
+            "value": 7.6139891147613525,
+            "unit": "seconds"
+          },
+          {
+            "name": "nils.json - fitness",
+            "value": 1320,
+            "unit": "points"
+          },
+          {
+            "name": "nils.json - time",
+            "value": 0.12537407875061035,
+            "unit": "seconds"
+          },
+          {
+            "name": "two_deposits.json - fitness",
+            "value": 90,
+            "unit": "points"
+          },
+          {
+            "name": "two_deposits.json - time",
+            "value": 0.009174585342407227,
+            "unit": "seconds"
+          },
+          {
+            "name": "001.task.json - fitness",
+            "value": 410,
+            "unit": "points"
+          },
+          {
+            "name": "001.task.json - time",
+            "value": 0.01606893539428711,
+            "unit": "seconds"
+          },
+          {
+            "name": "richard2.json - fitness",
+            "value": 120,
+            "unit": "points"
+          },
+          {
+            "name": "richard2.json - time",
+            "value": 0.02143239974975586,
+            "unit": "seconds"
+          },
+          {
+            "name": "richard.json - fitness",
+            "value": 120,
+            "unit": "points"
+          },
+          {
+            "name": "richard.json - time",
+            "value": 0.012493133544921875,
+            "unit": "seconds"
+          },
+          {
+            "name": "jacob_few_turns.json - fitness",
+            "value": 620,
+            "unit": "points"
+          },
+          {
+            "name": "jacob_few_turns.json - time",
+            "value": 58.014270067214966,
+            "unit": "seconds"
+          },
+          {
+            "name": "jacob.json - fitness",
+            "value": 1820,
+            "unit": "points"
+          },
+          {
+            "name": "jacob.json - time",
+            "value": 58.01102018356323,
+            "unit": "seconds"
+          },
+          {
+            "name": "big_empty.json - fitness",
+            "value": 400,
+            "unit": "points"
+          },
+          {
+            "name": "big_empty.json - time",
+            "value": 0.03165459632873535,
             "unit": "seconds"
           }
         ]
