@@ -113,7 +113,7 @@ func (c Chromosome) Copy() Chromosome {
 	return newChromosome
 }
 
-func (c Chromosome) CopyWithoutDisconnecteMines() Chromosome {
+func (c Chromosome) CopyWithoutDisconnectedMines() Chromosome {
 	newChromosome := Chromosome{
 		fitness:     c.fitness,
 		neededTurns: c.neededTurns,

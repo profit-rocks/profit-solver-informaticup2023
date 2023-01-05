@@ -118,7 +118,7 @@ func main() {
 	}
 	log.Println("final fitness", chromosome.fitness, "turns", chromosome.neededTurns)
 
-	err = chromosome.CopyWithoutDisconnecteMines().Export(scenario, exporter, *outputPtr)
+	err = chromosome.CopyWithoutDisconnectedMines().Export(scenario, exporter, *outputPtr)
 	if err != nil {
 		log.Fatal("could not export solution: ", err)
 	}
