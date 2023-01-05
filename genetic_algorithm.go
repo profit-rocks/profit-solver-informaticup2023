@@ -73,43 +73,6 @@ func removeUniform[T any](arr []T, probability float64) []T {
 	return arr
 }
 
-func (c Chromosome) Solution() Solution {
-	solution := Solution{
-		factories: make([]Factory, len(c.factories)),
-		mines:     make([]Mine, 0, len(c.mines)),
-		paths:     []Path{},
-		combiners: make([]Combiner, len(c.combiners)),
-	}
-	for i, combiner := range c.combiners {
-		solution.combiners[i] = Combiner{
-			position:  combiner.position,
-			direction: combiner.direction,
-		}
-	}
-	for i, factory := range c.factories {
-		solution.factories[i] = Factory{
-			position: factory.position,
-			product:  factory.product,
-		}
-	}
-	for _, mine := range c.mines {
-		if mine.connectedFactory != nil {
-			solution.mines = append(solution.mines, Mine{
-				position:         mine.position,
-				direction:        mine.direction,
-				connectedFactory: mine.connectedFactory,
-				distance:         mine.distance,
-			})
-		}
-	}
-	for _, path := range c.paths {
-		if len(path.conveyors) > 0 {
-			solution.paths = append(solution.paths, path)
-		}
-	}
-	return solution
-}
-
 func (p Path) copy() Path {
 	path := Path{}
 	for _, c := range p.conveyors {
@@ -126,7 +89,7 @@ func minInt(x int, y int) int {
 	return y
 }
 
-func (c Chromosome) copy() Chromosome {
+func (c Chromosome) Copy() Chromosome {
 	newChromosome := Chromosome{
 		fitness:     c.fitness,
 		neededTurns: c.neededTurns,
@@ -140,6 +103,32 @@ func (c Chromosome) copy() Chromosome {
 	}
 	for k, mine := range c.mines {
 		newChromosome.mines[k] = mine
+	}
+	for k, path := range c.paths {
+		newChromosome.paths[k] = path.copy()
+	}
+	for k, combiner := range c.combiners {
+		newChromosome.combiners[k] = combiner
+	}
+	return newChromosome
+}
+
+func (c Chromosome) CopyWithoutDisconnectedMines() Chromosome {
+	newChromosome := Chromosome{
+		fitness:     c.fitness,
+		neededTurns: c.neededTurns,
+		mines:       make([]Mine, 0, len(c.mines)),
+		factories:   make([]Factory, len(c.factories)),
+		combiners:   make([]Combiner, len(c.combiners)),
+		paths:       make([]Path, len(c.paths)),
+	}
+	for k, factory := range c.factories {
+		newChromosome.factories[k] = factory
+	}
+	for _, mine := range c.mines {
+		if mine.connectedFactory != nil {
+			newChromosome.mines = append(newChromosome.mines, mine)
+		}
 	}
 	for k, path := range c.paths {
 		newChromosome.paths[k] = path.copy()
@@ -376,14 +365,6 @@ func (g *GeneticAlgorithm) moveFactoriesMutation(chromosome Chromosome) (Chromos
 	return newChromosome, nil
 }
 
-func (g *GeneticAlgorithm) evaluateChromosome(chromosome Chromosome) (int, int) {
-	fitness, turns, err := g.scenario.evaluateSolution(chromosome.Solution())
-	if err != nil {
-		return -1, g.scenario.turns
-	}
-	return fitness, turns
-}
-
 func (g *GeneticAlgorithm) generateChromosomes() []Chromosome {
 	chromosomes := make([]Chromosome, g.populationSize)
 	for i := 0; i < g.populationSize; i++ {
@@ -412,7 +393,7 @@ func (g *GeneticAlgorithm) Run() {
 		log.Println("starting iteration", i+1, "/", g.iterations, "max fitness", chromosomes[0].fitness, "turns", chromosomes[0].neededTurns, "min fitness", chromosomes[len(chromosomes)-1].fitness, "turns", chromosomes[len(chromosomes)-1].neededTurns)
 
 		for j := 0; j < NumRoundsPerIteration; j++ {
-			chromosome := chromosomes[rand.Intn(g.populationSize)].copy()
+			chromosome := chromosomes[rand.Intn(g.populationSize)].Copy()
 			chromosome.resetPaths()
 
 			for k := 0; k < NumMutationsPerRound; k++ {
@@ -422,10 +403,10 @@ func (g *GeneticAlgorithm) Run() {
 				for !done {
 					mutationIndex, done = rng.Next()
 					mutation := Mutations[mutationIndex]
-					newChromosome, err := mutation(g, chromosome.copy())
+					newChromosome, err := mutation(g, chromosome.Copy())
 					if err == nil {
 						chromosome = newChromosome
-						for _, c := range g.chromosomesWithPaths(newChromosome.copy()) {
+						for _, c := range g.chromosomesWithPaths(newChromosome.Copy()) {
 							chromosomes = append(chromosomes, c)
 							g.chromosomeChannel <- c
 						}
@@ -468,12 +449,11 @@ func (g *GeneticAlgorithm) chromosomesWithPaths(chromosome Chromosome) []Chromos
 	for m := 0; m < len(chromosome.mines); m++ {
 		newChromosome, err := g.addPathMineToFactory(chromosome)
 		if err == nil {
-			newChromosome.fitness, newChromosome.neededTurns = g.evaluateChromosome(newChromosome)
-			// if the new chromosome is invalid, it won't get valid by building more paths
-			if newChromosome.fitness == -1 {
+			newChromosome.fitness, newChromosome.neededTurns, err = g.scenario.evaluateChromosome(newChromosome.CopyWithoutDisconnectedMines())
+			if err != nil {
 				break
 			}
-			chromosome = newChromosome.copy()
+			chromosome = newChromosome.Copy()
 			chromosomes = append(chromosomes, newChromosome)
 		}
 	}
