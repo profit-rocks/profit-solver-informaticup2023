@@ -396,7 +396,8 @@ func findPath(startPosition Position, endPositions []PathEndPosition, scenario S
 	var initialDistance int
 	for queue.Len() > 0 {
 		current := queue.Pop().(*Item)
-		currentEgress := current.value.Egress()
+		currentConveyor := current.value
+		currentEgress := currentConveyor.Egress()
 		finished := false
 		for _, p := range endPositions {
 			if currentEgress == p.position && cellInfo[currentEgress.y][currentEgress.x].numIngressNeighbors <= 1 {
