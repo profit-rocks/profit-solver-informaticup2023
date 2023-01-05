@@ -22,6 +22,7 @@ func main() {
 	logChromosomesDirPtr := flag.String("logdir", "", "Directory to log top chromosomes in each iteration")
 	visualizeChromosomesDirPtr := flag.String("visualizedir", "", "Directory to visualize chromosomes in each iteration")
 	endOnOptimalPtr := flag.Bool("endonoptimal", false, "End when optimal solution is found")
+	exportPtr := flag.String("exporter", "scenario", "Export type, either \"scenario\" or \"solution\"")
 	flag.Parse()
 	if *inputPtr == "" || *outputPtr == "" {
 		flag.Usage()
@@ -38,7 +39,15 @@ func main() {
 		}
 		defer pprof.StopCPUProfile()
 	}
-	scenario, _, err := importFromProfitJson(*inputPtr)
+	var exporter Exporter
+	if *exportPtr == "scenario" {
+		exporter = ScenarioExporter{}
+	} else if *exportPtr == "solution" {
+		exporter = SolutionExporter{}
+	} else {
+		log.Fatal("unknown exporter ", *exportPtr)
+	}
+	scenario, _, err := ImportScenario(*inputPtr)
 	if err != nil {
 		log.Fatal("could not import scenario: ", err)
 	}
@@ -66,7 +75,6 @@ func main() {
 		populationSize:          200,
 		iterations:              *itersPtr,
 		mutationProbability:     0.18,
-		crossoverProbability:    0.7,
 		optimum:                 optimum,
 		chromosomeChannel:       chromosomeChannel,
 		doneChannel:             doneChannel,
@@ -110,7 +118,7 @@ func main() {
 	}
 	log.Println("final fitness", chromosome.fitness, "turns", chromosome.neededTurns)
 
-	err = exportSolution(scenario, chromosome.Solution(), *outputPtr)
+	err = chromosome.CopyWithoutDisconnectedMines().Export(scenario, exporter, *outputPtr)
 	if err != nil {
 		log.Fatal("could not export solution: ", err)
 	}

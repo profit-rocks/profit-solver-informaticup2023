@@ -7,7 +7,7 @@ import (
 
 func TestImportMineWithInvalidSubtype(t *testing.T) {
 	for i := 1; i < 3; i++ {
-		_, _, err := importFromProfitJson(fmt.Sprintf("fixtures/mineWithInvalidSubtype%d.json", i))
+		_, _, err := ImportScenario(fmt.Sprintf("fixtures/mineWithInvalidSubtype%d.json", i))
 		if err == nil {
 			t.Errorf("importing invalid subtype should return an error")
 		}
@@ -16,7 +16,7 @@ func TestImportMineWithInvalidSubtype(t *testing.T) {
 
 func TestImportConveyerWithInvalidSubtype(t *testing.T) {
 	for i := 1; i < 3; i++ {
-		_, _, err := importFromProfitJson(fmt.Sprintf("fixtures/conveyorWithInvalidSubtype%d.json", i))
+		_, _, err := ImportScenario(fmt.Sprintf("fixtures/conveyorWithInvalidSubtype%d.json", i))
 		if err == nil {
 			t.Errorf("importing invalid subtype should return an error")
 		}
@@ -24,11 +24,11 @@ func TestImportConveyerWithInvalidSubtype(t *testing.T) {
 }
 
 func TestImportCombiner(t *testing.T) {
-	_, solution, err := importFromProfitJson("fixtures/singleCombiner.json")
+	_, chromosome, err := ImportScenario("fixtures/singleCombiner.json")
 	if err != nil {
 		t.Errorf("importing combiner should not throw an error")
 	}
-	if len(solution.combiners) == 0 {
-		t.Errorf("a combiner should be added to the solution")
+	if len(chromosome.combiners) == 0 {
+		t.Errorf("a combiner should be added to the chromsome")
 	}
 }
