@@ -15,12 +15,12 @@ func TestRightMineRectangles(t *testing.T) {
 
 	rectangles := mineRectanglesSlice(&mine)
 	validRectangles := []Rectangle{
-		{Position{1, 0}, 2, 1},
-		{Position{0, 1}, 4, 1},
+		{Position{1, 0}, 2, 1, nil},
+		{Position{0, 1}, 4, 1, nil},
 	}
 
 	for i := range validRectangles {
-		if rectangles[i] != validRectangles[i] {
+		if !rectangles[i].isEqualTo(validRectangles[i]) {
 			t.Errorf("Rectangle %d is not valid", i)
 		}
 	}
@@ -31,12 +31,12 @@ func TestBottomMineRectangles(t *testing.T) {
 
 	rectangles := mineRectanglesSlice(&mine)
 	validRectangles := []Rectangle{
-		{Position{0, 0}, 1, 4},
-		{Position{1, 1}, 1, 2},
+		{Position{0, 0}, 1, 4, nil},
+		{Position{1, 1}, 1, 2, nil},
 	}
 
 	for i := range validRectangles {
-		if rectangles[i] != validRectangles[i] {
+		if !rectangles[i].isEqualTo(validRectangles[i]) {
 			t.Errorf("Rectangle %d is not valid", i)
 		}
 	}
@@ -47,12 +47,12 @@ func TestLeftMineRectangles(t *testing.T) {
 
 	rectangles := mineRectanglesSlice(&mine)
 	validRectangles := []Rectangle{
-		{Position{0, 0}, 4, 1},
-		{Position{1, 1}, 2, 1},
+		{Position{0, 0}, 4, 1, nil},
+		{Position{1, 1}, 2, 1, nil},
 	}
 
 	for i := range validRectangles {
-		if rectangles[i] != validRectangles[i] {
+		if !rectangles[i].isEqualTo(validRectangles[i]) {
 			t.Errorf("Rectangle %d is not valid", i)
 		}
 	}
@@ -63,12 +63,12 @@ func TestTopMineRectangles(t *testing.T) {
 
 	rectangles := mineRectanglesSlice(&mine)
 	validRectangles := []Rectangle{
-		{Position{0, 1}, 1, 2},
-		{Position{1, 0}, 1, 4},
+		{Position{0, 1}, 1, 2, nil},
+		{Position{1, 0}, 1, 4, nil},
 	}
 
 	for i := range validRectangles {
-		if rectangles[i] != validRectangles[i] {
+		if !rectangles[i].isEqualTo(validRectangles[i]) {
 			t.Errorf("Rectangle %d is not valid", i)
 		}
 	}

@@ -5,22 +5,25 @@ import (
 	"testing"
 )
 
-func TestEmptySolutionEvaluation(t *testing.T) {
+func TestEmptyChromosomeEvaluation(t *testing.T) {
 	scenario := largeEmptyScenario()
-	solution := Solution{}
-	score, _, err := scenario.evaluateSolution(solution)
+	chromosome := Chromosome{}
+	score, turns, err := scenario.evaluateChromosome(chromosome)
 	if err != nil {
 		t.Errorf("evaluating empty solution should not return an error %v", err)
 	}
 	if score != 0 {
-		t.Errorf("score should be 0 and not %d", score)
+		t.Errorf("score of empty solution should be 0 and not %d", score)
+	}
+	if turns != scenario.turns {
+		t.Errorf("turns of empty solution should be %d and not %d", scenario.turns, turns)
 	}
 }
 
-func TestSolutionForLargeScenarioWithDepositEvaluation(t *testing.T) {
+func TestChromosomeForLargeScenarioWithDepositEvaluation(t *testing.T) {
 	scenario := largeScenarioWithDeposit()
-	solution := solutionForLargeScenarioWithDeposit()
-	score, _, err := scenario.evaluateSolution(solution)
+	chromosome := chromosomeForLargeScenarioWithDeposit()
+	score, _, err := scenario.evaluateChromosome(chromosome)
 	if err != nil {
 		t.Errorf("evaluating empty solution should not return an error %v", err)
 	}
@@ -30,10 +33,10 @@ func TestSolutionForLargeScenarioWithDepositEvaluation(t *testing.T) {
 	}
 }
 
-func TestSolutionWithPathForLargeScenarioWithDepositEvaluation(t *testing.T) {
+func TestChromosomeWithPathForLargeScenarioWithDepositEvaluation(t *testing.T) {
 	scenario := largeScenarioWithDeposit()
-	solution := solutionWithPathForLargeScenarioWithDeposit()
-	score, _, err := scenario.evaluateSolution(solution)
+	chromosome := chromosomeWithPathForLargeScenarioWithDeposit()
+	score, _, err := scenario.evaluateChromosome(chromosome)
 	if err != nil {
 		t.Errorf("evaluating empty solution should not return an error %v", err)
 	}
@@ -43,10 +46,10 @@ func TestSolutionWithPathForLargeScenarioWithDepositEvaluation(t *testing.T) {
 	}
 }
 
-func TestInvalidSolutionEvaluation(t *testing.T) {
+func TestInvalidChromosomeEvaluation(t *testing.T) {
 	scenario := largeEmptyScenario()
-	solution := invalidSolutionForLargeEmptyScenario()
-	score, _, err := scenario.evaluateSolution(solution)
+	chromosome := invalidChromosomeForLargeEmptyScenario()
+	score, _, err := scenario.evaluateChromosome(chromosome)
 	if err == nil {
 		t.Errorf("evaluating empty solution should throw an error")
 	}
@@ -55,9 +58,9 @@ func TestInvalidSolutionEvaluation(t *testing.T) {
 	}
 }
 
-func TestSolutionWithOverlappingFactoriesInvalid(t *testing.T) {
+func TestChromosomeWithOverlappingFactoriesInvalid(t *testing.T) {
 	scenario := largeEmptyScenario()
-	solution := Solution{
+	chromosome := Chromosome{
 		factories: []Factory{{
 			position: Position{0, 0},
 			product:  0,
@@ -66,7 +69,7 @@ func TestSolutionWithOverlappingFactoriesInvalid(t *testing.T) {
 			product:  0,
 		}},
 	}
-	err := scenario.checkValidity(solution)
+	err := scenario.checkValidity(chromosome)
 	if err == nil {
 		t.Errorf("two factories at same position should not be valid")
 	}
@@ -74,12 +77,12 @@ func TestSolutionWithOverlappingFactoriesInvalid(t *testing.T) {
 
 // TODO: Check out subtests to remove code duplication in the following tests (https://go.dev/blog/subtests)
 
-func TestSolutionWithMultipleIngressesAtEgressInvalid(t *testing.T) {
-	scenario, solution, err := importFromProfitJson("fixtures/solutionMultipleIngressesAtEgress.json")
+func TestChromosomeWithMultipleIngressesAtEgressInvalid(t *testing.T) {
+	scenario, chromosome, err := ImportScenario("fixtures/solutionMultipleIngressesAtEgress.json")
 	if err != nil {
 		t.Errorf("solution should be importable")
 	}
-	err = scenario.checkValidity(solution)
+	err = scenario.checkValidity(chromosome)
 	if err == nil {
 		t.Errorf("solution with two ingresses at an egress should not be valid")
 	}
@@ -91,7 +94,7 @@ type EvaluationTestConfig struct {
 	expectedTurns int
 }
 
-func TestEvaluationOfSolutions(t *testing.T) {
+func TestEvaluationOfChromosomes(t *testing.T) {
 	configs := []EvaluationTestConfig{
 		{"fixtures/solutionWithCombiner.json", 60, 15},
 		{"fixtures/solutionWithMineCombinerPath.json", 20, 10},
@@ -104,11 +107,11 @@ func TestEvaluationOfSolutions(t *testing.T) {
 
 	for _, config := range configs {
 		t.Run(fmt.Sprintf("Testing_%s", config.pathToFixture), func(t *testing.T) {
-			scenario, solution, err := importFromProfitJson(config.pathToFixture)
+			scenario, chromosome, err := ImportScenario(config.pathToFixture)
 			if err != nil {
 				t.Errorf("import of fixture failed")
 			}
-			score, turns, err := scenario.evaluateSolution(solution)
+			score, turns, err := scenario.evaluateChromosome(chromosome)
 			if score != config.expectedScore {
 				t.Errorf("score should be %d and not %d", config.expectedScore, score)
 			}
@@ -119,34 +122,34 @@ func TestEvaluationOfSolutions(t *testing.T) {
 	}
 }
 
-func TestSolutionWithOverlappingConveyorsIsValid(t *testing.T) {
-	scenario, solution, err := importFromProfitJson("fixtures/solutionWithOverlappingConveyors.json")
+func TestChromosomeWithOverlappingConveyorsIsValid(t *testing.T) {
+	scenario, chromosome, err := ImportScenario("fixtures/solutionWithOverlappingConveyors.json")
 	if err != nil {
 		t.Errorf("solution should be importable")
 	}
-	err = scenario.checkValidity(solution)
+	err = scenario.checkValidity(chromosome)
 	if err != nil {
 		t.Errorf("solution with overlapping conveyorrs should be valid")
 	}
 }
 
-func TestSolutionWithOverlappingConveyorsIsInvalid(t *testing.T) {
-	scenario, solution, err := importFromProfitJson("fixtures/invalidSolutionWithOverlappingConveyors.json")
+func TestChromosomeWithOverlappingConveyorsIsInvalid(t *testing.T) {
+	scenario, chromosome, err := ImportScenario("fixtures/invalidSolutionWithOverlappingConveyors.json")
 	if err != nil {
 		t.Errorf("solution should be importable")
 	}
-	err = scenario.checkValidity(solution)
+	err = scenario.checkValidity(chromosome)
 	if err == nil {
 		t.Errorf("invalid solution with overlapping conveyors should be invalid")
 	}
 }
 
-func TestSolutionWithOverlappingConveyorsInSamePathIsInvalid(t *testing.T) {
+func TestChromosomeWithOverlappingConveyorsInSamePathIsInvalid(t *testing.T) {
 	scenario := largeEmptyScenario()
-	solution := Solution{paths: []Path{{
+	chromosome := Chromosome{paths: []Path{{
 		conveyors: []Conveyor{{position: Position{x: 3, y: 3}, direction: Right, length: Long}, {position: Position{x: 3, y: 3}, direction: Left, length: Long}},
 	}}}
-	err := scenario.checkValidity(solution)
+	err := scenario.checkValidity(chromosome)
 	if err == nil {
 		t.Errorf("invalid solution with overlapping conveyors should be invalid")
 	}

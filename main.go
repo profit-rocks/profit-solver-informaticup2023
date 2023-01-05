@@ -11,6 +11,7 @@ import (
 
 // TODO: is this enough when running in docker?
 const PercentTimeUsed = 90
+const MaxFinishingTime = 2
 
 func main() {
 	inputPtr := flag.String("input", "-", "Path to input scenario json")
@@ -20,6 +21,8 @@ func main() {
 	itersPtr := flag.Int("iters", 50, "Number of iterations to run. Use 0 for unlimited")
 	logChromosomesDirPtr := flag.String("logdir", "", "Directory to log top chromosomes in each iteration")
 	visualizeChromosomesDirPtr := flag.String("visualizedir", "", "Directory to visualize chromosomes in each iteration")
+	endOnOptimalPtr := flag.Bool("endonoptimal", false, "End when optimal solution is found")
+	exportPtr := flag.String("exporter", "scenario", "Export type, either \"scenario\" or \"solution\"")
 	flag.Parse()
 	if *inputPtr == "" || *outputPtr == "" {
 		flag.Usage()
@@ -36,7 +39,15 @@ func main() {
 		}
 		defer pprof.StopCPUProfile()
 	}
-	scenario, _, err := importFromProfitJson(*inputPtr)
+	var exporter Exporter
+	if *exportPtr == "scenario" {
+		exporter = ScenarioExporter{}
+	} else if *exportPtr == "solution" {
+		exporter = SolutionExporter{}
+	} else {
+		log.Fatal("unknown exporter ", *exportPtr)
+	}
+	scenario, _, err := ImportScenario(*inputPtr)
 	if err != nil {
 		log.Fatal("could not import scenario: ", err)
 	}
@@ -64,7 +75,6 @@ func main() {
 		populationSize:          200,
 		iterations:              *itersPtr,
 		mutationProbability:     0.18,
-		crossoverProbability:    0.7,
 		optimum:                 optimum,
 		chromosomeChannel:       chromosomeChannel,
 		doneChannel:             doneChannel,
@@ -75,7 +85,12 @@ func main() {
 
 	var timeChannel <-chan time.Time
 	if scenario.time != 0 {
-		timeChannel = time.After(time.Duration(scenario.time) * time.Second * PercentTimeUsed / 100)
+		buffer := time.Duration(scenario.time) * time.Second * (100 - PercentTimeUsed) / 100
+		if buffer > MaxFinishingTime*time.Second {
+			buffer = MaxFinishingTime * time.Second
+		}
+		deadline := time.Duration(scenario.time)*time.Second - buffer
+		timeChannel = time.After(deadline)
 	} else {
 		timeChannel = make(<-chan time.Time)
 	}
@@ -94,7 +109,7 @@ func main() {
 		case newChromosome = <-chromosomeChannel:
 			if newChromosome.fitness > chromosome.fitness || (newChromosome.fitness == chromosome.fitness && newChromosome.neededTurns < chromosome.neededTurns) {
 				chromosome = newChromosome
-				if optimum != NoOptimum && chromosome.fitness == optimum {
+				if optimum != NoOptimum && chromosome.fitness == optimum && endOnOptimalPtr != nil && *endOnOptimalPtr {
 					log.Println("terminating: optimal solution found")
 					done = true
 				}
@@ -103,7 +118,7 @@ func main() {
 	}
 	log.Println("final fitness", chromosome.fitness, "turns", chromosome.neededTurns)
 
-	err = exportSolution(scenario, chromosome.Solution(), *outputPtr)
+	err = chromosome.CopyWithoutDisconnectedMines().Export(scenario, exporter, *outputPtr)
 	if err != nil {
 		log.Fatal("could not export solution: ", err)
 	}

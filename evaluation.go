@@ -37,18 +37,18 @@ type SimulatedMine struct {
 
 // TODO: Try to find a faster implementation
 // Checks that all egresses are connected to a single ingress. We assume that objects don't overlap
-func (s *Scenario) checkEgressesHaveSingleIngress(solution Solution) bool {
+func (s *Scenario) checkEgressesHaveSingleIngress(c Chromosome) bool {
 	Egress := 1
 	Ingress := 2
 	ingressEgressMatrix := make([][]int, s.width)
 	for i := range ingressEgressMatrix {
 		ingressEgressMatrix[i] = make([]int, s.height)
 	}
-	for _, mine := range solution.mines {
+	for _, mine := range c.mines {
 		ingressEgressMatrix[mine.Egress().x][mine.Egress().y] = Egress
 		ingressEgressMatrix[mine.Ingress().x][mine.Ingress().y] = Ingress
 	}
-	for _, factory := range solution.factories {
+	for _, factory := range c.factories {
 		for _, position := range factory.ingressPositions() {
 			ingressEgressMatrix[position.x][position.y] = Ingress
 		}
@@ -58,13 +58,13 @@ func (s *Scenario) checkEgressesHaveSingleIngress(solution Solution) bool {
 			ingressEgressMatrix[position.x][position.y] = Egress
 		}
 	}
-	for _, combiner := range solution.combiners {
+	for _, combiner := range c.combiners {
 		for _, position := range combiner.Ingresses() {
 			ingressEgressMatrix[position.x][position.y] = Ingress
 		}
 		ingressEgressMatrix[combiner.Egress().x][combiner.Egress().y] = Egress
 	}
-	for _, path := range solution.paths {
+	for _, path := range c.paths {
 		for _, conveyor := range path.conveyors {
 			ingressEgressMatrix[conveyor.Egress().x][conveyor.Egress().y] = Egress
 			ingressEgressMatrix[conveyor.Ingress().x][conveyor.Ingress().y] = Ingress
@@ -90,47 +90,51 @@ func (s *Scenario) checkEgressesHaveSingleIngress(solution Solution) bool {
 	return true
 }
 
-func (s *Scenario) checkValidity(solution Solution) error {
-	for i, mine := range solution.mines {
-		if !s.positionAvailableForMine(solution.factories, solution.mines[:i], solution.combiners, solution.paths, mine) {
-			return errors.New("solution includes a mine which position is invalid, can't evaluate this solution")
+func (s *Scenario) checkValidity(c Chromosome) error {
+	for i, mine := range c.mines {
+		if !s.positionAvailableForMine(c.factories, c.mines[:i], c.combiners, c.paths, mine) {
+			return errors.New("chromosome includes a mine which position is invalid, can't evaluate this chromosome")
 		}
 	}
 
-	for i, factory := range solution.factories {
-		if !s.positionAvailableForFactory(solution.factories[:i], solution.mines, solution.combiners, solution.paths, factory.position) {
-			return errors.New("solution includes a factory which position is invalid, can't evaluate this solution")
+	for i, factory := range c.factories {
+		if !s.positionAvailableForFactory(c.factories[:i], c.mines, c.combiners, c.paths, factory.position) {
+			return errors.New("chromosome includes a factory which position is invalid, can't evaluate this chromosome")
 		}
 	}
 
-	for i, combiner := range solution.combiners {
-		if !s.positionAvailableForCombiner(solution.factories, solution.mines, solution.paths, solution.combiners[:i], combiner) {
-			return errors.New("solution includes a combiner which position is invalid, can't evaluate this solution")
+	for i, combiner := range c.combiners {
+		if !s.positionAvailableForCombiner(c.factories, c.mines, c.paths, c.combiners[:i], combiner) {
+			return errors.New("chromosome includes a combiner which position is invalid, can't evaluate this chromosome")
 		}
 	}
-	paths := make([]Path, len(solution.paths))
-	for i, path := range solution.paths {
+	paths := make([]Path, len(c.paths))
+	for i, path := range c.paths {
 		paths = append(paths, Path{})
 		for _, conveyor := range path.conveyors {
-			if !s.positionAvailableForConveyor(solution.factories, solution.mines, solution.combiners, paths, conveyor) {
-				return errors.New("solution includes a factory which position is invalid, can't evaluate this solution")
+			if !s.positionAvailableForConveyor(c.factories, c.mines, c.combiners, paths, conveyor) {
+				return errors.New("chromosome includes a conveyor which position is invalid, can't evaluate this chromosome")
 			}
 			paths[i].conveyors = append(paths[i].conveyors, conveyor)
 		}
 	}
-	if !s.checkEgressesHaveSingleIngress(solution) {
-		return errors.New("solution includes multiple ingresses at an egress")
+	if !s.checkEgressesHaveSingleIngress(c) {
+		return errors.New("chromosome includes multiple ingresses at an egress")
 	}
 	return nil
 }
 
-func (s *Scenario) evaluateSolution(solution Solution) (int, int, error) {
+func (s *Scenario) evaluateChromosome(c Chromosome) (int, int, error) {
 	// TODO: remove validity check
-	err := s.checkValidity(solution)
+	err := s.checkValidity(c)
 	if err != nil {
 		return 0, s.turns, err
 	}
-	simulation := simulationFromScenarioAndSolution(s, solution)
+	if len(c.mines) == 0 || len(c.mines) == 0 {
+		return 0, s.turns, nil
+	}
+
+	simulation := simulationFromScenarioAndChromosome(s, c)
 	neededTurns := 0
 	finalScore := 0
 	products := make(map[int]Product)
@@ -138,8 +142,8 @@ func (s *Scenario) evaluateSolution(solution Solution) (int, int, error) {
 		products[product.subtype] = product
 	}
 	maxDistance := 0
-	for i := range solution.mines {
-		mine := &solution.mines[i]
+	for i := range c.mines {
+		mine := &c.mines[i]
 		if mine.distance > maxDistance {
 			maxDistance = mine.distance
 		}
@@ -177,12 +181,12 @@ func (s *Scenario) evaluateSolution(solution Solution) (int, int, error) {
 	return finalScore, neededTurns + 1, nil
 }
 
-func simulationFromScenarioAndSolution(scenario *Scenario, solution Solution) Simulation {
+func simulationFromScenarioAndChromosome(scenario *Scenario, c Chromosome) Simulation {
 	simulation := Simulation{
 		scenario:  scenario,
-		factories: make([]SimulatedFactory, len(solution.factories)),
+		factories: make([]SimulatedFactory, len(c.factories)),
 		deposits:  make([]SimulatedDeposit, len(scenario.deposits)),
-		mines:     make([]SimulatedMine, len(solution.mines)),
+		mines:     make([]SimulatedMine, len(c.mines)),
 	}
 	for i, deposit := range scenario.deposits {
 		simulation.deposits[i] = SimulatedDeposit{
@@ -190,20 +194,20 @@ func simulationFromScenarioAndSolution(scenario *Scenario, solution Solution) Si
 			remainingResources: deposit.width * deposit.height * DepositResourceFactor,
 		}
 	}
-	for i, factory := range solution.factories {
+	for i, factory := range c.factories {
 		simulation.factories[i] = SimulatedFactory{
 			factory:   factory,
 			resources: []int{0, 0, 0, 0, 0, 0, 0, 0},
 		}
 	}
-	for i, mine := range solution.mines {
+	for i, mine := range c.mines {
 		simulation.mines[i] = SimulatedMine{
 			mine: mine,
 		}
 		if mine.connectedFactory == nil {
 			continue
 		}
-		for n, factory := range solution.factories {
+		for n, factory := range c.factories {
 			if factory.position == mine.connectedFactory.position {
 				simulation.mines[i].connectedFactory = &simulation.factories[n]
 			}

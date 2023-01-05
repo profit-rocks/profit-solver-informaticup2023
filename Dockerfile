@@ -17,4 +17,4 @@ COPY *.go ./
 
 RUN go build -o profit
 
-CMD ["./profit", "-iters", "0"]
+CMD ["./profit", "-iters", "0", "-exporter", "solution"]

@@ -30,7 +30,7 @@ def input_to_benchmark_dicts(file, keep_solution):
         logdir = f"{output_file}_intermediate"
     else:
         logdir = ""
-    p = subprocess.Popen(["./profit-solver-icup23", "-input", "tasks/" + file, "-output", output_file, "-logdir", logdir], stderr=subprocess.PIPE)
+    p = subprocess.Popen(["./profit-solver-icup23", "-endonoptimal=true", "-input", "tasks/" + file, "-output", output_file, "-logdir", logdir], stderr=subprocess.PIPE)
     p.wait()
     end = time.time()
 

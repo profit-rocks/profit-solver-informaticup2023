@@ -91,12 +91,12 @@ func TestScenarioWithFactory(t *testing.T) {
 
 func TestPositionAvailableForFactory(t *testing.T) {
 	scenario := largeEmptyScenario()
-	solution := solutionWithSingleMineForLargeEmptyScenario()
-	mines := make([]Mine, len(solution.mines))
-	for i, mine := range solution.mines {
+	chromosome := chromosomeWithSingleMineForLargeEmptyScenario()
+	mines := make([]Mine, len(chromosome.mines))
+	for i, mine := range chromosome.mines {
 		mines[i] = mine
 	}
-	for _, mine := range solution.mines {
+	for _, mine := range chromosome.mines {
 		if scenario.positionAvailableForFactory([]Factory{}, mines, []Combiner{}, []Path{}, mine.position) {
 			t.Errorf("position %v should not be available", mine.position)
 		}
@@ -104,26 +104,26 @@ func TestPositionAvailableForFactory(t *testing.T) {
 }
 
 func TestPositionAvailableForCombiner(t *testing.T) {
-	scenario, solution, err := importFromProfitJson("fixtures/freePlacesForCombiners.json")
+	scenario, chromosome, err := ImportScenario("fixtures/freePlacesForCombiners.json")
 	if err != nil {
 		t.Errorf("failed to import fixture: %e", err)
 	}
 	applicableCombiners := []Combiner{{position: Position{1, 1}, direction: Right}, {position: Position{1, 5}, direction: Bottom}, {position: Position{1, 9}, direction: Left}, {position: Position{1, 13}, direction: Top}}
 	for _, combiner := range applicableCombiners {
-		if !scenario.positionAvailableForCombiner(solution.factories, solution.mines, solution.paths, solution.combiners, combiner) {
+		if !scenario.positionAvailableForCombiner(chromosome.factories, chromosome.mines, chromosome.paths, chromosome.combiners, combiner) {
 			t.Errorf("position %v should be available", combiner)
 		}
 	}
 }
 
 func TestPositionNotAvailableForCombiner(t *testing.T) {
-	scenario, solution, err := importFromProfitJson("fixtures/scenarioWithSingleDeposit.json")
+	scenario, chromsome, err := ImportScenario("fixtures/scenarioWithSingleDeposit.json")
 	if err != nil {
 		t.Errorf("failed to import fixture: %e", err)
 	}
 	nonApplicableCombiners := []Combiner{{position: Position{1, 4}, direction: Right}, {position: Position{4, 2}, direction: Bottom}, {position: Position{4, 1}, direction: Top}}
 	for _, combiner := range nonApplicableCombiners {
-		if scenario.positionAvailableForCombiner(solution.factories, solution.mines, solution.paths, solution.combiners, combiner) {
+		if scenario.positionAvailableForCombiner(chromsome.factories, chromsome.mines, chromsome.paths, chromsome.combiners, combiner) {
 			t.Errorf("position %v should not be available", combiner)
 		}
 	}
@@ -244,26 +244,24 @@ func TestTwoMinesSameEgress(t *testing.T) {
 }
 
 func TestPathExistsMineToCombiner(t *testing.T) {
-	scenario, solution, err := importFromProfitJson("fixtures/pathExistsMineToCombiner.json")
+	scenario, chromosome, err := ImportScenario("fixtures/pathExistsMineToCombiner.json")
 	if err != nil {
 		t.Errorf("failed to import fixture: %e", err)
 	}
 
-	g := geneticAlgorithmFromScenario(scenario)
-
-	if len(solution.mines) != 1 {
+	if len(chromosome.mines) != 1 {
 		t.Errorf("Expected number of mines of imported solution to be 1")
 	}
-	if len(solution.combiners) != 1 {
+	if len(chromosome.combiners) != 1 {
 		t.Errorf("Expected number of combiners of imported solution to be 1")
 	}
-	chromosome := Chromosome{mines: solution.mines, combiners: solution.combiners}
+	c := Chromosome{mines: chromosome.mines, combiners: chromosome.combiners}
 	var positions []PathEndPosition
-	for _, p := range chromosome.combiners[0].NextToIngressPositions() {
+	for _, p := range c.combiners[0].NextToIngressPositions() {
 		positions = append(positions, PathEndPosition{
 			position: p})
 	}
-	_, _, err = g.path(chromosome, chromosome.mines[0].Egress(), positions)
+	_, _, err = findPath(c.mines[0].Egress(), positions, scenario)
 	if err != nil {
 		t.Errorf("Searching for a path between mine and combiner should not return err %e", err)
 	}

@@ -50,28 +50,28 @@ func (c *Combiner) Egress() Position {
 func (c *Combiner) NextToIngressRectangles() []Rectangle {
 	if c.direction == Right {
 		return []Rectangle{
-			{Position{c.position.x - 2, c.position.y - 1}, 1, 3},
-			{Position{c.position.x - 1, c.position.y - 2}, 1, 1},
-			{Position{c.position.x - 1, c.position.y + 2}, 1, 1},
+			{Position{c.position.x - 2, c.position.y - 1}, 1, 3, nil},
+			{Position{c.position.x - 1, c.position.y - 2}, 1, 1, nil},
+			{Position{c.position.x - 1, c.position.y + 2}, 1, 1, nil},
 		}
 	} else if c.direction == Bottom {
 		return []Rectangle{
-			{Position{c.position.x - 1, c.position.y - 2}, 3, 1},
-			{Position{c.position.x - 2, c.position.y - 1}, 1, 1},
-			{Position{c.position.x + 2, c.position.y - 1}, 1, 1},
+			{Position{c.position.x - 1, c.position.y - 2}, 3, 1, nil},
+			{Position{c.position.x - 2, c.position.y - 1}, 1, 1, nil},
+			{Position{c.position.x + 2, c.position.y - 1}, 1, 1, nil},
 		}
 	} else if c.direction == Left {
 		return []Rectangle{
-			{Position{c.position.x + 2, c.position.y - 1}, 1, 3},
-			{Position{c.position.x + 1, c.position.y + 2}, 1, 1},
-			{Position{c.position.x + 1, c.position.y - 2}, 1, 1},
+			{Position{c.position.x + 2, c.position.y - 1}, 1, 3, nil},
+			{Position{c.position.x + 1, c.position.y + 2}, 1, 1, nil},
+			{Position{c.position.x + 1, c.position.y - 2}, 1, 1, nil},
 		}
 	}
 	// Top
 	return []Rectangle{
-		{Position{c.position.x - 1, c.position.y + 2}, 3, 1},
-		{Position{c.position.x - 2, c.position.y + 1}, 1, 1},
-		{Position{c.position.x + 2, c.position.y + 1}, 1, 1},
+		{Position{c.position.x - 1, c.position.y + 2}, 3, 1, nil},
+		{Position{c.position.x - 2, c.position.y + 1}, 1, 1, nil},
+		{Position{c.position.x + 2, c.position.y + 1}, 1, 1, nil},
 	}
 }
 
@@ -123,7 +123,7 @@ func (s *Scenario) positionAvailableForCombiner(factories []Factory, mines []Min
 	}
 	for _, path := range paths {
 		for _, conveyor := range path.conveyors {
-			if combiner.Intersects(conveyor.Rectangle()) {
+			if combiner.Intersects(*conveyor.Rectangle()) {
 				return false
 			}
 		}
@@ -156,17 +156,17 @@ func (c *Combiner) IntersectsAny(rectangles []Rectangle) bool {
 func (c *Combiner) RectanglesEach(f func(Rectangle)) {
 	switch c.direction {
 	case Right:
-		f(Rectangle{Position{c.position.x - 1, c.position.y - 1}, 2, 3})
-		f(Rectangle{Position{c.position.x + 1, c.position.y}, 1, 1})
+		f(Rectangle{Position{c.position.x - 1, c.position.y - 1}, 2, 3, nil})
+		f(Rectangle{Position{c.position.x + 1, c.position.y}, 1, 1, nil})
 	case Bottom:
-		f(Rectangle{Position{c.position.x - 1, c.position.y - 1}, 3, 2})
-		f(Rectangle{Position{c.position.x, c.position.y + 1}, 1, 1})
+		f(Rectangle{Position{c.position.x - 1, c.position.y - 1}, 3, 2, nil})
+		f(Rectangle{Position{c.position.x, c.position.y + 1}, 1, 1, nil})
 	case Left:
-		f(Rectangle{Position{c.position.x, c.position.y - 1}, 2, 3})
-		f(Rectangle{Position{c.position.x - 1, c.position.y}, 1, 1})
+		f(Rectangle{Position{c.position.x, c.position.y - 1}, 2, 3, nil})
+		f(Rectangle{Position{c.position.x - 1, c.position.y}, 1, 1, nil})
 	case Top:
-		f(Rectangle{Position{c.position.x - 1, c.position.y}, 3, 2})
-		f(Rectangle{Position{c.position.x, c.position.y - 1}, 1, 1})
+		f(Rectangle{Position{c.position.x - 1, c.position.y}, 3, 2, nil})
+		f(Rectangle{Position{c.position.x, c.position.y - 1}, 1, 1, nil})
 	}
 }
 

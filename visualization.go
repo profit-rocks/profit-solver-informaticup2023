@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
+	"os"
+
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/palette/moreland"
 	"gonum.org/v1/plot/plotter"
 	"gonum.org/v1/plot/vg"
-	"os"
 )
 
 const NumLoggedChromosomesPerIteration = 5
@@ -117,7 +118,7 @@ func exportChromosomes(scenario Scenario, i int, chromosomes []Chromosome, dir s
 	}
 	for j := 0; j < NumLoggedChromosomesPerIteration; j++ {
 		if j < len(chromosomes) {
-			err = exportSolution(scenario, chromosomes[j].Solution(), fmt.Sprintf("%s/iteration_%d_ch_%d.json", dir, i, j))
+			chromosomes[j].Export(scenario, ScenarioExporter{}, fmt.Sprintf("%s/iteration_%d_ch_%d.json", dir, i, j))
 			if err != nil {
 				return err
 			}

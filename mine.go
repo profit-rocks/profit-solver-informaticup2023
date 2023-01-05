@@ -40,17 +40,17 @@ func (m *Mine) Ingress() Position {
 func (m *Mine) RectanglesEach(f func(Rectangle)) {
 	switch m.direction {
 	case Right:
-		f(Rectangle{m.position, 2, 1})
-		f(Rectangle{Position{m.position.x - 1, m.position.y + 1}, 4, 1})
+		f(Rectangle{m.position, 2, 1, nil})
+		f(Rectangle{Position{m.position.x - 1, m.position.y + 1}, 4, 1, nil})
 	case Bottom:
-		f(Rectangle{Position{m.position.x, m.position.y - 1}, 1, 4})
-		f(Rectangle{Position{m.position.x + 1, m.position.y}, 1, 2})
+		f(Rectangle{Position{m.position.x, m.position.y - 1}, 1, 4, nil})
+		f(Rectangle{Position{m.position.x + 1, m.position.y}, 1, 2, nil})
 	case Left:
-		f(Rectangle{Position{m.position.x - 1, m.position.y}, 4, 1})
-		f(Rectangle{Position{m.position.x, m.position.y + 1}, 2, 1})
+		f(Rectangle{Position{m.position.x - 1, m.position.y}, 4, 1, nil})
+		f(Rectangle{Position{m.position.x, m.position.y + 1}, 2, 1, nil})
 	case Top:
-		f(Rectangle{Position{m.position.x, m.position.y}, 1, 2})
-		f(Rectangle{Position{m.position.x + 1, m.position.y - 1}, 1, 4})
+		f(Rectangle{Position{m.position.x, m.position.y}, 1, 2, nil})
+		f(Rectangle{Position{m.position.x + 1, m.position.y - 1}, 1, 4, nil})
 	}
 }
 
@@ -143,7 +143,7 @@ func (s *Scenario) positionAvailableForMine(factories []Factory, mines []Mine, c
 	}
 	for _, path := range paths {
 		for _, conveyor := range path.conveyors {
-			if mine.Intersects(conveyor.Rectangle()) {
+			if mine.Intersects(*conveyor.Rectangle()) {
 				return false
 			}
 		}

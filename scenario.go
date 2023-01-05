@@ -31,19 +31,11 @@ type Scenario struct {
 	time      int
 }
 
-// Solution is the output of any algorithm that solves Profit!
-type Solution struct {
-	factories []Factory
-	mines     []Mine
-	paths     []Path
-	combiners []Combiner
-}
-
 func (s *Scenario) boundRectangles() []Rectangle {
-	return []Rectangle{{Position{0, -1}, s.width, 1},
-		{Position{-1, 0}, 1, s.height},
-		{Position{s.width, 0}, 1, s.height},
-		{Position{0, s.height}, s.width, 1}}
+	return []Rectangle{{Position{0, -1}, s.width, 1, nil},
+		{Position{-1, 0}, 1, s.height, nil},
+		{Position{s.width, 0}, 1, s.height, nil},
+		{Position{0, s.height}, s.width, 1, nil}}
 }
 
 func (s *Scenario) inBounds(position Position) bool {

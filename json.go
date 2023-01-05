@@ -8,16 +8,26 @@ import (
 	"os"
 )
 
-type Profit struct {
-	Height   int      `json:"height"`
-	Width    int      `json:"width"`
-	Objects  []Object `json:"objects"`
-	Products []Object `json:"products"`
-	Turns    int      `json:"turns"`
-	Time     int      `json:"time"`
+type Exporter interface {
+	Export(scenario Scenario, chromosome Chromosome) any
 }
 
-type Object struct {
+// ScenarioExporter exports the scenario and the chromosome, useful for debugging on profit.phinau.de
+type ScenarioExporter struct{}
+
+// SolutionExporter exports the chromosome as specified by the problem statement
+type SolutionExporter struct{}
+
+type SerializedScenario struct {
+	Height   int                        `json:"height"`
+	Width    int                        `json:"width"`
+	Objects  []SerializedScenarioObject `json:"objects"`
+	Products []SerializedScenarioObject `json:"products"`
+	Turns    int                        `json:"turns"`
+	Time     int                        `json:"time"`
+}
+
+type SerializedScenarioObject struct {
 	ObjectType string `json:"type"`
 	Subtype    int    `json:"subtype"`
 	X          int    `json:"x"`
@@ -28,9 +38,17 @@ type Object struct {
 	Points     int    `json:"points"`
 }
 
-func exportSolution(scenario Scenario, solution Solution, filePath string) error {
-	exportableScenario := solutionToProfit(scenario, solution)
-	b, err := json.MarshalIndent(exportableScenario, "", " ")
+type SolutionExport []SolutionExportObject
+
+type SolutionExportObject struct {
+	ObjectType string `json:"type"`
+	X          int    `json:"x"`
+	Y          int    `json:"y"`
+	Subtype    int    `json:"subtype"`
+}
+
+func (c Chromosome) Export(scenario Scenario, exporter Exporter, filePath string) error {
+	b, err := json.MarshalIndent(exporter.Export(scenario, c), "", " ")
 	if err != nil {
 		return err
 	}
@@ -41,38 +59,10 @@ func exportSolution(scenario Scenario, solution Solution, filePath string) error
 	return os.WriteFile(filePath, b, 0644)
 }
 
-func solutionToProfit(scenario Scenario, solution Solution) Profit {
-	profit := Profit{
-		Height:   scenario.height,
-		Width:    scenario.width,
-		Objects:  []Object{},
-		Products: []Object{},
-		Turns:    scenario.turns,
-		Time:     100,
-	}
-
-	for _, deposit := range scenario.deposits {
-		profit.Objects = append(profit.Objects, Object{
-			ObjectType: "deposit",
-			Subtype:    deposit.subtype,
-			X:          deposit.position.x,
-			Y:          deposit.position.y,
-			Width:      deposit.width,
-			Height:     deposit.height,
-		})
-	}
-	for _, obstacle := range scenario.obstacles {
-		profit.Objects = append(profit.Objects, Object{
-			ObjectType: "obstacle",
-			X:          obstacle.position.x,
-			Y:          obstacle.position.y,
-			Width:      obstacle.width,
-			Height:     obstacle.height,
-		})
-	}
-
-	for _, factory := range solution.factories {
-		profit.Objects = append(profit.Objects, Object{
+func (_ SolutionExporter) Export(s Scenario, c Chromosome) any {
+	export := SolutionExport{}
+	for _, factory := range c.factories {
+		export = append(export, SolutionExportObject{
 			ObjectType: "factory",
 			Subtype:    factory.product,
 			X:          factory.position.x,
@@ -80,8 +70,8 @@ func solutionToProfit(scenario Scenario, solution Solution) Profit {
 		})
 	}
 
-	for _, mine := range solution.mines {
-		profit.Objects = append(profit.Objects, Object{
+	for _, mine := range c.mines {
+		export = append(export, SolutionExportObject{
 			ObjectType: "mine",
 			Subtype:    int(mine.direction),
 			X:          mine.position.x,
@@ -89,9 +79,9 @@ func solutionToProfit(scenario Scenario, solution Solution) Profit {
 		})
 	}
 
-	for _, path := range solution.paths {
+	for _, path := range c.paths {
 		for _, conveyor := range path.conveyors {
-			profit.Objects = append(profit.Objects, Object{
+			export = append(export, SolutionExportObject{
 				ObjectType: "conveyor",
 				Subtype:    conveyor.Subtype(),
 				X:          conveyor.position.x,
@@ -100,8 +90,78 @@ func solutionToProfit(scenario Scenario, solution Solution) Profit {
 		}
 	}
 
-	for _, combiner := range solution.combiners {
-		profit.Objects = append(profit.Objects, Object{
+	for _, combiner := range c.combiners {
+		export = append(export, SolutionExportObject{
+			ObjectType: "combiner",
+			X:          combiner.position.x,
+			Y:          combiner.position.y,
+			Subtype:    int(combiner.direction),
+		})
+	}
+	return export
+}
+
+func (_ ScenarioExporter) Export(s Scenario, c Chromosome) any {
+	export := SerializedScenario{
+		Height:   s.height,
+		Width:    s.width,
+		Objects:  []SerializedScenarioObject{},
+		Products: []SerializedScenarioObject{},
+		Turns:    s.turns,
+		Time:     100,
+	}
+
+	for _, deposit := range s.deposits {
+		export.Objects = append(export.Objects, SerializedScenarioObject{
+			ObjectType: "deposit",
+			Subtype:    deposit.subtype,
+			X:          deposit.position.x,
+			Y:          deposit.position.y,
+			Width:      deposit.width,
+			Height:     deposit.height,
+		})
+	}
+	for _, obstacle := range s.obstacles {
+		export.Objects = append(export.Objects, SerializedScenarioObject{
+			ObjectType: "obstacle",
+			X:          obstacle.position.x,
+			Y:          obstacle.position.y,
+			Width:      obstacle.width,
+			Height:     obstacle.height,
+		})
+	}
+
+	for _, factory := range c.factories {
+		export.Objects = append(export.Objects, SerializedScenarioObject{
+			ObjectType: "factory",
+			Subtype:    factory.product,
+			X:          factory.position.x,
+			Y:          factory.position.y,
+		})
+	}
+
+	for _, mine := range c.mines {
+		export.Objects = append(export.Objects, SerializedScenarioObject{
+			ObjectType: "mine",
+			Subtype:    int(mine.direction),
+			X:          mine.position.x,
+			Y:          mine.position.y,
+		})
+	}
+
+	for _, path := range c.paths {
+		for _, conveyor := range path.conveyors {
+			export.Objects = append(export.Objects, SerializedScenarioObject{
+				ObjectType: "conveyor",
+				Subtype:    conveyor.Subtype(),
+				X:          conveyor.position.x,
+				Y:          conveyor.position.y,
+			})
+		}
+	}
+
+	for _, combiner := range c.combiners {
+		export.Objects = append(export.Objects, SerializedScenarioObject{
 			ObjectType: "combiner",
 			X:          combiner.position.x,
 			Y:          combiner.position.y,
@@ -109,18 +169,18 @@ func solutionToProfit(scenario Scenario, solution Solution) Profit {
 		})
 	}
 
-	for _, product := range scenario.products {
-		profit.Products = append(profit.Products, Object{
+	for _, product := range s.products {
+		export.Products = append(export.Products, SerializedScenarioObject{
 			ObjectType: "product",
 			Subtype:    product.subtype,
 			Points:     product.points,
 			Resources:  product.resources,
 		})
 	}
-	return profit
+	return export
 }
 
-func importFromProfitJson(path string) (Scenario, Solution, error) {
+func ImportScenario(path string) (Scenario, Chromosome, error) {
 	var jsonFile *os.File
 	var err error
 	if path == "-" {
@@ -128,35 +188,35 @@ func importFromProfitJson(path string) (Scenario, Solution, error) {
 	} else {
 		jsonFile, err = os.Open(path)
 		if err != nil {
-			return Scenario{}, Solution{}, err
+			return Scenario{}, Chromosome{}, err
 		}
 		defer jsonFile.Close()
 	}
 	byteValue, err := io.ReadAll(jsonFile)
 	if err != nil {
-		return Scenario{}, Solution{}, err
+		return Scenario{}, Chromosome{}, err
 	}
-	var profit Profit
-	err = json.Unmarshal(byteValue, &profit)
+	var s SerializedScenario
+	err = json.Unmarshal(byteValue, &s)
 	if err != nil {
-		return Scenario{}, Solution{}, err
+		return Scenario{}, Chromosome{}, err
 	}
 
 	scenario := Scenario{
-		width:  profit.Width,
-		height: profit.Height,
-		turns:  profit.Turns,
-		time:   profit.Time,
+		width:  s.Width,
+		height: s.Height,
+		turns:  s.Turns,
+		time:   s.Time,
 	}
 	if scenario.time <= 0 {
-		return Scenario{}, Solution{}, errors.New("time imported from json has to be greater than 0")
+		return Scenario{}, Chromosome{}, errors.New("time imported from json has to be greater than 0")
 	}
-	solution := Solution{}
-	for _, object := range profit.Objects {
+	chromosome := Chromosome{}
+	for _, object := range s.Objects {
 		switch object.ObjectType {
 		case "deposit":
 			if object.Subtype >= NumResourceTypes || object.Subtype < 0 {
-				return Scenario{}, Solution{}, fmt.Errorf("invalid subtype %d for deposit", object.Subtype)
+				return Scenario{}, Chromosome{}, fmt.Errorf("invalid subtype %d for deposit", object.Subtype)
 			}
 			scenario.deposits = append(scenario.deposits, Deposit{
 				position: Position{object.X, object.Y},
@@ -172,30 +232,30 @@ func importFromProfitJson(path string) (Scenario, Solution, error) {
 			})
 		case "factory":
 			if object.Subtype >= NumProducts || object.Subtype < 0 {
-				return Scenario{}, Solution{}, fmt.Errorf("invalid factory subtype %d", object.Subtype)
+				return Scenario{}, Chromosome{}, fmt.Errorf("invalid factory subtype %d", object.Subtype)
 			}
-			solution.factories = append(solution.factories, Factory{
+			chromosome.factories = append(chromosome.factories, Factory{
 				position: Position{object.X, object.Y},
 				product:  object.Subtype,
 			})
 		case "mine":
 			if object.Subtype >= NumDirections || object.Subtype < 0 {
-				return Scenario{}, Solution{}, fmt.Errorf("invalid mine subtype: %d", object.Subtype)
+				return Scenario{}, Chromosome{}, fmt.Errorf("invalid mine subtype: %d", object.Subtype)
 			}
 			direction := DirectionFromSubtype(object.Subtype)
-			solution.mines = append(solution.mines, Mine{
+			chromosome.mines = append(chromosome.mines, Mine{
 				position:  Position{object.X, object.Y},
 				direction: direction,
 			})
 		case "conveyor":
 			if object.Subtype >= NumConveyorSubtypes || object.Subtype < 0 {
 				_ = fmt.Errorf("importing a conveyor failed, invalid subtype")
-				return Scenario{}, Solution{}, fmt.Errorf("invalid conveyor subtype: %d", object.Subtype)
+				return Scenario{}, Chromosome{}, fmt.Errorf("invalid conveyor subtype: %d", object.Subtype)
 			}
 			direction := DirectionFromSubtype(object.Subtype)
 			length := ConveyorLengthFromSubtype(object.Subtype)
 			// TODO: Think about building proper paths
-			solution.paths = append(solution.paths, Path{
+			chromosome.paths = append(chromosome.paths, Path{
 				conveyors: []Conveyor{{
 					position:  Position{object.X, object.Y},
 					direction: direction,
@@ -205,21 +265,21 @@ func importFromProfitJson(path string) (Scenario, Solution, error) {
 		case "combiner":
 			if object.Subtype >= NumDirections || object.Subtype < 0 {
 				_ = fmt.Errorf("importing a combiner failed, invalid subtype")
-				return Scenario{}, Solution{}, fmt.Errorf("invalid combiner subtype: %d", object.Subtype)
+				return Scenario{}, Chromosome{}, fmt.Errorf("invalid combiner subtype: %d", object.Subtype)
 			}
 			direction := DirectionFromSubtype(object.Subtype)
-			solution.combiners = append(solution.combiners, Combiner{
+			chromosome.combiners = append(chromosome.combiners, Combiner{
 				position:  Position{object.X, object.Y},
 				direction: direction,
 			})
 		default:
-			return Scenario{}, Solution{}, fmt.Errorf("unknown ObjectType: %s", object.ObjectType)
+			return Scenario{}, Chromosome{}, fmt.Errorf("unknown ObjectType: %s", object.ObjectType)
 		}
 	}
 
-	for _, product := range profit.Products {
+	for _, product := range s.Products {
 		if product.ObjectType != "product" {
-			return Scenario{}, Solution{}, fmt.Errorf("expected ObjectType to be 'product', not %s", product.ObjectType)
+			return Scenario{}, Chromosome{}, fmt.Errorf("expected ObjectType to be 'product', not %s", product.ObjectType)
 		}
 		scenario.products = append(scenario.products, Product{
 			subtype:   product.Subtype,
@@ -228,7 +288,13 @@ func importFromProfitJson(path string) (Scenario, Solution, error) {
 		})
 	}
 
-	// Do a BFS starting at every factory, to determine distance from every mine to it's factory
+	chromosome.determineDistancesFromMinesToFactories(scenario)
+
+	return scenario, chromosome, nil
+}
+
+// we perform a BFS from all factories to the mines
+func (c *Chromosome) determineDistancesFromMinesToFactories(scenario Scenario) {
 	combinerMatrix := make([][]*Combiner, scenario.width)
 	for i := range combinerMatrix {
 		combinerMatrix[i] = make([]*Combiner, scenario.height)
@@ -241,34 +307,34 @@ func importFromProfitJson(path string) (Scenario, Solution, error) {
 	for i := range conveyorMatrix {
 		conveyorMatrix[i] = make([]*Conveyor, scenario.height)
 	}
-	for i := range solution.mines {
-		mine := &solution.mines[i]
+	for i := range c.mines {
+		mine := &c.mines[i]
 		mine.RectanglesEach(func(rectangle Rectangle) {
 			rectangle.ForEach(func(position Position) {
 				mineMatrix[position.x][position.y] = mine
 			})
 		})
 	}
-	for i := range solution.combiners {
-		combiner := &solution.combiners[i]
+	for i := range c.combiners {
+		combiner := &c.combiners[i]
 		combiner.RectanglesEach(func(rectangle Rectangle) {
 			rectangle.ForEach(func(position Position) {
 				combinerMatrix[position.x][position.y] = combiner
 			})
 		})
 	}
-	for i := range solution.paths {
-		for j := range solution.paths[i].conveyors {
-			conveyor := &solution.paths[i].conveyors[j]
+	for i := range c.paths {
+		for j := range c.paths[i].conveyors {
+			conveyor := &c.paths[i].conveyors[j]
 			conveyor.Rectangle().ForEach(func(position Position) {
 				conveyorMatrix[position.x][position.y] = conveyor
 			})
 		}
 	}
 
-	for i := range solution.factories {
+	for i := range c.factories {
 		distance := 0
-		factory := &solution.factories[i]
+		factory := &c.factories[i]
 		positions := factory.NextToIngressPositions()
 		visitedPosition := make([][]bool, scenario.width)
 		for j := range visitedPosition {
@@ -305,6 +371,4 @@ func importFromProfitJson(path string) (Scenario, Solution, error) {
 			}
 		}
 	}
-
-	return scenario, solution, nil
 }
