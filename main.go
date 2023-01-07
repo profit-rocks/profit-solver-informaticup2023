@@ -72,12 +72,12 @@ func main() {
 
 	geneticAlgorithm := GeneticAlgorithm{
 		scenario:                  scenario,
-		populationSize:            200,
+		populationSize:            100,
 		iterations:                *itersPtr,
 		moveObjectProbability:     0.18,
 		numMutatedChromosomes:     50,
 		numMutationsPerChromosome: 20,
-		numCrossovers:             100,
+		numCrossovers:             10,
 		optimum:                   optimum,
 		chromosomeChannel:         chromosomeChannel,
 		doneChannel:               doneChannel,
