@@ -29,3 +29,9 @@ CGO_LDFLAGS="-llpsolve55 -lm -ldl -lcolamd"
 
 - Run `go tool pprof -http localhost:8080 PATH_TO_PTOFILE_FILE` to get a visual representation of the results 
 - You might need to install `graphviz`
+
+## Benchmarking
+
+- You can benchmark all tasks in `./tasks` using `python benchmark.py`.
+- Add `--keep-solutions` if you want to access the intermediate and final solutions afterwards
+- If you want to add a task for benchmarking, simply put it in `./tasks`
