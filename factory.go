@@ -25,7 +25,7 @@ func (f Factory) Rectangle() Rectangle {
 }
 
 func (f Factory) NextToIngressPositions() []Position {
-	positions := make([]Position, 0)
+	positions := make([]Position, 0, 20)
 	for i := 0; i < FactoryWidth; i++ {
 		positions = append(positions, Position{
 			x: f.position.x + i,
