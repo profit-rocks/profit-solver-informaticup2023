@@ -4,6 +4,7 @@ import os
 import subprocess
 import sys
 import time
+import argparse
 
 NUM_RUNS_PER_FILE = 1
 
@@ -22,10 +23,14 @@ def output_to_needed_turns(output):
             return turns
 
 
-def input_to_benchmark_dicts(file):
+def input_to_benchmark_dicts(file, keep_solution):
     output_file = file + ".out"
     start = time.time()
-    p = subprocess.Popen(["./profit-solver-icup23", "-endonoptimal=true", "-input", "tasks/" + file, "-output", output_file], stderr=subprocess.PIPE)
+    if keep_solution:
+        logdir = f"{output_file}_intermediate"
+    else:
+        logdir = ""
+    p = subprocess.Popen(["./profit-solver-icup23", "-endonoptimal=true", "-input", "tasks/" + file, "-output", output_file, "-logdir", logdir], stderr=subprocess.PIPE)
     p.wait()
     end = time.time()
 
@@ -33,12 +38,16 @@ def input_to_benchmark_dicts(file):
         print("return code", p.returncode)
         print("stderr", p.stderr.read())
         exit(1)
-    os.unlink(output_file)
+    if not keep_solution:
+        os.unlink(output_file)
     output = p.stderr.read()
     return output_to_fitness(output), output_to_needed_turns(output), end-start
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--keep-solutions', action=argparse.BooleanOptionalAction, default=False)
+    args = parser.parse_args()
     l = []
     for file in os.listdir("tasks"):
         print(file, file=sys.stderr)
@@ -46,7 +55,7 @@ if __name__ == '__main__':
         total_fitness = 0
         total_turns = 0
         for _ in range(NUM_RUNS_PER_FILE):
-            fitness, turns, elapsed_time = input_to_benchmark_dicts(file)
+            fitness, turns, elapsed_time = input_to_benchmark_dicts(file, args.keep_solutions)
             total_time += elapsed_time
             total_fitness += fitness
             total_turns += turns
