@@ -405,7 +405,7 @@ func (g *GeneticAlgorithm) Run() {
 						newChromosome.mines[x].connectedFactory = nil
 					}
 					// Before building paths, we have to update the cell Info
-					populateCellInfoWithNewChromosome(newChromosome)
+					populateCellInfoWithNewChromosome(newChromosome, g.scenario)
 					for _, comb := range newChromosome.combiners {
 						newChromosome, _ = g.addPathCombinerToFactory(newChromosome, comb)
 					}
@@ -413,9 +413,9 @@ func (g *GeneticAlgorithm) Run() {
 					for m := 0; m < len(newChromosome.mines); m++ {
 						newChromosomeWithPaths, err2 := g.addPathMineToFactory(chromosomeWithPaths)
 						if err2 == nil {
-							newChromosomeWithPaths.fitness, newChromosomeWithPaths.neededTurns = g.evaluateChromosome(newChromosomeWithPaths.CopyWithoutDisconnectedMines())
+							newChromosomeWithPaths.fitness, newChromosomeWithPaths.neededTurns, err2 = g.scenario.evaluateChromosome(newChromosomeWithPaths.CopyWithoutDisconnectedMines())
 							// if the new chromosome is invalid, it won't get valid by building more paths
-							if newChromosomeWithPaths.fitness == -1 {
+							if err != nil {
 								break
 							}
 							chromosomeWithPaths = newChromosomeWithPaths.Copy()
