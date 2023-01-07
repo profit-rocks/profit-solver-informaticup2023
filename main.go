@@ -71,15 +71,18 @@ func main() {
 	doneChannel := make(chan bool)
 
 	geneticAlgorithm := GeneticAlgorithm{
-		scenario:                scenario,
-		populationSize:          200,
-		iterations:              *itersPtr,
-		mutationProbability:     0.18,
-		optimum:                 optimum,
-		chromosomeChannel:       chromosomeChannel,
-		doneChannel:             doneChannel,
-		logChromosomesDir:       *logChromosomesDirPtr,
-		visualizeChromosomesDir: *visualizeChromosomesDirPtr,
+		scenario:                  scenario,
+		populationSize:            200,
+		iterations:                *itersPtr,
+		moveObjectProbability:     0.18,
+		numMutatedChromosomes:     50,
+		numMutationsPerChromosome: 20,
+		numCrossovers:             100,
+		optimum:                   optimum,
+		chromosomeChannel:         chromosomeChannel,
+		doneChannel:               doneChannel,
+		logChromosomesDir:         *logChromosomesDirPtr,
+		visualizeChromosomesDir:   *visualizeChromosomesDirPtr,
 	}
 	go geneticAlgorithm.Run()
 
