@@ -3,7 +3,7 @@ package main
 import "testing"
 
 func TestOptimumTask1(t *testing.T) {
-	scenario, _, err := importFromProfitJson("official_tasks/002.task.json")
+	scenario, _, err := ImportScenario("official_tasks/002.task.json")
 	if err != nil {
 		t.Errorf("failed to import fixture: %e", err)
 	}
