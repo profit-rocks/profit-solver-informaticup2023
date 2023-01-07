@@ -392,6 +392,7 @@ func (g *GeneticAlgorithm) Run() {
 		}
 		chromosomes = chromosomes[:g.populationSize]
 		log.Println("starting iteration", i+1, "/", g.iterations, "max fitness", chromosomes[0].fitness, "turns", chromosomes[0].neededTurns, "min fitness", chromosomes[len(chromosomes)-1].fitness, "turns", chromosomes[len(chromosomes)-1].neededTurns)
+		bestCrossoverFitness := 0
 		for z := 0; z < NumChosenForCrossover; z++ {
 			for j := z + 1; j < NumChosenForCrossover; j++ {
 				chromosome1 := chromosomes[z]
@@ -401,12 +402,16 @@ func (g *GeneticAlgorithm) Run() {
 					newChromosome.resetPaths()
 					for _, c := range g.chromosomesWithPaths(newChromosome.Copy()) {
 						chromosomes = append(chromosomes, c)
+						if c.fitness > bestCrossoverFitness {
+							bestCrossoverFitness = c.fitness
+						}
 						g.chromosomeChannel <- c
 					}
 					break
 				}
 			}
 		}
+		log.Println("best fitness from crossovers:", bestCrossoverFitness)
 
 		for j := 0; j < NumRoundsPerIteration; j++ {
 			chromosome := chromosomes[rand.Intn(len(chromosomes)-j)].Copy()
