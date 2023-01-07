@@ -514,7 +514,7 @@ func (c *Chromosome) resetPaths() {
 }
 
 func (g *GeneticAlgorithm) chromosomesWithPaths(chromosome Chromosome) []Chromosome {
-	var chromosomes []Chromosome
+	chromosomes := make([]Chromosome, 0, len(chromosome.mines))
 	// fitness is always 0 for chromosomes without mines or factories
 	if len(chromosome.factories) == 0 || len(chromosome.mines) == 0 {
 		return chromosomes
