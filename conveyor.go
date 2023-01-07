@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"gopkg.in/eapache/queue.v1"
 )
 
 const NumConveyorSubtypes = 8
@@ -26,6 +27,11 @@ type Conveyor struct {
 	length    ConveyorLength
 	distance  int
 	rectangle Rectangle
+}
+
+type QueueItem struct {
+	conveyor Conveyor
+	distance int
 }
 
 func ConveyorLengthFromSubtype(subtype int) ConveyorLength {
@@ -381,22 +387,22 @@ func findPath(startPosition Position, endPositions []PathEndPosition, scenario S
 		direction: Right,
 		length:    Short,
 	}
-	queue := New()
-	startItem := Item{
-		value:    startConveyor,
+	q := queue.New()
+	startItem := QueueItem{
+		conveyor: startConveyor,
 		distance: 0,
 	}
 
 	// TODO: Conveyors of same path may overlap
 	// TODO: Conveyors of same path may violate ingress-egress-rules
-	queue.Push(&startItem)
+	q.Add(&startItem)
 
 	cellInfo[startPosition.y][startPosition.x].distance = 0
 	var factory *Factory
 	var initialDistance int
-	for queue.Len() > 0 {
-		current := queue.Pop().(*Item)
-		currentConveyor := current.value
+	for q.Length() > 0 {
+		current := q.Remove().(*QueueItem)
+		currentConveyor := current.conveyor
 		currentEgress := currentConveyor.Egress()
 		finished := false
 		for _, p := range endPositions {
@@ -404,7 +410,7 @@ func findPath(startPosition Position, endPositions []PathEndPosition, scenario S
 				if p.position != startPosition {
 					path.conveyors = append(path.conveyors, cellInfo[currentEgress.y][currentEgress.x].currentConveyor)
 				} else {
-					path.conveyors = append(path.conveyors, current.value)
+					path.conveyors = append(path.conveyors, currentConveyor)
 				}
 				factory = p.connectedFactory
 				initialDistance = p.distance
@@ -418,16 +424,16 @@ func findPath(startPosition Position, endPositions []PathEndPosition, scenario S
 			continue
 		}
 		var nextIngresses []Position
-		if current.value.Egress() == startPosition {
+		if currentEgress == startPosition {
 			nextIngresses = startPosition.NeighborPositions()
 		} else {
-			nextIngresses = current.value.NextToEgressPositions()
+			nextIngresses = currentConveyor.NextToEgressPositions()
 		}
 		for z, nextIngress := range nextIngresses {
 			if !scenario.inBounds(nextIngress) {
 				continue
 			}
-			if cellInfo[nextIngress.y][nextIngress.x].numEgressNeighbors >= 1 && current.value.Egress() != startPosition || cellInfo[nextIngress.y][nextIngress.x].numEgressNeighbors >= 2 {
+			if cellInfo[nextIngress.y][nextIngress.x].numEgressNeighbors >= 1 && currentEgress != startPosition || cellInfo[nextIngress.y][nextIngress.x].numEgressNeighbors >= 2 {
 				continue
 			}
 			for i := 0; i < NumConveyorSubtypes; i++ {
@@ -456,12 +462,12 @@ func findPath(startPosition Position, endPositions []PathEndPosition, scenario S
 					if isBlocked {
 						continue
 					}
-					next := Item{
-						value:    nextConveyor,
+					next := QueueItem{
+						conveyor: nextConveyor,
 						distance: current.distance + 1,
 					}
-					queue.Push(&next)
-					cellInfo[nextEgress.y][nextEgress.x].previousEgress = current.value.Egress()
+					q.Add(&next)
+					cellInfo[nextEgress.y][nextEgress.x].previousEgress = currentEgress
 					cellInfo[nextEgress.y][nextEgress.x].currentConveyor = nextConveyor
 					cellInfo[nextEgress.y][nextEgress.x].distance = next.distance
 				}

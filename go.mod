@@ -17,5 +17,6 @@ require (
 	golang.org/x/sys v0.0.0-20220722155257-8c9f86f7a55f // indirect
 	golang.org/x/text v0.3.7 // indirect
 	gonum.org/v1/plot v0.12.0 // indirect
+	gopkg.in/eapache/queue.v1 v1.1.0 // indirect
 	rsc.io/pdf v0.1.1 // indirect
 )
