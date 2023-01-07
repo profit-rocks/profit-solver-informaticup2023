@@ -398,31 +398,12 @@ func (g *GeneticAlgorithm) Run() {
 				chromosome2 := chromosomes[j]
 				newChromosome, err := g.crossover(chromosome1, chromosome2)
 				if err == nil {
-					if len(newChromosome.factories) == 0 || len(newChromosome.mines) == 0 {
-						break
+					newChromosome.resetPaths()
+					for _, c := range g.chromosomesWithPaths(newChromosome.Copy()) {
+						chromosomes = append(chromosomes, c)
+						g.chromosomeChannel <- c
 					}
-					for x := range newChromosome.mines {
-						newChromosome.mines[x].connectedFactory = nil
-					}
-					// Before building paths, we have to update the cell Info
-					populateCellInfoWithNewChromosome(newChromosome, g.scenario)
-					for _, comb := range newChromosome.combiners {
-						newChromosome, _ = g.addPathCombinerToFactory(newChromosome, comb)
-					}
-					chromosomeWithPaths := newChromosome
-					for m := 0; m < len(newChromosome.mines); m++ {
-						newChromosomeWithPaths, err2 := g.addPathMineToFactory(chromosomeWithPaths)
-						if err2 == nil {
-							newChromosomeWithPaths.fitness, newChromosomeWithPaths.neededTurns, err2 = g.scenario.evaluateChromosome(newChromosomeWithPaths.CopyWithoutDisconnectedMines())
-							// if the new chromosome is invalid, it won't get valid by building more paths
-							if err != nil {
-								break
-							}
-							chromosomeWithPaths = newChromosomeWithPaths.Copy()
-							chromosomes = append(chromosomes, newChromosomeWithPaths)
-							g.chromosomeChannel <- newChromosomeWithPaths
-						}
-					}
+					break
 				}
 			}
 		}
