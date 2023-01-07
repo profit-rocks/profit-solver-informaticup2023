@@ -470,11 +470,9 @@ func (g *GeneticAlgorithm) crossover(chromosome1 Chromosome, chromosome2 Chromos
 	for _, factory := range chromosome2.factories {
 		same := false
 		for _, oldFactory := range newChromosome.factories {
-			if oldFactory.Rectangle().Intersects(factory.Rectangle()) {
-				if oldFactory.product == factory.product {
-					same = true
-					break
-				}
+			if oldFactory.Rectangle().Intersects(factory.Rectangle()) && oldFactory.product == factory.product {
+				same = true
+				break
 			}
 		}
 		if same {
