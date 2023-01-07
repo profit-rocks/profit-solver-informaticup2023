@@ -1,0 +1,604 @@
+{
+  "width": 100,
+  "height": 100,
+  "objects": [
+    {
+      "type": "deposit",
+      "x": 2,
+      "y": 2,
+      "subtype": 0,
+      "width": 19,
+      "height": 13
+    },
+    {
+      "type": "deposit",
+      "x": 77,
+      "y": 9,
+      "subtype": 1,
+      "width": 3,
+      "height": 3
+    },
+    {
+      "type": "deposit",
+      "x": 35,
+      "y": 31,
+      "subtype": 1,
+      "width": 3,
+      "height": 3
+    },
+    {
+      "type": "deposit",
+      "x": 91,
+      "y": 46,
+      "subtype": 1,
+      "width": 3,
+      "height": 3
+    },
+    {
+      "type": "deposit",
+      "x": 36,
+      "y": 55,
+      "subtype": 1,
+      "width": 3,
+      "height": 3
+    },
+    {
+      "type": "deposit",
+      "x": 76,
+      "y": 33,
+      "subtype": 1,
+      "width": 3,
+      "height": 3
+    },
+    {
+      "type": "deposit",
+      "x": 41,
+      "y": 86,
+      "subtype": 2,
+      "width": 39,
+      "height": 8
+    },
+    {
+      "type": "deposit",
+      "x": 56,
+      "y": 40,
+      "subtype": 3,
+      "width": 3,
+      "height": 3
+    },
+    {
+      "type": "deposit",
+      "x": 18,
+      "y": 41,
+      "subtype": 3,
+      "width": 3,
+      "height": 3
+    },
+    {
+      "type": "deposit",
+      "x": 19,
+      "y": 33,
+      "subtype": 3,
+      "width": 3,
+      "height": 3
+    },
+    {
+      "type": "deposit",
+      "x": 58,
+      "y": 12,
+      "subtype": 3,
+      "width": 3,
+      "height": 3
+    },
+    {
+      "type": "deposit",
+      "x": 14,
+      "y": 74,
+      "subtype": 3,
+      "width": 3,
+      "height": 3
+    },
+    {
+      "type": "deposit",
+      "x": 85,
+      "y": 64,
+      "subtype": 3,
+      "width": 3,
+      "height": 3
+    },
+    {
+      "type": "deposit",
+      "x": 59,
+      "y": 54,
+      "subtype": 3,
+      "width": 3,
+      "height": 3
+    },
+    {
+      "type": "deposit",
+      "x": 22,
+      "y": 62,
+      "subtype": 4,
+      "width": 3,
+      "height": 3
+    },
+    {
+      "type": "deposit",
+      "x": 22,
+      "y": 65,
+      "subtype": 4,
+      "width": 3,
+      "height": 3
+    },
+    {
+      "type": "deposit",
+      "x": 25,
+      "y": 65,
+      "subtype": 4,
+      "width": 3,
+      "height": 3
+    },
+    {
+      "type": "deposit",
+      "x": 25,
+      "y": 61,
+      "subtype": 4,
+      "width": 3,
+      "height": 3
+    },
+    {
+      "type": "deposit",
+      "x": 22,
+      "y": 58,
+      "subtype": 4,
+      "width": 3,
+      "height": 3
+    },
+    {
+      "type": "deposit",
+      "x": 25,
+      "y": 57,
+      "subtype": 4,
+      "width": 3,
+      "height": 3
+    },
+    {
+      "type": "deposit",
+      "x": 21,
+      "y": 52,
+      "subtype": 4,
+      "width": 3,
+      "height": 3
+    },
+    {
+      "type": "deposit",
+      "x": 27,
+      "y": 53,
+      "subtype": 4,
+      "width": 3,
+      "height": 3
+    },
+    {
+      "type": "deposit",
+      "x": 59,
+      "y": 25,
+      "subtype": 4,
+      "width": 3,
+      "height": 3
+    },
+    {
+      "type": "deposit",
+      "x": 63,
+      "y": 25,
+      "subtype": 4,
+      "width": 3,
+      "height": 3
+    },
+    {
+      "type": "deposit",
+      "x": 70,
+      "y": 25,
+      "subtype": 4,
+      "width": 3,
+      "height": 3
+    },
+    {
+      "type": "deposit",
+      "x": 75,
+      "y": 25,
+      "subtype": 4,
+      "width": 3,
+      "height": 3
+    },
+    {
+      "type": "deposit",
+      "x": 66,
+      "y": 20,
+      "subtype": 4,
+      "width": 3,
+      "height": 3
+    },
+    {
+      "type": "deposit",
+      "x": 67,
+      "y": 30,
+      "subtype": 4,
+      "width": 3,
+      "height": 3
+    },
+    {
+      "type": "deposit",
+      "x": 49,
+      "y": 64,
+      "subtype": 5,
+      "width": 3,
+      "height": 3
+    },
+    {
+      "type": "deposit",
+      "x": 95,
+      "y": 90,
+      "subtype": 5,
+      "width": 3,
+      "height": 3
+    },
+    {
+      "type": "deposit",
+      "x": 1,
+      "y": 84,
+      "subtype": 5,
+      "width": 11,
+      "height": 11
+    },
+    {
+      "type": "deposit",
+      "x": 9,
+      "y": 44,
+      "subtype": 5,
+      "width": 3,
+      "height": 3
+    },
+    {
+      "type": "deposit",
+      "x": 42,
+      "y": 16,
+      "subtype": 5,
+      "width": 3,
+      "height": 3
+    },
+    {
+      "type": "deposit",
+      "x": 51,
+      "y": 2,
+      "subtype": 5,
+      "width": 3,
+      "height": 3
+    },
+    {
+      "type": "deposit",
+      "x": 3,
+      "y": 26,
+      "subtype": 5,
+      "width": 3,
+      "height": 3
+    },
+    {
+      "type": "deposit",
+      "x": 90,
+      "y": 32,
+      "subtype": 6,
+      "width": 3,
+      "height": 3
+    },
+    {
+      "type": "deposit",
+      "x": 40,
+      "y": 41,
+      "subtype": 6,
+      "width": 3,
+      "height": 3
+    },
+    {
+      "type": "deposit",
+      "x": 32,
+      "y": 38,
+      "subtype": 6,
+      "width": 3,
+      "height": 3
+    },
+    {
+      "type": "deposit",
+      "x": 34,
+      "y": 49,
+      "subtype": 6,
+      "width": 3,
+      "height": 3
+    },
+    {
+      "type": "deposit",
+      "x": 8,
+      "y": 50,
+      "subtype": 6,
+      "width": 3,
+      "height": 3
+    },
+    {
+      "type": "deposit",
+      "x": 9,
+      "y": 67,
+      "subtype": 6,
+      "width": 3,
+      "height": 3
+    },
+    {
+      "type": "deposit",
+      "x": 43,
+      "y": 78,
+      "subtype": 6,
+      "width": 3,
+      "height": 3
+    },
+    {
+      "type": "deposit",
+      "x": 48,
+      "y": 81,
+      "subtype": 6,
+      "width": 3,
+      "height": 3
+    },
+    {
+      "type": "deposit",
+      "x": 55,
+      "y": 81,
+      "subtype": 6,
+      "width": 3,
+      "height": 3
+    },
+    {
+      "type": "deposit",
+      "x": 62,
+      "y": 81,
+      "subtype": 6,
+      "width": 3,
+      "height": 3
+    },
+    {
+      "type": "deposit",
+      "x": 70,
+      "y": 81,
+      "subtype": 6,
+      "width": 3,
+      "height": 3
+    },
+    {
+      "type": "deposit",
+      "x": 76,
+      "y": 81,
+      "subtype": 6,
+      "width": 3,
+      "height": 3
+    },
+    {
+      "type": "deposit",
+      "x": 41,
+      "y": 97,
+      "subtype": 6,
+      "width": 59,
+      "height": 2
+    },
+    {
+      "type": "deposit",
+      "x": 71,
+      "y": 44,
+      "subtype": 7,
+      "width": 11,
+      "height": 15
+    },
+    {
+      "type": "deposit",
+      "x": 19,
+      "y": 22,
+      "subtype": 7,
+      "width": 27,
+      "height": 6
+    },
+    {
+      "type": "deposit",
+      "x": 24,
+      "y": 86,
+      "subtype": 7,
+      "width": 3,
+      "height": 3
+    },
+    {
+      "type": "deposit",
+      "x": 29,
+      "y": 75,
+      "subtype": 7,
+      "width": 3,
+      "height": 3
+    },
+    {
+      "type": "deposit",
+      "x": 9,
+      "y": 60,
+      "subtype": 7,
+      "width": 3,
+      "height": 3
+    },
+    {
+      "type": "deposit",
+      "x": 3,
+      "y": 36,
+      "subtype": 7,
+      "width": 3,
+      "height": 3
+    },
+    {
+      "type": "obstacle",
+      "x": 54,
+      "y": 71,
+      "width": 46,
+      "height": 3
+    },
+    {
+      "type": "obstacle",
+      "x": 0,
+      "y": 71,
+      "width": 50,
+      "height": 2
+    },
+    {
+      "type": "obstacle",
+      "x": 50,
+      "y": 8,
+      "width": 1,
+      "height": 51
+    },
+    {
+      "type": "obstacle",
+      "x": 0,
+      "y": 19,
+      "width": 25,
+      "height": 1
+    },
+    {
+      "type": "obstacle",
+      "x": 27,
+      "y": 0,
+      "width": 3,
+      "height": 14
+    },
+    {
+      "type": "obstacle",
+      "x": 86,
+      "y": 0,
+      "width": 14,
+      "height": 30
+    }
+  ],
+  "products": [
+    {
+      "type": "product",
+      "subtype": 0,
+      "resources": [
+        10,
+        0,
+        10,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "points": 15
+    },
+    {
+      "type": "product",
+      "subtype": 1,
+      "resources": [
+        0,
+        1,
+        0,
+        1,
+        1,
+        0,
+        1,
+        0
+      ],
+      "points": 14
+    },
+    {
+      "type": "product",
+      "subtype": 2,
+      "resources": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        0,
+        5
+      ],
+      "points": 6
+    },
+    {
+      "type": "product",
+      "subtype": 3,
+      "resources": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        5,
+        0,
+        0
+      ],
+      "points": 20
+    },
+    {
+      "type": "product",
+      "subtype": 4,
+      "resources": [
+        0,
+        0,
+        0,
+        0,
+        5,
+        0,
+        0,
+        5
+      ],
+      "points": 1
+    },
+    {
+      "type": "product",
+      "subtype": 5,
+      "resources": [
+        0,
+        0,
+        0,
+        0,
+        4,
+        0,
+        8,
+        0
+      ],
+      "points": 20
+    },
+    {
+      "type": "product",
+      "subtype": 6,
+      "resources": [
+        0,
+        3,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "points": 1
+    },
+    {
+      "type": "product",
+      "subtype": 7,
+      "resources": [
+        0,
+        0,
+        0,
+        0,
+        5,
+        0,
+        0,
+        2
+      ],
+      "points": 5
+    }
+  ],
+  "turns": 100,
+  "time": 240
+}
