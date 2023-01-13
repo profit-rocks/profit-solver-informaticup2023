@@ -20,7 +20,7 @@ func TestRightMineRectangles(t *testing.T) {
 	}
 
 	for i := range validRectangles {
-		if !rectangles[i].isEqualTo(validRectangles[i]) {
+		if !rectangles[i].Equals(validRectangles[i]) {
 			t.Errorf("Rectangle %d is not valid", i)
 		}
 	}
@@ -36,7 +36,7 @@ func TestBottomMineRectangles(t *testing.T) {
 	}
 
 	for i := range validRectangles {
-		if !rectangles[i].isEqualTo(validRectangles[i]) {
+		if !rectangles[i].Equals(validRectangles[i]) {
 			t.Errorf("Rectangle %d is not valid", i)
 		}
 	}
@@ -52,7 +52,7 @@ func TestLeftMineRectangles(t *testing.T) {
 	}
 
 	for i := range validRectangles {
-		if !rectangles[i].isEqualTo(validRectangles[i]) {
+		if !rectangles[i].Equals(validRectangles[i]) {
 			t.Errorf("Rectangle %d is not valid", i)
 		}
 	}
@@ -68,7 +68,7 @@ func TestTopMineRectangles(t *testing.T) {
 	}
 
 	for i := range validRectangles {
-		if !rectangles[i].isEqualTo(validRectangles[i]) {
+		if !rectangles[i].Equals(validRectangles[i]) {
 			t.Errorf("Rectangle %d is not valid", i)
 		}
 	}

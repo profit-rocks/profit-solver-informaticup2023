@@ -12,7 +12,7 @@ type Rectangle struct {
 	positions []Position
 }
 
-func (r Rectangle) isEqualTo(rectangle Rectangle) bool {
+func (r Rectangle) Equals(rectangle Rectangle) bool {
 	return r.position == rectangle.position && r.width == rectangle.width && r.height == rectangle.height
 }
 

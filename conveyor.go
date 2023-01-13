@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+
 	"gopkg.in/eapache/queue.v1"
 )
 
@@ -173,8 +174,8 @@ func (c Conveyor) Positions(i int) Position {
 	return Position{c.position.x, c.position.y + i - 1}
 }
 
-func (s *Scenario) positionAvailableForConveyor(factories []Factory, mines []Mine, combiners []Combiner, paths []Path, conveyor Conveyor) bool {
-	boundRectangles := s.boundRectangles()
+func (s *Scenario) PositionAvailableForConveyor(factories []Factory, mines []Mine, combiners []Combiner, paths []Path, conveyor Conveyor) bool {
+	boundRectangles := s.BoundRectangles()
 	for _, rectangle := range boundRectangles {
 		if conveyor.Rectangle().Intersects(rectangle) {
 			return false
@@ -251,7 +252,7 @@ var cellInfo [100][100]CellInfo
 
 func populateCellInfoWithIngress(ingress Position, scenario Scenario) {
 	for _, p := range ingress.NeighborPositions() {
-		if !scenario.inBounds(p) {
+		if !scenario.InBounds(p) {
 			continue
 		}
 		cellInfo[p.y][p.x].numIngressNeighbors += 1
@@ -260,7 +261,7 @@ func populateCellInfoWithIngress(ingress Position, scenario Scenario) {
 
 func populateCellInfoWithEgress(egress Position, scenario Scenario) {
 	for _, p := range egress.NeighborPositions() {
-		if !scenario.inBounds(p) {
+		if !scenario.InBounds(p) {
 			continue
 		}
 		cellInfo[p.y][p.x].numEgressNeighbors += 1
@@ -331,8 +332,8 @@ func populateCellInfoWithNewChromosome(chromosome Chromosome, scenario Scenario)
 
 	// keep algorithm from using occupied squares
 	for _, deposit := range scenario.deposits {
-		for _, p := range deposit.nextToEgressPositions() {
-			if !scenario.inBounds(p) {
+		for _, p := range deposit.NextToEgressPositions() {
+			if !scenario.InBounds(p) {
 				continue
 			}
 			cellInfo[p.y][p.x].numEgressNeighbors += 1
@@ -358,7 +359,7 @@ func populateCellInfoWithNewChromosome(chromosome Chromosome, scenario Scenario)
 	}
 	for _, f := range chromosome.factories {
 		for _, p := range f.NextToIngressPositions() {
-			if !scenario.inBounds(p) {
+			if !scenario.InBounds(p) {
 				continue
 			}
 			cellInfo[p.y][p.x].numIngressNeighbors += 1
@@ -430,7 +431,7 @@ func findPath(startPosition Position, endPositions []PathEndPosition, scenario S
 			nextIngresses = currentConveyor.NextToEgressPositions()
 		}
 		for z, nextIngress := range nextIngresses {
-			if !scenario.inBounds(nextIngress) {
+			if !scenario.InBounds(nextIngress) {
 				continue
 			}
 			if cellInfo[nextIngress.y][nextIngress.x].numEgressNeighbors >= 1 && currentEgress != startPosition || cellInfo[nextIngress.y][nextIngress.x].numEgressNeighbors >= 2 {
@@ -442,14 +443,14 @@ func findPath(startPosition Position, endPositions []PathEndPosition, scenario S
 					continue
 				}
 				nextEgress := nextConveyor.Egress()
-				if !scenario.inBounds(nextEgress) {
+				if !scenario.InBounds(nextEgress) {
 					continue
 				}
 				if current.distance+1 < cellInfo[nextEgress.y][nextEgress.x].distance {
 					isBlocked := false
 					for m := 0; m < int(nextConveyor.length); m++ {
 						p := nextConveyor.Positions(m)
-						if !scenario.inBounds(p) {
+						if !scenario.InBounds(p) {
 							isBlocked = true
 							break
 						}

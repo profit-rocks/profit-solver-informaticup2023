@@ -15,7 +15,7 @@ func (d Deposit) Rectangle() Rectangle {
 	}
 }
 
-func (d Deposit) nextToEgressPositions() []Position {
+func (d Deposit) NextToEgressPositions() []Position {
 	positions := make([]Position, 2*d.width+2*d.height)
 	for i := 0; i < d.width; i++ {
 		positions[i] = Position{
@@ -40,7 +40,7 @@ func (d Deposit) nextToEgressPositions() []Position {
 	return positions
 }
 
-func (d Deposit) egressPositions() []Position {
+func (d Deposit) EgressPositions() []Position {
 	positions := make([]Position, 0)
 	for i := 0; i < d.width; i++ {
 		positions = append(positions, Position{

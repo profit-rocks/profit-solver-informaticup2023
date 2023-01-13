@@ -20,7 +20,7 @@ func TestRightCombinerRectangles(t *testing.T) {
 	}
 
 	for i := range validRectangles {
-		if !rectangles[i].isEqualTo(validRectangles[i]) {
+		if !rectangles[i].Equals(validRectangles[i]) {
 			t.Errorf("Rectangle %d is not valid", i)
 		}
 	}
@@ -36,7 +36,7 @@ func TestBottomCombinerRectangles(t *testing.T) {
 	}
 
 	for i := range validRectangles {
-		if !rectangles[i].isEqualTo(validRectangles[i]) {
+		if !rectangles[i].Equals(validRectangles[i]) {
 			t.Errorf("Rectangle %d is not valid", i)
 		}
 	}
@@ -52,7 +52,7 @@ func TestLeftCombinerRectangles(t *testing.T) {
 	}
 
 	for i := range validRectangles {
-		if !rectangles[i].isEqualTo(validRectangles[i]) {
+		if !rectangles[i].Equals(validRectangles[i]) {
 			t.Errorf("Rectangle %d is not valid", i)
 		}
 	}
@@ -68,7 +68,7 @@ func TestTopCombinerRectangles(t *testing.T) {
 	}
 
 	for i := range validRectangles {
-		if !rectangles[i].isEqualTo(validRectangles[i]) {
+		if !rectangles[i].Equals(validRectangles[i]) {
 			t.Errorf("Rectangle %d is not valid", i)
 		}
 	}

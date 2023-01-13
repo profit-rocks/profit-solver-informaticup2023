@@ -75,9 +75,9 @@ func (c *Combiner) NextToIngressRectangles() []Rectangle {
 	}
 }
 
-func (s *Scenario) positionAvailableForCombiner(factories []Factory, mines []Mine, paths []Path, combiners []Combiner, combiner Combiner) bool {
+func (s *Scenario) PositionAvailableForCombiner(factories []Factory, mines []Mine, paths []Path, combiners []Combiner, combiner Combiner) bool {
 	// combiner is out of bounds
-	boundRectangles := s.boundRectangles()
+	boundRectangles := s.BoundRectangles()
 	if combiner.IntersectsAny(boundRectangles) {
 		return false
 	}
@@ -170,7 +170,7 @@ func (c *Combiner) RectanglesEach(f func(Rectangle)) {
 	}
 }
 
-func (s *Scenario) randomCombiner(chromosome Chromosome) (Combiner, error) {
+func (s *Scenario) RandomCombiner(chromosome Chromosome) (Combiner, error) {
 	rng := NewUniqueRNG(s.width * s.height)
 	var n int
 	done := false
@@ -183,7 +183,7 @@ func (s *Scenario) randomCombiner(chromosome Chromosome) (Combiner, error) {
 		for i := 0; i < 4; i++ {
 			direction, _ := directionRng.Next()
 			combiner := Combiner{position: pos, direction: Direction(direction)}
-			if s.positionAvailableForCombiner(chromosome.factories, chromosome.mines, chromosome.paths, chromosome.combiners, combiner) {
+			if s.PositionAvailableForCombiner(chromosome.factories, chromosome.mines, chromosome.paths, chromosome.combiners, combiner) {
 				return combiner, nil
 			}
 		}
