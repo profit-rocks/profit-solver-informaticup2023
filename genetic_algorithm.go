@@ -210,7 +210,7 @@ func (g *GeneticAlgorithm) MoveCombiners(chromosome Chromosome) (Chromosome, err
 
 func (g *GeneticAlgorithm) AddMine(chromosome Chromosome) (Chromosome, error) {
 	randomDeposit := &g.scenario.deposits[rand.Intn(len(g.scenario.deposits))]
-	newMine, err := g.RandomMine(randomDeposit, chromosome)
+	newMine, err := g.scenario.RandomMine(randomDeposit, chromosome)
 	if err != nil {
 		return chromosome, err
 	}
@@ -364,7 +364,7 @@ func (g *GeneticAlgorithm) MoveMines(chromosome Chromosome) (Chromosome, error) 
 		// TODO: this might move the mine to a different deposit
 		for i, deposit := range g.scenario.deposits {
 			if deposit.Rectangle().Intersects(Rectangle{Position{mine.Ingress().x - 1, mine.Ingress().y - 1}, 3, 3, nil}) {
-				newMine, err := g.RandomMine(&g.scenario.deposits[i], newChromosome)
+				newMine, err := g.scenario.RandomMine(&g.scenario.deposits[i], newChromosome)
 				if err == nil {
 					newChromosome.mines = append(newChromosome.mines, newMine)
 					break
@@ -506,7 +506,7 @@ func (g *GeneticAlgorithm) Crossover(chromosome1 Chromosome, chromosome2 Chromos
 		if g.scenario.PositionAvailableForMine(newChromosome.factories, newChromosome.mines, newChromosome.combiners, newChromosome.paths, mine) {
 			newChromosome.mines = append(newChromosome.mines, mine)
 		} else {
-			newMine, err := g.RandomMine(mine.connectedDeposit, newChromosome)
+			newMine, err := g.scenario.RandomMine(mine.connectedDeposit, newChromosome)
 			if err == nil {
 				newChromosome.mines = append(newChromosome.mines, newMine)
 			}
