@@ -18,7 +18,7 @@ If you want to try out our solution, you can do so using Docker.
 
 You can also run our solution without Docker using the instructions below.
 
-### 0. Building
+### Building
 
 1. If you do not have Go installed, consult the [official documentation](https://go.dev/doc/install). We tested our solution with Go version 1.19.3.
 2. To calculate optimal scores, we are using a Go package called `lpsolve`. Documentation on how to install the package and its dependencies, can be found on their [official website](https://pkg.go.dev/github.com/draffensperger/golp#section-readme))
@@ -37,7 +37,7 @@ To set the environment variables and build the program in one command, you can r
 CGO_CFLAGS="-I/usr/include/lpsolve" CGO_LDFLAGS="-llpsolve55 -lm -ldl -lcolamd" go build
 ```
 
-### 1. Executing our program
+### Running
 
 Execute `./profit-solver-icup23 -help` to get an overview over the command line options:
 
@@ -66,14 +66,14 @@ Usage of ./profit-solver-icup23:
 
 In its default configuration, our program reads the scenario from `stdin` and writes it output to `stdout`. Use `-input` and `-output` to read from a file and write to a file.
 
-## Profiling
+### Profiling
 
+To investigate performance issues, you can use the integrated CPU profiler.
+
+- For the graphical output, you might need to install `graphviz` on your system. Look [here](https://graphviz.org/download/) for detailed installation instructions.
 - Use the command line argument `-cpuprofile PATH_TO_PROFILE_FILE` to run the code with profiling
 - Run `go tool pprof -http localhost:8080 PATH_TO_PROFILE_FILE` to get a visual representation of the results
-- You might need to install `graphviz` on your system. Look [here](https://graphviz.org/download/) for detailed installation instructions.
 
-## Benchmarking
+### Benchmarking
 
-- You can benchmark all tasks in `./tasks` using `python benchmark.py`.
-- Add `--keep-solutions` if you want to access the intermediate and final solutions afterwards
-- If you want to add a task for benchmarking, simply put it in `./tasks`
+To run benchmarks on our solution, you can use the `benchmark.py` script. By default, it runs benchmarks on all tasks in `./tasks`. Add the `--keep-solutions` flag if you want to access the intermediate and final solutions afterwards.
