@@ -1,6 +1,9 @@
 package main
 
-import "testing"
+import (
+	"reflect"
+	"testing"
+)
 
 func mineRectanglesSlice(mine *Mine) []Rectangle {
 	rectangles := make([]Rectangle, 0)
@@ -71,5 +74,23 @@ func TestTopMineRectangles(t *testing.T) {
 		if !rectangles[i].Equals(validRectangles[i]) {
 			t.Errorf("Rectangle %d is not valid", i)
 		}
+	}
+}
+
+func TestRectangle_Positions(t *testing.T) {
+	rect := Rectangle{position: Position{0, 0}, width: 3, height: 2}
+	positions := []Position{{0, 0}, {0, 1}, {0, 2}, {1, 0}, {1, 1}, {1, 2}}
+	if !reflect.DeepEqual(rect.Positions(), positions) {
+		t.Error("Rectangle should have positions", positions)
+	}
+}
+
+func TestRectangle_PositionsCaching(t *testing.T) {
+	rect := Rectangle{position: Position{1, 1}, width: 1, height: 1}
+	positions := []Position{{1, 1}}
+	rect.Positions()
+	if !reflect.DeepEqual(rect.Positions(), positions) {
+		t.Error("Rectangle should have cached positions", positions)
+
 	}
 }
