@@ -75,7 +75,7 @@ func main() {
 		populationSize:            100,
 		iterations:                *itersPtr,
 		moveObjectProbability:     0.18,
-		numMutatedChromosomes:     20,
+		numMutatedChromosomes:     50,
 		numMutationsPerChromosome: 20,
 		numCrossovers:             10,
 		optimum:                   optimum,
