@@ -108,7 +108,8 @@ func saveGrid(grid [][]int, path string) error {
 	pal := moreland.SmoothBlueRed().Palette(255)
 	hm := plotter.NewHeatMap(plotData, pal)
 	p.Add(hm)
-	return p.Save(vg.Length(width)*vg.Inch, vg.Length(height)*vg.Inch, path)
+	p.HideAxes()
+	return p.Save(vg.Length(width)*vg.Inch*0.1, vg.Length(height)*vg.Inch*0.1, path)
 }
 
 func exportChromosomes(scenario Scenario, i int, chromosomes []Chromosome, dir string) error {
