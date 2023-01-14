@@ -1,40 +1,75 @@
-# Solver for the challenge Profit! of informaticup2023
-The informaticup is a competition for computer science students in Germany, Austria and Switzerland. The competition is held by the German Society of Informatics. More information about the competition is available in the [official repository](https://github.com/informatiCup/informatiCup2023) and the [official challenge description](https://github.com/informatiCup/informatiCup2023/blob/main/informatiCup%202023%20-%20Profit!.pdf)
+# Genetic Algorithm for Profit! for InformatiCup 2023
+
+InformatiCup is a competition for computer science students in Germany, Austria and Switzerland. The competition is held by the German Society of Computer Science. The 2023 edition of InformatiCup is called _Profit!_. More information about the competition is available in the [official repository](https://github.com/informatiCup/informatiCup2023) and the [official challenge description](https://github.com/informatiCup/informatiCup2023/blob/main/informatiCup%202023%20-%20Profit!.pdf)
+
+This repository contains our solution to _Profit!_ which based on an approach using genetic algorithms.
+
+An interactive playground for the challenge is available at [https://profit.phinau.de](https://profit.phinau.de). The website offers scenario visualization, simulation, import and export. By clicking _Export (task)_, you download scenario file which can be imported by our solution.
 
 ## Run using docker
 
-Docker is the easy way of running our solution. If you do not want to develop our solution further, it is the preffered method of running our solution. 
-Build the docker image using `docker build . -t profit.rocks`. Run with task input by doing `cat task.json | docker run -i --rm --network none --cpus 2.000 --memory 2G --memory-swap 2G profit.rocks > output.json`. These are the official parameters mentioned in the challenge description.
+If you want to try out our solution, you can do so using Docker.
 
-## Installation (Development setup)
-After completing these steps, you can run our solution locally and start with the development.
+1. If you do not have a Docker installation, consult the [official documentation](https://docs.docker.com/)
+1. Build the docker image using `docker build . -t profit.rocks`.
+1. Run with task input by running `cat task.json | docker run -i --rm --network none --cpus 2.000 --memory 2G --memory-swap 2G profit.rocks > output.json`. These are the official parameters from the challenge description.
 
-### 0. Prerequisites
-Our solution is written in Golang. To run it, you need a Golang installation on your computer. Instructions on how to get a running Golang installation can be found [here](https://go.dev/doc/install). For our solution you need at least Golang version 1.19.3.
+## Development Setup
 
-To calculate optimal scores, we are using a package called `lpsolve`. Documentation on how to install the package and its dependencies, can be found on their official website ([see here for instructions](https://pkg.go.dev/github.com/draffensperger/golp#section-readme))
+You can also run our solution without Docker using the instructions below.
 
-As mentioned in the instructions, it is important to set the right environment variables, when building our program. Please note this is the configuration for Linux and we haven't tested it on Windows. Please take a look in the instructions linked above, if you're using windows.
+### 0. Building
+
+1. If you do not have Go installed, consult the [official documentation](https://go.dev/doc/install). We tested our solution with Go version 1.19.3.
+2. To calculate optimal scores, we are using a Go package called `lpsolve`. Documentation on how to install the package and its dependencies, can be found on their [official website](https://pkg.go.dev/github.com/draffensperger/golp#section-readme))
+3. For the build, you need to set the following environment variables:
+
 ```
 CGO_CFLAGS="-I/usr/include/lpsolve"
 CGO_LDFLAGS="-llpsolve55 -lm -ldl -lcolamd"
 ```
 
-If you already have a valid task you want to solve, go to step 1. Else continue reading. 
-Tasks can be built on the website [https://profit.phinau.de](https://profit.phinau.de). The website offers a visualization of the json format scenarios are in. Create a valid scenario there and export it into a json file. Afterwards you can use our solution, to solve the task. If you want a visual representation of the computed solution, you can import it once again there.
+4. Build our software using `go build`. The resulting binary is called `profit-solver-icup23`. After changing the code, you have to rebuild the binary for changes to take effect. Please note that we only tested the building process on Linux. Please look at the package documentation if you are building our software on Windows.
 
-### 1. Executing our programm
+To set the environment variables and build the program in one command, you can run:
 
-Go is a compiled language. In order to start the compile run `go build` in the root of the repository. There is now a binary called `profit-solver-icup23`. Execute `./profit-solver-icup23 --help` to get an overview over the command line options. In its default configuration our program expects the scenario via `stdin` and writes it output to `stdout`. This is quite incovenient for development purposes. Use `-input` and `-output` to read from a file and write to a file.
+```bash
+CGO_CFLAGS="-I/usr/include/lpsolve" CGO_LDFLAGS="-llpsolve55 -lm -ldl -lcolamd" go build
+```
 
-Instead of compiling and the executing the binary in seperate steps, use `go run profit-solver-icup23` to build and run the program at the same time. Use the command line arguments in the same way. After changing the code, you have to rebuild the binary for changes to take effect.
+### 1. Executing our program
 
-If the execution fails, make sure you set the environment variables as mentioned above.
+Execute `./profit-solver-icup23 -help` to get an overview over the command line options:
+
+```bash
+$ ./profit-solver-icup23 -help
+Usage of ./profit-solver-icup23:
+  -cpuprofile string
+    	Path to output cpu profile
+  -endonoptimal
+    	End when optimal solution is found
+  -exporter string
+    	Export type, either "scenario" or "solution" (default "scenario")
+  -input string
+    	Path to input scenario json (default "-")
+  -iters int
+    	Number of iterations to run. Use 0 for unlimited (default 50)
+  -logdir string
+    	Directory to log top chromosomes in each iteration
+  -output string
+    	Path to output scenario json (default "-")
+  -seed int
+    	Seed for random number generator
+  -visualizedir string
+    	Directory to visualize chromosomes in each iteration
+```
+
+In its default configuration, our program reads the scenario from `stdin` and writes it output to `stdout`. Use `-input` and `-output` to read from a file and write to a file.
 
 ## Profiling
 
 - Use the command line argument `-cpuprofile PATH_TO_PROFILE_FILE` to run the code with profiling
-- Run `go tool pprof -http localhost:8080 PATH_TO_PROFILE_FILE` to get a visual representation of the results 
+- Run `go tool pprof -http localhost:8080 PATH_TO_PROFILE_FILE` to get a visual representation of the results
 - You might need to install `graphviz` on your system. Look [here](https://graphviz.org/download/) for detailed installation instructions.
 
 ## Benchmarking
