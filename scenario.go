@@ -31,14 +31,14 @@ type Scenario struct {
 	time      int
 }
 
-func (s *Scenario) boundRectangles() []Rectangle {
+func (s *Scenario) BoundRectangles() []Rectangle {
 	return []Rectangle{{Position{0, -1}, s.width, 1, nil},
 		{Position{-1, 0}, 1, s.height, nil},
 		{Position{s.width, 0}, 1, s.height, nil},
 		{Position{0, s.height}, s.width, 1, nil}}
 }
 
-func (s *Scenario) inBounds(position Position) bool {
+func (s *Scenario) InBounds(position Position) bool {
 	return !(position.y < 0 || position.y >= s.height || position.x < 0 || position.x >= s.width)
 }
 

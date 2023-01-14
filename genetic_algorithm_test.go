@@ -12,7 +12,7 @@ func TestLargeEmptyScenarioIsAvailable(t *testing.T) {
 	g := geneticAlgorithmFromScenario(largeEmptyScenario())
 	for x := 0; x <= g.scenario.width-FactoryWidth; x++ {
 		for y := 0; y <= g.scenario.height-FactoryHeight; y++ {
-			if !g.scenario.positionAvailableForFactory([]Factory{}, []Mine{}, []Combiner{}, []Path{}, Position{x, y}) {
+			if !g.scenario.PositionAvailableForFactory([]Factory{}, []Mine{}, []Combiner{}, []Path{}, Position{x, y}) {
 				t.Errorf("position %v should be available", Position{x, y})
 			}
 		}
@@ -23,14 +23,14 @@ func TestLargeEmptyScenarioBorders(t *testing.T) {
 	g := geneticAlgorithmFromScenario(largeEmptyScenario())
 	for x := 0; x <= g.scenario.width-FactoryWidth; x++ {
 		for y := g.scenario.height - FactoryHeight + 1; y < g.scenario.width; y++ {
-			if g.scenario.positionAvailableForFactory([]Factory{}, []Mine{}, []Combiner{}, []Path{}, Position{x, y}) {
+			if g.scenario.PositionAvailableForFactory([]Factory{}, []Mine{}, []Combiner{}, []Path{}, Position{x, y}) {
 				t.Errorf("position %v should not be available", Position{x, y})
 			}
 		}
 	}
 	for x := g.scenario.width - FactoryWidth + 1; x < g.scenario.width; x++ {
 		for y := 0; y <= g.scenario.height-FactoryHeight; y++ {
-			if g.scenario.positionAvailableForFactory([]Factory{}, []Mine{}, []Combiner{}, []Path{}, Position{x, y}) {
+			if g.scenario.PositionAvailableForFactory([]Factory{}, []Mine{}, []Combiner{}, []Path{}, Position{x, y}) {
 				t.Errorf("position %v should not be available", Position{x, y})
 			}
 		}
@@ -42,7 +42,7 @@ func TestSmallEmptyScenario(t *testing.T) {
 	for x := 0; x < g.scenario.width; x++ {
 		for y := 0; y < g.scenario.height; y++ {
 			pos := Position{x, y}
-			if g.scenario.positionAvailableForFactory([]Factory{}, []Mine{}, []Combiner{}, []Path{}, pos) {
+			if g.scenario.PositionAvailableForFactory([]Factory{}, []Mine{}, []Combiner{}, []Path{}, pos) {
 				t.Errorf("position %v should not be available", pos)
 			}
 		}
@@ -55,7 +55,7 @@ func TestScenarioWithObstacles(t *testing.T) {
 	for x := 0; x < g.scenario.width; x++ {
 		for y := 0; y < g.scenario.height; y++ {
 			pos := Position{x, y}
-			if g.scenario.positionAvailableForFactory([]Factory{}, []Mine{}, []Combiner{}, []Path{}, pos) {
+			if g.scenario.PositionAvailableForFactory([]Factory{}, []Mine{}, []Combiner{}, []Path{}, pos) {
 				t.Errorf("position %v should not be available", pos)
 			}
 		}
@@ -77,11 +77,11 @@ func TestScenarioWithFactory(t *testing.T) {
 		for y := 0; y <= g.scenario.height-FactoryHeight; y++ {
 			pos := Position{x, y}
 			if x > 5-FactoryWidth && x < 5+FactoryWidth && y > 5-FactoryHeight && y < 5+FactoryWidth {
-				if g.scenario.positionAvailableForFactory(chromosome.factories, chromosome.mines, []Combiner{}, chromosome.paths, pos) {
+				if g.scenario.PositionAvailableForFactory(chromosome.factories, chromosome.mines, []Combiner{}, chromosome.paths, pos) {
 					t.Errorf("position %v should not be available", pos)
 				}
 			} else {
-				if !g.scenario.positionAvailableForFactory(chromosome.factories, chromosome.mines, []Combiner{}, chromosome.paths, pos) {
+				if !g.scenario.PositionAvailableForFactory(chromosome.factories, chromosome.mines, []Combiner{}, chromosome.paths, pos) {
 					t.Errorf("position %v should be available", pos)
 				}
 			}
@@ -97,7 +97,7 @@ func TestPositionAvailableForFactory(t *testing.T) {
 		mines[i] = mine
 	}
 	for _, mine := range chromosome.mines {
-		if scenario.positionAvailableForFactory([]Factory{}, mines, []Combiner{}, []Path{}, mine.position) {
+		if scenario.PositionAvailableForFactory([]Factory{}, mines, []Combiner{}, []Path{}, mine.position) {
 			t.Errorf("position %v should not be available", mine.position)
 		}
 	}
@@ -110,7 +110,7 @@ func TestPositionAvailableForCombiner(t *testing.T) {
 	}
 	applicableCombiners := []Combiner{{position: Position{1, 1}, direction: Right}, {position: Position{1, 5}, direction: Bottom}, {position: Position{1, 9}, direction: Left}, {position: Position{1, 13}, direction: Top}}
 	for _, combiner := range applicableCombiners {
-		if !scenario.positionAvailableForCombiner(chromosome.factories, chromosome.mines, chromosome.paths, chromosome.combiners, combiner) {
+		if !scenario.PositionAvailableForCombiner(chromosome.factories, chromosome.mines, chromosome.paths, chromosome.combiners, combiner) {
 			t.Errorf("position %v should be available", combiner)
 		}
 	}
@@ -123,7 +123,7 @@ func TestPositionNotAvailableForCombiner(t *testing.T) {
 	}
 	nonApplicableCombiners := []Combiner{{position: Position{1, 4}, direction: Right}, {position: Position{4, 2}, direction: Bottom}, {position: Position{4, 1}, direction: Top}}
 	for _, combiner := range nonApplicableCombiners {
-		if scenario.positionAvailableForCombiner(chromsome.factories, chromsome.mines, chromsome.paths, chromsome.combiners, combiner) {
+		if scenario.PositionAvailableForCombiner(chromsome.factories, chromsome.mines, chromsome.paths, chromsome.combiners, combiner) {
 			t.Errorf("position %v should not be available", combiner)
 		}
 	}
@@ -136,11 +136,11 @@ func TestScenarioWithDeposit(t *testing.T) {
 		for y := 0; y <= g.scenario.height-FactoryHeight; y++ {
 			pos := Position{x, y}
 			if x == 0 && y == 0 || x == 0 && y == 10 || x == 10 && y == 0 || x == 10 && y == 10 {
-				if !g.scenario.positionAvailableForFactory([]Factory{}, []Mine{}, []Combiner{}, []Path{}, pos) {
+				if !g.scenario.PositionAvailableForFactory([]Factory{}, []Mine{}, []Combiner{}, []Path{}, pos) {
 					t.Errorf("position %v should be available", pos)
 				}
 			} else {
-				if g.scenario.positionAvailableForFactory([]Factory{}, []Mine{}, []Combiner{}, []Path{}, pos) {
+				if g.scenario.PositionAvailableForFactory([]Factory{}, []Mine{}, []Combiner{}, []Path{}, pos) {
 					t.Errorf("position %v should not be available", pos)
 				}
 			}
@@ -199,7 +199,7 @@ func TestAvailableMinePositions(t *testing.T) {
 	}
 
 	g := geneticAlgorithmFromScenario(scenarioWithDeposit())
-	mines := g.scenario.minePositions(&g.scenario.deposits[0], Chromosome{})
+	mines := g.scenario.MinePositions(&g.scenario.deposits[0], Chromosome{})
 
 	for _, mine := range mines {
 		found := false
@@ -230,7 +230,7 @@ func TestAvailableMinePositions(t *testing.T) {
 
 func TestTwoMinesSameEgress(t *testing.T) {
 	g := geneticAlgorithmFromScenario(scenarioWithDeposit())
-	mines := g.scenario.minePositions(&g.scenario.deposits[0], Chromosome{
+	mines := g.scenario.MinePositions(&g.scenario.deposits[0], Chromosome{
 		factories: []Factory{},
 		mines:     []Mine{{position: Position{6, 3}, direction: Right}},
 		fitness:   0,

@@ -32,7 +32,7 @@ func (p plottable) Z(c, r int) float64 {
 	return float64(p.grid[c][r])
 }
 
-func (g *GeneticAlgorithm) visualizeChromosomes(chromosomes []Chromosome, iteration int, dir string) error {
+func (g *GeneticAlgorithm) VisualizeChromosomes(chromosomes []Chromosome, iteration int, dir string) error {
 	err := os.MkdirAll(dir, 0o755)
 	if err != nil {
 		return err

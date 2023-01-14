@@ -99,9 +99,9 @@ func (m *Mine) NextToIngressPositions() []Position {
 	return []Position{{ingress.x, ingress.y + 1}, {ingress.x - 1, ingress.y}, {ingress.x + 1, ingress.y}}
 }
 
-func (s *Scenario) positionAvailableForMine(factories []Factory, mines []Mine, combiners []Combiner, paths []Path, mine Mine) bool {
+func (s *Scenario) PositionAvailableForMine(factories []Factory, mines []Mine, combiners []Combiner, paths []Path, mine Mine) bool {
 	// mine is out of bounds
-	boundRectangles := s.boundRectangles()
+	boundRectangles := s.BoundRectangles()
 	if mine.IntersectsAny(boundRectangles) {
 		return false
 	}
@@ -118,7 +118,7 @@ func (s *Scenario) positionAvailableForMine(factories []Factory, mines []Mine, c
 			return false
 		}
 	}
-	depositEgress, err := s.attachedDepositEgress(mine)
+	depositEgress, err := s.AttachedDepositEgress(mine)
 	for _, otherMine := range mines {
 		if mine.Egress().NextTo(otherMine.Ingress()) || mine.Ingress().NextTo(otherMine.Egress()) {
 			return false
@@ -151,7 +151,7 @@ func (s *Scenario) positionAvailableForMine(factories []Factory, mines []Mine, c
 	return true
 }
 
-func (s *Scenario) minePositions(deposit *Deposit, chromosome Chromosome) []Mine {
+func (s *Scenario) MinePositions(deposit *Deposit, chromosome Chromosome) []Mine {
 	/* For each mine direction, we go counter-clockwise.
 	   There is always one case where the mine corner matches the deposit edge.
 	   We always use the mine ingress coordinate as our iteration variable */
@@ -196,15 +196,15 @@ func (s *Scenario) minePositions(deposit *Deposit, chromosome Chromosome) []Mine
 
 	validPositions := make([]Mine, 0)
 	for i := range positions {
-		if s.positionAvailableForMine(chromosome.factories, chromosome.mines, chromosome.combiners, chromosome.paths, positions[i]) {
+		if s.PositionAvailableForMine(chromosome.factories, chromosome.mines, chromosome.combiners, chromosome.paths, positions[i]) {
 			validPositions = append(validPositions, positions[i])
 		}
 	}
 	return validPositions
 }
 
-func (g *GeneticAlgorithm) randomMine(deposit *Deposit, chromosome Chromosome) (Mine, error) {
-	availableMines := g.scenario.minePositions(deposit, chromosome)
+func (s *Scenario) RandomMine(deposit *Deposit, chromosome Chromosome) (Mine, error) {
+	availableMines := s.MinePositions(deposit, chromosome)
 	if len(availableMines) != 0 {
 		randomMine := availableMines[rand.Intn(len(availableMines))]
 		randomMine.connectedDeposit = deposit
@@ -213,7 +213,7 @@ func (g *GeneticAlgorithm) randomMine(deposit *Deposit, chromosome Chromosome) (
 	return Mine{}, errors.New("no mines available")
 }
 
-func (s *Scenario) attachedDepositEgress(mine Mine) (Position, error) {
+func (s *Scenario) AttachedDepositEgress(mine Mine) (Position, error) {
 	ingress := mine.Ingress()
 	for _, deposit := range s.deposits {
 		depositRectangle := deposit.Rectangle()

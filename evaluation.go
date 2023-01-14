@@ -37,7 +37,7 @@ type SimulatedMine struct {
 
 // TODO: Try to find a faster implementation
 // Checks that all egresses are connected to a single ingress. We assume that objects don't overlap
-func (s *Scenario) checkEgressesHaveSingleIngress(c Chromosome) bool {
+func (s *Scenario) CheckEgressesHaveSingleIngress(c Chromosome) bool {
 	Egress := 1
 	Ingress := 2
 	ingressEgressMatrix := make([][]int, s.width)
@@ -49,12 +49,12 @@ func (s *Scenario) checkEgressesHaveSingleIngress(c Chromosome) bool {
 		ingressEgressMatrix[mine.Ingress().x][mine.Ingress().y] = Ingress
 	}
 	for _, factory := range c.factories {
-		for _, position := range factory.ingressPositions() {
+		for _, position := range factory.IngressPositions() {
 			ingressEgressMatrix[position.x][position.y] = Ingress
 		}
 	}
 	for _, deposit := range s.deposits {
-		for _, position := range deposit.egressPositions() {
+		for _, position := range deposit.EgressPositions() {
 			ingressEgressMatrix[position.x][position.y] = Egress
 		}
 	}
@@ -75,7 +75,7 @@ func (s *Scenario) checkEgressesHaveSingleIngress(c Chromosome) bool {
 			if ingressEgressMatrix[i][j] == Egress {
 				numIngresses := 0
 				for _, position := range (Position{i, j}).NeighborPositions() {
-					if s.inBounds(position) {
+					if s.InBounds(position) {
 						if ingressEgressMatrix[position.x][position.y] == Ingress {
 							numIngresses += 1
 						}
@@ -90,21 +90,21 @@ func (s *Scenario) checkEgressesHaveSingleIngress(c Chromosome) bool {
 	return true
 }
 
-func (s *Scenario) checkValidity(c Chromosome) error {
+func (s *Scenario) CheckValidity(c Chromosome) error {
 	for i, mine := range c.mines {
-		if !s.positionAvailableForMine(c.factories, c.mines[:i], c.combiners, c.paths, mine) {
+		if !s.PositionAvailableForMine(c.factories, c.mines[:i], c.combiners, c.paths, mine) {
 			return errors.New("chromosome includes a mine which position is invalid, can't evaluate this chromosome")
 		}
 	}
 
 	for i, factory := range c.factories {
-		if !s.positionAvailableForFactory(c.factories[:i], c.mines, c.combiners, c.paths, factory.position) {
+		if !s.PositionAvailableForFactory(c.factories[:i], c.mines, c.combiners, c.paths, factory.position) {
 			return errors.New("chromosome includes a factory which position is invalid, can't evaluate this chromosome")
 		}
 	}
 
 	for i, combiner := range c.combiners {
-		if !s.positionAvailableForCombiner(c.factories, c.mines, c.paths, c.combiners[:i], combiner) {
+		if !s.PositionAvailableForCombiner(c.factories, c.mines, c.paths, c.combiners[:i], combiner) {
 			return errors.New("chromosome includes a combiner which position is invalid, can't evaluate this chromosome")
 		}
 	}
@@ -112,21 +112,21 @@ func (s *Scenario) checkValidity(c Chromosome) error {
 	for i, path := range c.paths {
 		paths = append(paths, Path{})
 		for _, conveyor := range path.conveyors {
-			if !s.positionAvailableForConveyor(c.factories, c.mines, c.combiners, paths, conveyor) {
+			if !s.PositionAvailableForConveyor(c.factories, c.mines, c.combiners, paths, conveyor) {
 				return errors.New("chromosome includes a conveyor which position is invalid, can't evaluate this chromosome")
 			}
 			paths[i].conveyors = append(paths[i].conveyors, conveyor)
 		}
 	}
-	if !s.checkEgressesHaveSingleIngress(c) {
+	if !s.CheckEgressesHaveSingleIngress(c) {
 		return errors.New("chromosome includes multiple ingresses at an egress")
 	}
 	return nil
 }
 
-func (s *Scenario) evaluateChromosome(c Chromosome) (int, int, error) {
+func (s *Scenario) EvaluateChromosome(c Chromosome) (int, int, error) {
 	// TODO: remove validity check
-	err := s.checkValidity(c)
+	err := s.CheckValidity(c)
 	if err != nil {
 		return 0, s.turns, err
 	}
@@ -247,7 +247,7 @@ func (s *Simulation) simulateOneTurn(currentTurn int) {
 
 func (s *Simulation) adjacentMinesToDeposit(deposit SimulatedDeposit) []*SimulatedMine {
 	mines := make([]*SimulatedMine, 0)
-	for _, position := range deposit.deposit.nextToEgressPositions() {
+	for _, position := range deposit.deposit.NextToEgressPositions() {
 		mine, foundMine := s.mineWithIngress(position)
 		if foundMine {
 			mines = append(mines, mine)

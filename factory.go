@@ -49,7 +49,7 @@ func (f Factory) NextToIngressPositions() []Position {
 	return positions
 }
 
-func (f Factory) ingressPositions() []Position {
+func (f Factory) IngressPositions() []Position {
 	positions := make([]Position, 0)
 	for i := 0; i < FactoryWidth; i++ {
 		positions = append(positions, Position{
@@ -74,7 +74,7 @@ func (f Factory) ingressPositions() []Position {
 	return positions
 }
 
-func (s *Scenario) positionAvailableForFactory(factories []Factory, mines []Mine, combiners []Combiner, paths []Path, position Position) bool {
+func (s *Scenario) PositionAvailableForFactory(factories []Factory, mines []Mine, combiners []Combiner, paths []Path, position Position) bool {
 	factoryRectangle := Rectangle{
 		position: position,
 		width:    FactoryWidth,
@@ -135,7 +135,7 @@ func (s *Scenario) positionAvailableForFactory(factories []Factory, mines []Mine
 	return true
 }
 
-func (s *Scenario) randomFactory(chromosome Chromosome) (Factory, error) {
+func (s *Scenario) RandomFactory(chromosome Chromosome) (Factory, error) {
 	rng := NewUniqueRNG(s.width * s.height)
 	var n int
 	done := false
@@ -144,7 +144,7 @@ func (s *Scenario) randomFactory(chromosome Chromosome) (Factory, error) {
 		x := n % s.width
 		y := n / s.width
 		pos := Position{x, y}
-		if s.positionAvailableForFactory(chromosome.factories, chromosome.mines, chromosome.combiners, chromosome.paths, pos) {
+		if s.PositionAvailableForFactory(chromosome.factories, chromosome.mines, chromosome.combiners, chromosome.paths, pos) {
 			subtype := s.products[rand.Intn(len(s.products))].subtype
 			return Factory{position: pos, product: subtype}, nil
 		}
