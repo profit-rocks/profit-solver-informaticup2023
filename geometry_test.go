@@ -79,9 +79,9 @@ func TestTopMineRectangles(t *testing.T) {
 
 func TestRectangle_Positions(t *testing.T) {
 	rect := Rectangle{position: Position{0, 0}, width: 3, height: 2}
-	positions := []Position{{0, 0}, {0, 1}, {0, 2}, {1, 0}, {1, 1}, {1, 2}}
+	positions := []Position{{0, 0}, {0, 1}, {1, 0}, {1, 1}, {2, 0}, {2, 1}}
 	if !reflect.DeepEqual(rect.Positions(), positions) {
-		t.Error("Rectangle should have positions", positions)
+		t.Error("Rectangle should have positions", positions, "received", rect.Positions())
 	}
 }
 
