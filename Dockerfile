@@ -8,6 +8,8 @@ ENV CGO_CFLAGS="-I/usr/include/lpsolve" \
     CGO_LDFLAGS="-llpsolve55 -lm -ldl -lcolamd"
 
 WORKDIR /app
+ENV GOMEMLIMIT=1800MiB
+ENV GOGC=off
 
 COPY go.mod go.sum ./
 
