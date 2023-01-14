@@ -372,3 +372,19 @@ func (c *Chromosome) determineDistancesFromMinesToFactories(scenario Scenario) {
 		}
 	}
 }
+
+func exportChromosomes(scenario Scenario, i int, chromosomes []Chromosome, dir string) error {
+	err := os.MkdirAll(dir, 0o755)
+	if err != nil {
+		return err
+	}
+	for j := 0; j < NumLoggedChromosomesPerIteration; j++ {
+		if j < len(chromosomes) {
+			err2 := chromosomes[j].Export(scenario, ScenarioExporter{}, fmt.Sprintf("%s/iteration_%d_ch_%d.json", dir, i, j))
+			if err2 != nil {
+				return err2
+			}
+		}
+	}
+	return nil
+}

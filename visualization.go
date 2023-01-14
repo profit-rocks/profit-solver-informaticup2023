@@ -111,19 +111,3 @@ func saveGrid(grid [][]int, path string) error {
 	p.HideAxes()
 	return p.Save(vg.Length(width)*vg.Inch*0.1, vg.Length(height)*vg.Inch*0.1, path)
 }
-
-func exportChromosomes(scenario Scenario, i int, chromosomes []Chromosome, dir string) error {
-	err := os.MkdirAll(dir, 0o755)
-	if err != nil {
-		return err
-	}
-	for j := 0; j < NumLoggedChromosomesPerIteration; j++ {
-		if j < len(chromosomes) {
-			chromosomes[j].Export(scenario, ScenarioExporter{}, fmt.Sprintf("%s/iteration_%d_ch_%d.json", dir, i, j))
-			if err != nil {
-				return err
-			}
-		}
-	}
-	return nil
-}
