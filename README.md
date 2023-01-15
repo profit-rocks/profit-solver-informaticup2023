@@ -6,6 +6,17 @@ This repository contains our solution to _Profit!_ which is based on an approach
 
 An interactive playground for the challenge is available at [https://profit.phinau.de](https://profit.phinau.de). The website offers scenario visualization, simulation, import and export. By clicking _Export (task)_, you download a scenario file which can be imported by our solution.
 
+## Example task
+We chose `tasks/jacob.json` as our example task. The task is a medium-sized scenario, with the time set to 60 seconds and turns set to 75. The following products are enabled:
+| Resource  | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 |
+|-----------|---|---|---|---|---|---|---|---|
+| Product 1 | 1 | 1 | 1 | 1 | 0 | 0 | 0 | 0 |
+| Product 4 | 0 | 0 | 4 | 2 | 0 | 0 | 0 | 0 |
+
+Our algorithm produces the following solution, which scores 1830 points after 41 turns. The theoretical optimum is 1850 points:
+
+![image](https://user-images.githubusercontent.com/46268468/212553297-891d44c0-a0c8-422f-ba87-6cd1d965eec9.png)
+
 ## Run using docker
 
 If you want to try out our solution, you can do so using Docker.
@@ -76,4 +87,4 @@ To investigate performance issues, you can use the integrated CPU profiler.
 
 ### Benchmarking
 
-To run benchmarks on our solution, you can use the `benchmark.py` script which requires Python version 3.10 or higher. By default, it runs benchmarks on all tasks in `./tasks`. Add the `--keep-solutions` flag if you want to access the intermediate and final solutions afterwards.
+To run benchmarks on our solution, you can use the `benchmark.py` script which requires Python version 3.10 or higher. By default, it runs benchmarks on all tasks in `./tasks`. Add the `--keep-solutions` flag if you want to access the intermediate and final solutions afterward.
