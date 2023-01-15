@@ -6,6 +6,17 @@ This repository contains our solution to _Profit!_ which is based on an approach
 
 An interactive playground for the challenge is available at [https://profit.phinau.de](https://profit.phinau.de). The website offers scenario visualization, simulation, import and export. By clicking _Export (task)_, you download a scenario file which can be imported by our solution.
 
+## Example task
+We chose `tasks/jacob.json` as our example task. The task is a medium sized scenario with two different products.
+
+<p float="left">
+  <img src="https://user-images.githubusercontent.com/39831045/212551213-2b4f0164-1971-4c6e-a9c3-e96a2c0da350.png" width="48%" />
+  <img src="https://user-images.githubusercontent.com/39831045/212551320-469267f1-769e-448a-8a3b-46b629ff242f.png" width="48%" /> 
+</p>
+
+Our algorithm produces the following solution, which scores 820 points after 65 turns. The theoretical optimum is 850 points.
+
+
 ## Run using docker
 
 If you want to try out our solution, you can do so using Docker.
