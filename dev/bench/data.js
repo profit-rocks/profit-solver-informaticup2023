@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1673882772014,
+  "lastUpdate": 1673890697899,
   "repoUrl": "https://github.com/profit-rocks/profit-solver-informaticup2023",
   "entries": {
     "Benchmark": [
@@ -22049,6 +22049,180 @@ window.BENCHMARK_DATA = {
           {
             "name": "big_empty.json - time",
             "value": 0.016860246658325195,
+            "unit": "seconds"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "46268468+jacob271@users.noreply.github.com",
+            "name": "Jacob Schäfer",
+            "username": "jacob271"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "d339e1c0f1b721b38044eae87d3d9fc5a43ec8d0",
+          "message": "upload report",
+          "timestamp": "2023-01-16T18:27:32+01:00",
+          "tree_id": "d200e188fa877c2f30f40efa9272dccffadd1747",
+          "url": "https://github.com/profit-rocks/profit-solver-informaticup2023/commit/d339e1c0f1b721b38044eae87d3d9fc5a43ec8d0"
+        },
+        "date": 1673890696465,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "jacob.json - fitness",
+            "value": 1510,
+            "unit": "points"
+          },
+          {
+            "name": "jacob.json - time",
+            "value": 58.01652002334595,
+            "unit": "seconds"
+          },
+          {
+            "name": "two_deposits.json - fitness",
+            "value": 90,
+            "unit": "points"
+          },
+          {
+            "name": "two_deposits.json - time",
+            "value": 0.013224363327026367,
+            "unit": "seconds"
+          },
+          {
+            "name": "001.task.json - fitness",
+            "value": 410,
+            "unit": "points"
+          },
+          {
+            "name": "001.task.json - time",
+            "value": 0.1798415184020996,
+            "unit": "seconds"
+          },
+          {
+            "name": "004.task.json - fitness",
+            "value": 120,
+            "unit": "points"
+          },
+          {
+            "name": "004.task.json - time",
+            "value": 6.961395502090454,
+            "unit": "seconds"
+          },
+          {
+            "name": "richard.json - fitness",
+            "value": 120,
+            "unit": "points"
+          },
+          {
+            "name": "richard.json - time",
+            "value": 0.036421775817871094,
+            "unit": "seconds"
+          },
+          {
+            "name": "exampleScenario.json - fitness",
+            "value": 450,
+            "unit": "points"
+          },
+          {
+            "name": "exampleScenario.json - time",
+            "value": 14.847862005233765,
+            "unit": "seconds"
+          },
+          {
+            "name": "alex.json - fitness",
+            "value": 585,
+            "unit": "points"
+          },
+          {
+            "name": "alex.json - time",
+            "value": 98.0124785900116,
+            "unit": "seconds"
+          },
+          {
+            "name": "many_products_and_deposits.json - fitness",
+            "value": 1837,
+            "unit": "points"
+          },
+          {
+            "name": "many_products_and_deposits.json - time",
+            "value": 238.0291440486908,
+            "unit": "seconds"
+          },
+          {
+            "name": "jacob_few_turns.json - fitness",
+            "value": 760,
+            "unit": "points"
+          },
+          {
+            "name": "jacob_few_turns.json - time",
+            "value": 58.014981508255005,
+            "unit": "seconds"
+          },
+          {
+            "name": "003.task.json - fitness",
+            "value": 50,
+            "unit": "points"
+          },
+          {
+            "name": "003.task.json - time",
+            "value": 98.01113843917847,
+            "unit": "seconds"
+          },
+          {
+            "name": "multiple_paths_required.json - fitness",
+            "value": 380,
+            "unit": "points"
+          },
+          {
+            "name": "multiple_paths_required.json - time",
+            "value": 0.3972492218017578,
+            "unit": "seconds"
+          },
+          {
+            "name": "002.task.json - fitness",
+            "value": 90,
+            "unit": "points"
+          },
+          {
+            "name": "002.task.json - time",
+            "value": 2.1612191200256348,
+            "unit": "seconds"
+          },
+          {
+            "name": "nils.json - fitness",
+            "value": 1320,
+            "unit": "points"
+          },
+          {
+            "name": "nils.json - time",
+            "value": 0.1553511619567871,
+            "unit": "seconds"
+          },
+          {
+            "name": "richard2.json - fitness",
+            "value": 120,
+            "unit": "points"
+          },
+          {
+            "name": "richard2.json - time",
+            "value": 0.006335258483886719,
+            "unit": "seconds"
+          },
+          {
+            "name": "big_empty.json - fitness",
+            "value": 400,
+            "unit": "points"
+          },
+          {
+            "name": "big_empty.json - time",
+            "value": 0.04173612594604492,
             "unit": "seconds"
           }
         ]
