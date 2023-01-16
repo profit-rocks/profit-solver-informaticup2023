@@ -2,7 +2,7 @@
 
 InformatiCup is a competition for computer science students in Germany, Austria and Switzerland. The competition is held by the [German Society of Computer Science](https://gi.de/). The 2023 edition of InformatiCup is called _Profit!_. More information about the competition is available in the [official repository](https://github.com/informatiCup/informatiCup2023) and the [official challenge description](https://github.com/informatiCup/informatiCup2023/blob/main/informatiCup%202023%20-%20Profit!.pdf)
 
-This repository contains our solution to _Profit!_ which is based on an approach using genetic algorithms.
+This repository contains our solution to _Profit!_ which is based on an approach using genetic algorithms. See `report.pdf` for a detailed description of the theoretical approach, further thoughts on our development process, and an evaluation of our solution.
 
 An interactive playground for the challenge is available at [https://profit.phinau.de](https://profit.phinau.de). The website offers scenario visualization, simulation, import and export. By clicking _Export (task)_, you download a scenario file which can be imported by our solution.
 
