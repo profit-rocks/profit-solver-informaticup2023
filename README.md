@@ -1,3 +1,5 @@
+![logo_profit_rocks_crop](https://user-images.githubusercontent.com/46268468/216763253-023acb21-618f-4f29-95e1-b128b185327f.png)
+
 # Genetic Algorithm for _Profit!_ for InformatiCup 2023
 
 InformatiCup is a competition for computer science students in Germany, Austria and Switzerland. The competition is held by the [German Society of Computer Science](https://gi.de/). The 2023 edition of InformatiCup is called _Profit!_. More information about the competition is available in the [official repository](https://github.com/informatiCup/informatiCup2023) and the [official challenge description](https://github.com/informatiCup/informatiCup2023/blob/main/informatiCup%202023%20-%20Profit!.pdf)
